@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WinMD</title>
+  </head>
+  <body>
+    <div id="app">
+      <header class="toolbar" aria-label="ファイル操作">
+        <span class="brand">Win<span>MD</span></span>
+        <button id="new" title="Ctrl+N">新規</button>
+        <button id="open" title="Ctrl+O">開く…</button>
+        <button id="save" title="Ctrl+S">保存</button>
+        <button id="save-as" title="Ctrl+Shift+S">名前を付けて保存…</button>
+        <span class="toolbar-spacer"></span>
+        <button id="search" title="Ctrl+F / Ctrl+H">検索・置換</button>
+        <label class="remote-option"
+          ><input type="checkbox" id="remote" />この文書の外部画像を許可</label
+        >
+      </header>
+      <div id="path" class="path" title="フルパス">新規文書</div>
+      <div id="notice" role="status" hidden>
+        <span></span><button id="reload">再読み込み…</button>
+      </div>
+      <main id="split">
+        <section class="pane source-pane" aria-label="Markdownソース">
+          <div class="pane-label">MARKDOWN <span>ソース</span></div>
+          <div id="editor"></div>
+        </section>
+        <div
+          id="divider"
+          role="separator"
+          tabindex="0"
+          aria-label="編集とプレビューの幅"
+          aria-orientation="vertical"
+          aria-valuenow="50"
+        ></div>
+        <section class="pane preview-pane" aria-label="プレビュー">
+          <div class="pane-label">PREVIEW <span>プレビュー</span></div>
+          <iframe
+            id="preview"
+            title="Markdownプレビュー"
+            sandbox="allow-same-origin"
+            referrerpolicy="no-referrer"
+          ></iframe>
+        </section>
+      </main>
+      <footer>
+        <span id="status" role="status">準備中…</span
+        ><span id="format">UTF-8 · LF</span>
+      </footer>
+    </div>
+    <dialog id="confirm">
+      <form method="dialog">
+        <h2></h2>
+        <p></p>
+        <div class="dialog-actions"></div>
+      </form>
+    </dialog>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+[package]
+name = "winmd-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+same-file = "1"
+tempfile = "3"
+base64 = "0.22"
+percent-encoding = "2"
+url = "2"
+png = "0.18"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Storage_FileSystem", "Win32_Foundation"] }

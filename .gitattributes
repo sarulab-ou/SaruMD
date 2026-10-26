@@ -1,0 +1,11 @@
+* text=auto
+*.sh text eol=lf
+*.rs text eol=lf
+*.md text eol=lf
+*.ts text eol=lf
+*.json text eol=lf
+*.png binary
+*.ico binary
+# Preserve upstream license text exactly, including line endings and whitespace.
+docs/licenses/*.txt -text -whitespace
+docs/third-party-licenses.txt -text -whitespace

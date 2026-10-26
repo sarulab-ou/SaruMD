@@ -1,0 +1,11 @@
+{
+  "identifier": "document",
+  "description": "ローカル文書ウィンドウの限定されたIPC。fs/shell/window作成権限を与えない。",
+  "local": true,
+  "windows": ["doc-*"],
+  "permissions": [
+    "allow-document-commands",
+    "core:event:allow-listen",
+    "core:event:allow-unlisten"
+  ]
+}
