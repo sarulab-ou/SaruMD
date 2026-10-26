@@ -1,4 +1,34 @@
-# 検証記録（2026-10-26）
+# 検証記録（最終更新：2026-10-27）
+
+## 更新版0.1.3：ファイルメニュー・PDF・印刷
+
+ファイルメニュー（Alt+F、キー表示、矢印/Home/End/Esc操作）、PDF保存先選択、印刷（Ctrl+P）、全ウィンドウへの安全な終了要求を追加。タブは追加せず、画面内ロゴとタイトルの「— WinMD」を削除した。PDF/印刷は未保存本文のサニタイズ済みプレビューを使用し、原本を自動保存しない。PDFはネイティブWebView2で生成後、既存のatomic_saveで保存する。32 MiB上限、.pdf以外の保存先拒否、開いている文書の上書き拒否、上書き確認後の外部変更比較を実装した。
+
+2026-10-27、既存のWindows/WSL GNU環境で実施：
+
+| 検証                                                                                                | 結果                                                                                                                                                                                                               |
+| --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm run check` / `pnpm run lint` / `pnpm run build`                                               | 成功。Viteの約724 kBチャンク警告は継続                                                                                                                                                                             |
+| `pnpm run test`                                                                                     | 8ファイル25件成功。メニューのAlt+F/キー移動/disabled/IMEガード、印刷画像待機・失敗・timeout、最新未保存本文とXSS/外部画像ブロックの印刷スナップショットを追加                                                      |
+| `test -p winmd-core` / `test -p winmd-core --target x86_64-pc-windows-gnu`                          | Linux14件、実Windows15件成功                                                                                                                                                                                       |
+| desktop Windows `clippy --all-targets` / core Linux `clippy --all-targets` / `fmt --all -- --check` | 成功（`-D warnings`）。プローブ修正後のexample clippyも再確認                                                                                                                                                      |
+| Windows x64 GNUリリース / NSIS                                                                      | 成功。ログ`.tools/final-build-0.1.3.log`で`Finished 1 bundle`。署名なし・クロスビルド警告あり                                                                                                                      |
+| 7-Zip `t` / 展開照合                                                                                | 成功。exeの標準UNK→NSSマーカー3バイトだけを正規化して全体一致、WebView2Loader.dllと第三者ライセンス全文はハッシュ一致                                                                                              |
+| 実WebView2 PDFプローブ                                                                              | `scripts/build-print-probe-wsl.sh`で生成し、非表示ウィンドウで実行。66,961バイトのPDFを作成、終了コード0・PASS                                                                                                     |
+| PDF読取・描画                                                                                       | Windows Miniconda baseのPyMuPDFで5ページ全てのA4寸法、日本語見出しと末尾END_OF_DOCUMENT、SHOULD_NOT_PRINT不在を確認。全5ページをPNGにして目視し、文字欠け・重なりなし、表ヘッダー繰り返しとコード/引用の表示を確認 |
+
+PDFの試験出力は`.tools/print-smoke-0.1.3.pdf`、ログは同名`.log`/`.err`、描画は`.tools/print-smoke-page-1.png`〜`5.png`。固定fixtureと製品の印刷CSS・PDF生成関数を使い、実プリンターとユーザー文書には触れていない。WebView2終了時に`Failed to unregister class Chrome_WidgetWin_0 ... 1412`が標準エラーへ出たが、PDF生成・検証・プロセス終了は成功した。
+
+プローブ初回はexeにCommon Controls v6のマニフェストがなくWindowsローダーで停止したため、専用ビルドスクリプトで埋め込んだ。次にdata URLの非許可を確認したため、製品の権限は広げずテスト専用localhost fixtureへ変更した。最終プローブで上記PASSを確認した。pnpm 11の組み込み`check`による別処理を避け、プロジェクトの型検査は明示的に`pnpm run check`で実行した。依存は既存ローカルstoreからoffline/frozen-lockfileで復元しており、ライブラリのバージョン更新はしていない。
+
+**未実施**：最終アプリ上のクリック/Alt+F、保存ダイアログのキャンセル・上書き、実プリンター、印刷プレビューUI、複数dirty文書の終了確認、v0.1.3インストーラーの対話受入。これらを実施済みとは扱わない。手順をmanual-tests.mdへ追加済み。
+
+| 0.1.3成果物                                                                           | SHA-256                                                            |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `target/verified/x86_64-pc-windows-gnu/release/winmd.exe`                             | `ba672b60763ae0527eb9ffcd7a81593890c7c9aee83a3de5a5df900d4b56917a` |
+| `target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/WinMD_0.1.3_x64-setup.exe` | `181a446809e332fe06ccf7c6ffbe96a62eeb3206f51d136ff658a66f53ce0035` |
+
+インストーラーは4,995,111バイト。既存のインストール済みアプリは置き換えていない。
 
 ## 更新版0.1.2：関連付け起動の修正
 

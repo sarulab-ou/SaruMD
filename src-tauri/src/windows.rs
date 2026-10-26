@@ -6,7 +6,7 @@ use winmd_core::Result;
 
 fn create_window(app: &AppHandle, id: &str) -> Result<()> {
     let window = WebviewWindowBuilder::new(app, id, WebviewUrl::App("index.html".into()))
-        .title("WinMD")
+        .title("無題")
         .inner_size(1180.0, 800.0)
         .min_inner_size(760.0, 440.0)
         .decorations(true)

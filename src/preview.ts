@@ -1,6 +1,7 @@
 import DOMPurify from 'dompurify';
 import { safeHttpUrl } from './markdown';
 import { boundedDebounce } from './scheduler';
+import { waitForPrintImage } from './printing';
 
 export function sanitizePreview(html: string): DocumentFragment {
   return DOMPurify.sanitize(html, {
@@ -64,7 +65,13 @@ export class Preview {
   private requested = 0;
   private remote = false;
   private body!: HTMLElement;
+  private printRequest?: {
+    revision: number;
+    resolve: () => void;
+    reject: (error: Error) => void;
+  };
   private readonly schedule = boundedDebounce(() => {
+    if (this.printRequest) return;
     this.requested = this.generation;
     this.worker.postMessage({ revision: this.requested, text: this.text });
   });
@@ -96,6 +103,29 @@ export class Preview {
           doc.addEventListener('contextmenu', (event) =>
             event.preventDefault(),
           );
+          // iframe keyboard events do not bubble to the app's menu/shortcut handlers.
+          doc.addEventListener('keydown', (event) => {
+            if (event.isComposing || event.keyCode === 229) return;
+            const key = event.key.toLowerCase();
+            if (
+              (event.ctrlKey &&
+                !event.altKey &&
+                ['n', 'o', 's', 'w', 'p'].includes(key)) ||
+              (event.altKey && !event.ctrlKey && key === 'f')
+            ) {
+              event.preventDefault();
+              document.dispatchEvent(
+                new KeyboardEvent('keydown', {
+                  key: event.key,
+                  ctrlKey: event.ctrlKey,
+                  altKey: event.altKey,
+                  shiftKey: event.shiftKey,
+                  bubbles: true,
+                  cancelable: true,
+                }),
+              );
+            }
+          });
           resolve();
         },
         { once: true },
@@ -108,14 +138,30 @@ export class Preview {
       if (event.data.revision !== this.requested) return;
       if (event.data.error) {
         this.report(event.data.error);
+        this.printRequest?.reject(new Error(event.data.error));
+        this.printRequest = undefined;
         return;
       }
-      void this.paint(event.data.html ?? '', event.data.revision);
+      void this.paint(event.data.html ?? '', event.data.revision)
+        .then(() => {
+          if (this.printRequest?.revision === event.data.revision) {
+            this.printRequest.resolve();
+            this.printRequest = undefined;
+          }
+        })
+        .catch((error: unknown) => {
+          this.printRequest?.reject(new Error(String(error)));
+          this.printRequest = undefined;
+          this.report(String(error));
+        });
     };
-    this.worker.onerror = () =>
+    this.worker.onerror = () => {
+      this.printRequest?.reject(new Error('プレビュー変換に失敗しました。'));
+      this.printRequest = undefined;
       this.report(
         'プレビュー変換でエラーが発生しました。編集内容は保持されています。',
       );
+    };
   }
   update(text: string): void {
     this.text = text;
@@ -125,6 +171,26 @@ export class Preview {
   allowRemote(allowed: boolean): void {
     this.remote = allowed;
     this.update(this.text);
+  }
+  async preparePrint(text: string, target: HTMLElement): Promise<void> {
+    await this.ready;
+    this.text = text;
+    this.requested = ++this.generation;
+    await new Promise<void>((resolve, reject) => {
+      this.printRequest = { revision: this.requested, resolve, reject };
+      this.worker.postMessage({ revision: this.requested, text });
+    });
+    // Copy only the sanitized, resolved article. No Markdown HTML enters the app shell.
+    target.replaceChildren(
+      ...[...this.body.childNodes].map((node) => node.cloneNode(true)),
+    );
+    await Promise.all(
+      [...target.querySelectorAll('img')].map(waitForPrintImage),
+    );
+    await document.fonts?.ready;
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    );
   }
   private async paint(html: string, generation: number): Promise<void> {
     await this.ready;

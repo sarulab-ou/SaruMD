@@ -6,7 +6,7 @@ A Markdown editor for Windows. **Each document opens in its own independent wind
 
 ## Install
 
-**[Windows x64 installer v0.1.2](target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/WinMD_0.1.2_x64-setup.exe)**
+**[Windows x64 installer v0.1.3](target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/WinMD_0.1.3_x64-setup.exe)**
 
 This link points to the generated installer in this build workspace. No GitHub release has been published yet, and the installer is not included in source checkouts.
 
@@ -23,6 +23,9 @@ The current installer is an unsigned GNU trial build. GUI and installation accep
 3. Press **Ctrl+S** to save. For a new document, choose its location first.
 4. Copy an image and press **Ctrl+V** in the editor. WinMD saves it beside the Markdown file as `20261026_231824.png` and inserts an image link. Unsaved documents are saved first; existing images are never overwritten.
 5. Changes made by Codex or another editor reload automatically when WinMD has no unsaved edits. Otherwise, WinMD keeps your edits and shows a conflict notification.
+6. Press **Alt+F** for the File menu. Choose **PDFにエクスポート** to save a PDF, or **印刷 (Ctrl+P)** to open the print dialog.
+
+PDF export and printing include the rendered document and unsaved edits. PDFs use A4 portrait and exclude the editor and menus. They do not save or change the Markdown source. Remote image permission follows the preview setting. Exit asks each window to save its changes; canceled documents remain open.
 
 Image paste accepts PNG, JPEG, GIF, and WebP, saving as PNG. The limit is 16 MiB and 16 megapixels. If a file with the same timestamp already exists, wait one second and paste again.
 
@@ -30,6 +33,7 @@ Image paste accepts PNG, JPEG, GIF, and WebP, saving as PNG. The limit is 16 MiB
 
 | Action                            | Shortcut                        |
 | --------------------------------- | ------------------------------- |
+| File menu                         | Alt+F (arrows, Enter, Esc)      |
 | New document in a separate window | Ctrl+N                          |
 | Open a file                       | Ctrl+O                          |
 | Save / Save As                    | Ctrl+S / Ctrl+Shift+S           |
@@ -37,6 +41,7 @@ Image paste accepts PNG, JPEG, GIF, and WebP, saving as PNG. The limit is 16 MiB
 | Find / Replace                    | Ctrl+F / Ctrl+H                 |
 | Undo / Redo                       | Ctrl+Z / Ctrl+Y or Ctrl+Shift+Z |
 | Close the current window          | Ctrl+W / Alt+F4                 |
+| Print                             | Ctrl+P                          |
 
 ## Files and preview
 

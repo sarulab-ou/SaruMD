@@ -13,6 +13,9 @@ fn main() {
             "open_external_link",
             "set_document_title",
             "save_pasted_image",
+            "print_document",
+            "export_pdf",
+            "request_exit",
         ]),
     ))
     .expect("Tauri 2 build configuration failed");

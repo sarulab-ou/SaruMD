@@ -46,6 +46,15 @@ NSIS currentUser、標準WebView2 Evergreenを使用。ブラウザエンジン�
 
 ## 公式資料
 
+0.1.3ではHTMLのファイルメニューにAlt+Fとキー表示を追加。1文書1ウィンドウのまま、アプリ内ロゴとタイトルのアプリ名を省いた。「終了」は各文書の既存close要求を通し、保存確認を迂回しない。
+
+PDF/印刷は保存・貼り付け・再読み込みと直列化し、準備中は編集を一時停止する。現在の未保存本文をWorkerで再変換し、既存DOMPurifyと画像検証を通ったarticleだけを印刷用DOMへ複製する。外部画像の許可状態を維持し、画像ロードとフォントを待つ。印刷CSSは本文以外を非表示にし、表のヘッダー繰り返し、長いコードの折り返し、A4余白を設定する。iframeのsandboxとCSPは維持する。
+
+WindowsネイティブのWebView2 ShowPrintUI/PrintToPdfをTauri 2 with_webview経由でUIスレッドから呼ぶ。PDFは一時フォルダーに生成し、成功コールバックとPDFヘッダー確認後、Rustダイアログで選ばれた.pdfへ既存atomic_saveで保存する。既存出力は具体的内容を読み取って上書き確認し、置換直前の内容比較を行う。開いている文書への出力を拒否し、Markdownの保存・dirty状態には影響させない。保存・検証の上限は32 MiB。COM API互換性のためTauriを2.12系列、webview2-comを0.39.1へ固定する。
+
+- [WebView2の印刷API](https://learn.microsoft.com/en-us/microsoft-edge/webview2/how-to/print)
+- [Tauri 2 with_webview](https://docs.rs/tauri/2.12.5/tauri/webview/struct.Webview.html#method.with_webview)
+
 0.1.1の追加設計：画像貼り付けはCodeMirrorのpasteイベントの画像データだけを使い、クリップボード常時監視や読み取り権限は追加しない。PNGをTauri 2のRawバイナリIPCで送り、Rustでデコード・サイズを検証し、所有文書のフォルダーへ新規限定のatomic_saveを行う。ファイル名はRust側PCローカル時刻から生成し、任意パスを受け付けない。貼り付けの非同期処理は保存キューに即時予約し、Save As/終了/再読み込みとの順序を保証する。挿入範囲はCodeMirrorの変更を通じて追跡し、画像保存完了前は本文を変更しない。
 
 外部変更は300ms集約後、cleanな文書のみ保存キュー内で自動反映する。待機中の追加入力を再確認し、Rustのreload_externalでも未保存編集を拒否する。dirtyなら既存通知と手動操作へ残す。自動反映では位置を維持し、ディスクからの再読み込みとしてUndoをリセットする。

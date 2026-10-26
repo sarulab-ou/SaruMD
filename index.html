@@ -3,16 +3,52 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>WinMD</title>
+    <title>無題</title>
   </head>
   <body>
     <div id="app">
       <header class="toolbar" aria-label="ファイル操作">
-        <span class="brand">Win<span>MD</span></span>
-        <button id="new" title="Ctrl+N">新規</button>
-        <button id="open" title="Ctrl+O">開く…</button>
-        <button id="save" title="Ctrl+S">保存</button>
-        <button id="save-as" title="Ctrl+Shift+S">名前を付けて保存…</button>
+        <div class="menu-container">
+          <button
+            id="file-menu-button"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            aria-controls="file-menu"
+            aria-keyshortcuts="Alt+f"
+            title="Alt+F"
+          >
+            ファイル
+          </button>
+          <div id="file-menu" role="menu" aria-label="ファイル" hidden>
+            <button id="new" role="menuitem" aria-keyshortcuts="Control+n">
+              <span>新しいウィンドウ</span><span class="shortcut">Ctrl+N</span>
+            </button>
+            <button id="open" role="menuitem" aria-keyshortcuts="Control+o">
+              <span>開く…</span><span class="shortcut">Ctrl+O</span>
+            </button>
+            <div role="separator"></div>
+            <button id="save" role="menuitem" aria-keyshortcuts="Control+s">
+              <span>保存</span><span class="shortcut">Ctrl+S</span>
+            </button>
+            <button
+              id="save-as"
+              role="menuitem"
+              aria-keyshortcuts="Control+Shift+s"
+            >
+              <span>名前を付けて保存…</span
+              ><span class="shortcut">Ctrl+Shift+S</span>
+            </button>
+            <div role="separator"></div>
+            <button id="export-pdf" role="menuitem">
+              <span>PDFにエクスポート…</span>
+            </button>
+            <button id="print" role="menuitem" aria-keyshortcuts="Control+p">
+              <span>印刷…</span><span class="shortcut">Ctrl+P</span>
+            </button>
+            <div role="separator"></div>
+            <button id="exit" role="menuitem"><span>終了</span></button>
+          </div>
+        </div>
         <span class="toolbar-spacer"></span>
         <button id="search" title="Ctrl+F / Ctrl+H">検索・置換</button>
         <label class="remote-option"
@@ -51,6 +87,7 @@
         ><span id="format">UTF-8 · LF</span>
       </footer>
     </div>
+    <article id="print-content" aria-hidden="true"></article>
     <dialog id="confirm">
       <form method="dialog">
         <h2></h2>

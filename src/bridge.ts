@@ -14,6 +14,9 @@ export const bridge = {
   close: (text: string, revision: number, discard: boolean) =>
     invoke<void>('close_document', { text, revision, discard }),
   requestClose: () => invoke<void>('request_close'),
+  requestExit: () => invoke<void>('request_exit'),
+  print: () => invoke<void>('print_document'),
+  exportPdf: () => invoke<string | null>('export_pdf'),
   image: (reference: string) =>
     invoke<string>('read_local_image', { reference }),
   link: (url: string) => invoke<void>('open_external_link', { url }),

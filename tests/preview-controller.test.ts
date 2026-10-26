@@ -84,3 +84,30 @@ it('blocks external image loading by default and never gives links script URLs',
     false,
   );
 });
+
+it('prints the latest unsaved text and keeps raw HTML and blocked images safe', async () => {
+  const { preview, worker } = await setup();
+  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+    callback(0);
+    return 0;
+  });
+  const target = document.createElement('article');
+  document.body.append(target);
+  preview.update('old');
+  vi.advanceTimersByTime(200);
+  const old = worker.sent[0].revision;
+  const pending = preview.preparePrint('unsaved 最新', target);
+  await Promise.resolve();
+  const latest = worker.sent.at(-1)!;
+  expect(latest.text).toBe('unsaved 最新');
+  worker.reply(old, '<p>old</p>');
+  worker.reply(
+    latest.revision,
+    '<h1>unsaved 最新</h1><script>bad()</script><img data-winmd-src="https://tracking.invalid/x"><input type="checkbox" checked>',
+  );
+  await pending;
+  expect(target.querySelector('h1')?.textContent).toBe('unsaved 最新');
+  expect(target.querySelector('script,img')).toBeNull();
+  expect(target.textContent).toContain('ブロック中');
+  expect(target.querySelector<HTMLInputElement>('input')!.disabled).toBe(true);
+});

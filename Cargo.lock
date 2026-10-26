@@ -4738,7 +4738,7 @@ checksum = "d6bbff5f0aada427a1e5a6da5f1f98158182f26556f345ac9e04d36d0ebed650"
 
 [[package]]
 name = "winmd"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "chrono",
  "notify",
@@ -4748,12 +4748,15 @@ dependencies = [
  "tauri-plugin-dialog",
  "tauri-plugin-opener",
  "tauri-plugin-single-instance",
+ "tempfile",
+ "webview2-com",
+ "windows",
  "winmd-core",
 ]
 
 [[package]]
 name = "winmd-core"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "base64 0.22.1",
  "percent-encoding",

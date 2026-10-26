@@ -45,20 +45,49 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 3px;
-  padding: 10px 16px;
+  padding: 5px 10px;
   border-bottom: 1px solid #e3e8ef;
   background: #fafbfd;
+  font-size: 14px;
+}
+.menu-container {
+  position: relative;
+}
+#file-menu-button[aria-expanded='true'] {
+  background: #e9edf4;
+}
+#file-menu:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+}
+#file-menu {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: -4px;
+  min-width: 300px;
+  padding: 5px;
+  border: 1px solid #dedfe5;
+  border-radius: 8px;
+  background: #fcfcfd;
+  box-shadow: 0 7px 20px #16223726;
+  z-index: 20;
+}
+#file-menu button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 10px 14px;
+  text-align: left;
+}
+#file-menu .shortcut {
+  color: #697383;
   font-size: 12px;
 }
-.brand {
-  font-weight: 700;
-  font-size: 19px;
-  letter-spacing: -0.8px;
-  margin-right: 20px;
-  color: #1e2d47;
-}
-.brand span {
-  color: #386bd3;
+#file-menu [role='separator'] {
+  height: 1px;
+  margin: 4px 8px;
+  background: #e6e8ed;
 }
 .toolbar-spacer {
   flex: 1;
@@ -209,10 +238,107 @@ dialog p {
 .cm-search input {
   max-width: 145px;
 }
-@media (max-width: 900px) {
-  .brand {
-    margin-right: 8px;
+#print-content {
+  display: none;
+}
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
   }
+  html,
+  body {
+    height: auto;
+    overflow: visible;
+    background: white;
+    color: #1b1b1b;
+  }
+  body > :not(#print-content) {
+    display: none !important;
+  }
+  #print-content {
+    display: block;
+    font:
+      11pt/1.75 'Yu Gothic UI',
+      Meiryo,
+      sans-serif;
+    overflow-wrap: anywhere;
+    print-color-adjust: exact;
+  }
+  #print-content h1,
+  #print-content h2,
+  #print-content h3,
+  #print-content h4 {
+    break-after: avoid;
+    line-height: 1.4;
+  }
+  #print-content h1 {
+    font-size: 22pt;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8pt;
+    margin-top: 0;
+  }
+  #print-content h2 {
+    font-size: 17pt;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5pt;
+  }
+  #print-content p {
+    orphans: 3;
+    widows: 3;
+  }
+  #print-content pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    background: #f4f6fa;
+    border: 1px solid #ddd;
+    padding: 10pt;
+  }
+  #print-content code {
+    font:
+      9pt/1.6 'Cascadia Code',
+      Consolas,
+      monospace;
+  }
+  #print-content blockquote {
+    border-left: 3px solid #bbb;
+    margin-left: 0;
+    padding-left: 12pt;
+    color: #555;
+  }
+  #print-content table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  #print-content th,
+  #print-content td {
+    border: 1px solid #bbb;
+    padding: 5pt 8pt;
+  }
+  #print-content th {
+    background: #f4f6fa;
+  }
+  #print-content thead {
+    display: table-header-group;
+  }
+  #print-content tr,
+  #print-content img {
+    break-inside: avoid;
+  }
+  #print-content img {
+    max-width: 100%;
+    max-height: 245mm;
+    object-fit: contain;
+  }
+  #print-content a {
+    color: #265fd6;
+  }
+  #print-content .image-note {
+    color: #786335;
+    font-size: 9pt;
+  }
+}
+@media (max-width: 900px) {
   .toolbar {
     padding: 8px;
     gap: 0;

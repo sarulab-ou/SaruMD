@@ -8,6 +8,7 @@ import { confirmDialog } from './dialog';
 import { setupSplit } from './split';
 import type { PasteTarget } from './image-paste';
 import { ExternalSync } from './external-sync';
+import { setupFileMenu } from './menu';
 
 const state = new DocumentState();
 const saves = new SerialTasks();
@@ -17,6 +18,14 @@ let editor: MarkdownEditor;
 let ready = false;
 let saving = false;
 let exclusive = false;
+let printing = false;
+const modalOpen = () =>
+  document.querySelector<HTMLDialogElement>('#confirm')!.open;
+setupFileMenu(
+  document.querySelector('#file-menu-button')!,
+  document.querySelector('#file-menu')!,
+  () => !ready || exclusive || modalOpen(),
+);
 const report = (message: string) => {
   status.textContent = message;
   status.classList.add('error');
@@ -210,6 +219,46 @@ async function reload(): Promise<void> {
   await checkExternal();
 }
 
+async function printDocument(pdf: boolean): Promise<void> {
+  if (printing || exclusive || editor.view.composing) return;
+  printing = true;
+  try {
+    await operations.run(() =>
+      saves.run(async () => {
+        exclusive = true;
+        editor.setReadOnly(true);
+        document.querySelector<HTMLInputElement>('#remote')!.disabled = true;
+        status.classList.remove('error');
+        status.textContent = pdf ? 'PDFを準備中…' : '印刷を準備中…';
+        try {
+          await preview.preparePrint(
+            state.text,
+            document.querySelector('#print-content')!,
+          );
+          if (pdf) {
+            const path = await bridge.exportPdf();
+            if (path) status.textContent = `PDFを出力しました: ${path}`;
+            else {
+              refresh();
+              status.textContent = 'PDF出力をキャンセルしました';
+            }
+          } else {
+            await bridge.print();
+            status.textContent = '印刷画面を開きました';
+          }
+        } finally {
+          exclusive = false;
+          editor.setReadOnly(state.readOnly);
+          document.querySelector<HTMLInputElement>('#remote')!.disabled = false;
+          editor.focus();
+        }
+      }),
+    );
+  } finally {
+    printing = false;
+  }
+}
+
 const handlers: Record<string, () => Promise<unknown> | void> = {
   new: bridge.newDocument,
   open: bridge.open,
@@ -217,10 +266,13 @@ const handlers: Record<string, () => Promise<unknown> | void> = {
   'save-as': () => save(true),
   search: () => editor.search(),
   reload: () => operations.run(reload),
+  print: () => printDocument(false),
+  'export-pdf': () => printDocument(true),
+  exit: bridge.requestExit,
 };
 for (const [id, handler] of Object.entries(handlers)) {
   document.getElementById(id)!.addEventListener('click', () => {
-    if (ready) guard(async () => handler());
+    if (ready && !exclusive && !modalOpen()) guard(async () => handler());
   });
 }
 document.querySelector<HTMLInputElement>('#remote')!.onchange = (event) =>
@@ -228,13 +280,16 @@ document.querySelector<HTMLInputElement>('#remote')!.onchange = (event) =>
 document.addEventListener(
   'keydown',
   (event) => {
+    if (event.ctrlKey && !event.altKey && event.key.toLowerCase() === 'p')
+      event.preventDefault();
     if (
       !ready ||
+      exclusive ||
       event.isComposing ||
       event.keyCode === 229 ||
       !event.ctrlKey ||
       event.altKey ||
-      document.querySelector<HTMLDialogElement>('#confirm')!.open
+      modalOpen()
     )
       return;
     const key = event.key.toLowerCase();
@@ -247,7 +302,9 @@ document.addEventListener(
             ? () => save(event.shiftKey)
             : key === 'w'
               ? bridge.requestClose
-              : undefined;
+              : key === 'p'
+                ? handlers.print
+                : undefined;
     if (action) {
       event.preventDefault();
       guard(async () => action());

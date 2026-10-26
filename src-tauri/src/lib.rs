@@ -1,4 +1,5 @@
 mod commands;
+mod printing;
 mod state;
 mod watch;
 mod windows;
@@ -40,6 +41,9 @@ pub fn run() {
             commands::open_external_link,
             commands::set_document_title,
             commands::save_pasted_image,
+            commands::print_document,
+            commands::export_pdf,
+            commands::request_exit,
         ])
         .setup(|app| {
             let handle = app.handle();
