@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import type { Snapshot } from './document';
+import type { ClipboardContents } from './editing';
 
 // No command accepts a caller-provided document/window ID or unrestricted file path.
 export const bridge = {
@@ -22,4 +23,16 @@ export const bridge = {
   link: (url: string) => invoke<void>('open_external_link', { url }),
   title: (dirty: boolean) => invoke<void>('set_document_title', { dirty }),
   pasteImage: (png: Uint8Array) => invoke<string>('save_pasted_image', png),
+  writeClipboardText: (text: string) =>
+    invoke<void>('write_clipboard_text', { text }),
+  readClipboard: async (): Promise<ClipboardContents> => {
+    const bytes = new Uint8Array(await invoke<ArrayBuffer>('read_clipboard'));
+    if (bytes[0] === 1) return { type: 'image', png: bytes.subarray(1) };
+    if (bytes[0] === 0)
+      return {
+        type: 'text',
+        text: new TextDecoder().decode(bytes.subarray(1)),
+      };
+    throw new Error('クリップボードの応答が不正です。');
+  },
 };

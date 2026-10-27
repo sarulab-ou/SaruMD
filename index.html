@@ -7,7 +7,7 @@
   </head>
   <body>
     <div id="app">
-      <header class="toolbar" aria-label="ファイル操作">
+      <header class="toolbar" aria-label="メニュー">
         <div class="menu-container">
           <button
             id="file-menu-button"
@@ -17,7 +17,7 @@
             aria-keyshortcuts="Alt+f"
             title="Alt+F"
           >
-            ファイル
+            ファイル (<u>F</u>)
           </button>
           <div id="file-menu" role="menu" aria-label="ファイル" hidden>
             <button id="new" role="menuitem" aria-keyshortcuts="Control+n">
@@ -49,19 +49,60 @@
             <button id="exit" role="menuitem"><span>終了</span></button>
           </div>
         </div>
-        <span class="toolbar-spacer"></span>
-        <button id="search" title="Ctrl+F / Ctrl+H">検索・置換</button>
-        <label class="remote-option"
-          ><input type="checkbox" id="remote" />この文書の外部画像を許可</label
-        >
+        <div class="menu-container">
+          <button
+            id="edit-menu-button"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            aria-controls="edit-menu"
+            aria-keyshortcuts="Alt+e"
+            title="Alt+E"
+          >
+            編集 (<u>E</u>)
+          </button>
+          <div id="edit-menu" role="menu" aria-label="編集" hidden>
+            <button id="undo" role="menuitem" aria-keyshortcuts="Control+z">
+              <span>元に戻す</span><span class="shortcut">Ctrl+Z</span>
+            </button>
+            <div role="separator"></div>
+            <button id="cut" role="menuitem" aria-keyshortcuts="Control+x">
+              <span>切り取り</span><span class="shortcut">Ctrl+X</span>
+            </button>
+            <button id="paste" role="menuitem" aria-keyshortcuts="Control+v">
+              <span>貼り付け</span><span class="shortcut">Ctrl+V</span>
+            </button>
+            <button id="delete" role="menuitem" aria-keyshortcuts="Delete">
+              <span>削除</span><span class="shortcut">Del</span>
+            </button>
+            <div role="separator"></div>
+            <button id="find" role="menuitem" aria-keyshortcuts="Control+f">
+              <span>検索する</span><span class="shortcut">Ctrl+F</span>
+            </button>
+            <button id="find-next" role="menuitem" aria-keyshortcuts="F3">
+              <span>次を検索</span><span class="shortcut">F3</span>
+            </button>
+            <button
+              id="find-previous"
+              role="menuitem"
+              aria-keyshortcuts="Shift+F3"
+            >
+              <span>前を検索</span><span class="shortcut">Shift+F3</span>
+            </button>
+            <button id="replace" role="menuitem" aria-keyshortcuts="Control+h">
+              <span>置換</span><span class="shortcut">Ctrl+H</span>
+            </button>
+            <div role="separator"></div>
+            <button id="timestamp" role="menuitem" aria-keyshortcuts="F5">
+              <span>タイムスタンプを挿入</span><span class="shortcut">F5</span>
+            </button>
+          </div>
+        </div>
       </header>
-      <div id="path" class="path" title="フルパス">新規文書</div>
       <div id="notice" role="status" hidden>
         <span></span><button id="reload">再読み込み…</button>
       </div>
       <main id="split">
         <section class="pane source-pane" aria-label="Markdownソース">
-          <div class="pane-label">MARKDOWN <span>ソース</span></div>
           <div id="editor"></div>
         </section>
         <div
@@ -73,7 +114,6 @@
           aria-valuenow="50"
         ></div>
         <section class="pane preview-pane" aria-label="プレビュー">
-          <div class="pane-label">PREVIEW <span>プレビュー</span></div>
           <iframe
             id="preview"
             title="Markdownプレビュー"

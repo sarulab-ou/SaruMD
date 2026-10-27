@@ -1,5 +1,6 @@
 use crate::{printing, state::AppState, windows};
 use tauri::{AppHandle, Emitter, Manager, WebviewWindow};
+use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
 use tauri_plugin_opener::OpenerExt;
 use winmd_core::{
@@ -20,6 +21,40 @@ fn owned(app: &AppHandle, window: &WebviewWindow) -> Result<String> {
     let id = window.label().to_string();
     app.state::<AppState>().lock()?.get(&id)?;
     Ok(id)
+}
+
+#[tauri::command]
+pub async fn write_clipboard_text(
+    app: AppHandle,
+    window: WebviewWindow,
+    text: String,
+) -> Result<()> {
+    owned(&app, &window)?;
+    if text.len() as u64 > file_io::MAX_DOCUMENT {
+        return Err("切り取りテキストの上限は32 MiBです。".into());
+    }
+    blocking(move || app.clipboard().write_text(text).map_err(|e| e.to_string())).await
+}
+
+#[tauri::command]
+pub async fn read_clipboard(app: AppHandle, window: WebviewWindow) -> Result<tauri::ipc::Response> {
+    owned(&app, &window)?;
+    let bytes = blocking(move || {
+        if let Ok(image) = app.clipboard().read_image() {
+            return crate::clipboard::encode_png(image.width(), image.height(), image.rgba());
+        }
+        let text = app.clipboard().read_text().map_err(|_| {
+            "クリップボードに貼り付けできる画像・テキストがありません。".to_string()
+        })?;
+        if text.len() as u64 > file_io::MAX_DOCUMENT {
+            return Err("貼り付けテキストの上限は32 MiBです。".into());
+        }
+        let mut bytes = vec![0];
+        bytes.extend_from_slice(text.as_bytes());
+        Ok(bytes)
+    })
+    .await?;
+    Ok(tauri::ipc::Response::new(bytes))
 }
 
 #[tauri::command]
@@ -364,7 +399,19 @@ pub fn set_document_title(app: AppHandle, window: WebviewWindow, dirty: bool) ->
         .and_then(|p| p.file_name())
         .map(|n| n.to_string_lossy().into_owned())
         .unwrap_or_else(|| "無題".into());
+    let title = if let Some(path) = &path {
+        let raw = path.to_string_lossy();
+        // Display only: keep the canonical extended-length path for all file I/O.
+        let full_path = if let Some(unc) = raw.strip_prefix(r"\\?\UNC\") {
+            format!(r"\\{unc}")
+        } else {
+            raw.strip_prefix(r"\\?\").unwrap_or(&raw).to_string()
+        };
+        format!("{name} ({full_path})")
+    } else {
+        name
+    };
     window
-        .set_title(&format!("{}{}", if dirty { "* " } else { "" }, name))
+        .set_title(&format!("{}{}", if dirty { "* " } else { "" }, title))
         .map_err(|e| e.to_string())
 }

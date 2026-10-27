@@ -1,3 +1,4 @@
+mod clipboard;
 mod commands;
 mod printing;
 mod state;
@@ -28,6 +29,7 @@ pub fn run() {
         }))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .invoke_handler(tauri::generate_handler![
             commands::document_snapshot,
             commands::new_document,
@@ -44,6 +46,8 @@ pub fn run() {
             commands::print_document,
             commands::export_pdf,
             commands::request_exit,
+            commands::read_clipboard,
+            commands::write_clipboard_text,
         ])
         .setup(|app| {
             let handle = app.handle();

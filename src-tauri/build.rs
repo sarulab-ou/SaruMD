@@ -16,6 +16,8 @@ fn main() {
             "print_document",
             "export_pdf",
             "request_exit",
+            "read_clipboard",
+            "write_clipboard_text",
         ]),
     ))
     .expect("Tauri 2 build configuration failed");

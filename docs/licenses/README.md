@@ -1,5 +1,7 @@
 # 補足ライセンスの出典
 
+2026-10-27追加：`BSL-1.0.txt`は[SPDX公式BSL-1.0本文](https://github.com/spdx/license-list-data/blob/main/text/BSL-1.0.txt)。clipboard-win 5.4.3のCargo.tomlの`license = "BSL-1.0"`を確認し、配布パッケージに独立した本文がないため補足した。
+
 2026-10-26に公式上流から取得した本文。公開パッケージに独立したライセンスファイルがない場合の補足に使う。`scripts/licenses.mjs` が配布用の `docs/third-party-licenses.txt` に統合する。
 
 | ファイル                | 出典・対応                                                                                                                                                                                        |

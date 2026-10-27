@@ -53,18 +53,20 @@ button:disabled {
 .menu-container {
   position: relative;
 }
-#file-menu-button[aria-expanded='true'] {
+.menu-container > button[aria-expanded='true'] {
   background: #e9edf4;
 }
-#file-menu:not([hidden]) {
+.menu-container [role='menu']:not([hidden]) {
   display: flex;
   flex-direction: column;
 }
-#file-menu {
+.menu-container [role='menu'] {
   position: absolute;
   top: calc(100% + 5px);
   left: -4px;
   min-width: 300px;
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
   padding: 5px;
   border: 1px solid #dedfe5;
   border-radius: 8px;
@@ -72,7 +74,7 @@ button:disabled {
   box-shadow: 0 7px 20px #16223726;
   z-index: 20;
 }
-#file-menu button {
+.menu-container [role='menu'] button {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -80,35 +82,14 @@ button:disabled {
   padding: 10px 14px;
   text-align: left;
 }
-#file-menu .shortcut {
+.menu-container .shortcut {
   color: #697383;
   font-size: 12px;
 }
-#file-menu [role='separator'] {
+.menu-container [role='separator'] {
   height: 1px;
   margin: 4px 8px;
   background: #e6e8ed;
-}
-.toolbar-spacer {
-  flex: 1;
-}
-.remote-option {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-left: 10px;
-  color: #637086;
-  font-size: 11px;
-}
-.path {
-  font-size: 11px;
-  color: #7d8798;
-  padding: 8px 20px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  border-bottom: 1px solid #edf0f5;
-  user-select: text;
 }
 #split {
   --source-width: 50%;
@@ -122,28 +103,6 @@ button:disabled {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-.pane-label {
-  height: 34px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  background: #fbfcfe;
-  border-bottom: 1px solid #edf0f5;
-  color: #7b879c;
-  font:
-    10px/1.3 'Segoe UI',
-    sans-serif;
-  letter-spacing: 1.5px;
-}
-.pane-label span {
-  font:
-    10px 'Yu Gothic UI',
-    sans-serif;
-  letter-spacing: 0;
-  color: #a2aab6;
 }
 #editor {
   flex: 1;
@@ -345,9 +304,5 @@ dialog p {
   }
   .toolbar button {
     padding: 5px 7px;
-  }
-  .remote-option {
-    max-width: 125px;
-    font-size: 10px;
   }
 }

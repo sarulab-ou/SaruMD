@@ -1,10 +1,25 @@
 import { basicSetup } from 'codemirror';
-import { Compartment, EditorState } from '@codemirror/state';
+import { Compartment, EditorState, Transaction } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 import { markdown } from '@codemirror/lang-markdown';
-import { indentWithTab } from '@codemirror/commands';
-import { search, openSearchPanel } from '@codemirror/search';
-import { imagePaste, type ImagePasteOptions } from './image-paste';
+import {
+  indentWithTab,
+  undo,
+  undoDepth,
+  isolateHistory,
+} from '@codemirror/commands';
+import {
+  search,
+  openSearchPanel,
+  findNext,
+  findPrevious,
+} from '@codemirror/search';
+import {
+  imagePaste,
+  insertPastedImage,
+  type ImagePasteOptions,
+} from './image-paste';
+import { formatTimestamp, type ClipboardContents } from './editing';
 
 export class MarkdownEditor {
   readonly view: EditorView;
@@ -35,6 +50,13 @@ export class MarkdownEditor {
         search({ top: true }),
         keymap.of([
           indentWithTab,
+          {
+            key: 'F5',
+            run: () => {
+              this.insertTimestamp();
+              return true;
+            },
+          },
           {
             key: 'Mod-h',
             run: (view) => {
@@ -118,7 +140,90 @@ export class MarkdownEditor {
     if (preservePosition) this.view.scrollDOM.scrollTop = scrollTop;
   }
   search(): void {
+    this.view.focus();
     openSearchPanel(this.view);
+  }
+  replace(): void {
+    this.search();
+    this.view.dom
+      .querySelector<HTMLInputElement>('input[name="replace"]')
+      ?.focus();
+  }
+  findNext(backwards = false): void {
+    this.view.focus();
+    (backwards ? findPrevious : findNext)(this.view);
+  }
+  get canEdit(): boolean {
+    return !this.view.state.readOnly && !this.view.composing;
+  }
+  get hasSelection(): boolean {
+    return this.view.state.selection.ranges.some((range) => !range.empty);
+  }
+  get canUndo(): boolean {
+    return this.canEdit && undoDepth(this.view.state) > 0;
+  }
+  undo(): void {
+    if (this.canUndo) undo(this.view);
+    this.focus();
+  }
+  deleteSelection(): void {
+    if (this.canEdit && this.hasSelection)
+      this.insertText('', 'delete.selection');
+    this.focus();
+  }
+  insertTimestamp(date = new Date()): void {
+    if (this.canEdit) this.insertText(formatTimestamp(date));
+    this.focus();
+  }
+  private insertText(text: string, userEvent = 'input'): void {
+    this.view.dispatch({
+      ...this.view.state.replaceSelection(text.replace(/\r\n?/g, '\n')),
+      annotations: [
+        Transaction.userEvent.of(userEvent),
+        isolateHistory.of('full'),
+      ],
+      scrollIntoView: true,
+    });
+  }
+  async cut(writeText: (text: string) => Promise<void>): Promise<void> {
+    if (!this.canEdit || !this.hasSelection) return;
+    const { doc, selection } = this.view.state;
+    const text = selection.ranges
+      .map((range) => doc.sliceString(range.from, range.to))
+      .join('\n');
+    await writeText(text); // A failed clipboard write must never remove the original text.
+    if (
+      !this.canEdit ||
+      this.view.state.doc !== doc ||
+      !this.view.state.selection.eq(selection)
+    )
+      throw new Error(
+        '切り取り中に編集位置が変わったため、本文は削除していません。',
+      );
+    this.insertText('', 'delete.cut');
+    this.focus();
+  }
+  async pasteClipboard(read: () => Promise<ClipboardContents>): Promise<void> {
+    if (!this.canEdit) return;
+    const { doc, selection } = this.view.state;
+    const contents = await read();
+    if (
+      !this.canEdit ||
+      this.view.state.doc !== doc ||
+      !this.view.state.selection.eq(selection)
+    )
+      throw new Error(
+        '貼り付け中に編集位置が変わったため、挿入を中止しました。',
+      );
+    if (contents.type === 'image') {
+      if (!this.paste) throw new Error('画像の貼り付けを利用できません。');
+      await insertPastedImage(
+        this.view,
+        () => Promise.resolve(contents.png),
+        this.paste,
+      );
+    } else this.insertText(contents.text, 'input.paste');
+    this.focus();
   }
   setReadOnly(value: boolean): void {
     this.view.dispatch({

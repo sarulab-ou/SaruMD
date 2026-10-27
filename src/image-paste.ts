@@ -92,6 +92,50 @@ const positions = StateField.define<Map<object, Pending>>({
   },
 });
 
+export async function insertPastedImage(
+  view: EditorView,
+  readPng: () => Promise<Uint8Array>,
+  options: ImagePasteOptions,
+): Promise<void> {
+  if (view.composing || view.state.readOnly) return;
+  const token = {};
+  const selection = view.state.selection.main;
+  view.dispatch({
+    effects: add.of({
+      token,
+      range: { from: selection.from, to: selection.to, valid: true },
+    }),
+  });
+  const range = () => view.state.field(positions, false)?.get(token);
+  const target: PasteTarget = {
+    valid: () => range()?.valid === true && !view.state.readOnly,
+    insert(filename) {
+      if (!/^\d{8}_\d{6}\.png$/.test(filename))
+        throw new Error('画像のファイル名が不正です。');
+      const current = range();
+      if (!current?.valid || view.state.readOnly)
+        throw new Error(
+          '貼り付け位置が変更されたため挿入を中止しました。保存したPNGは文書フォルダーに残っています。',
+        );
+      const markdown = `![画像](${filename})`;
+      view.dispatch({
+        changes: { from: current.from, to: current.to, insert: markdown },
+        effects: remove.of(token),
+        selection: EditorSelection.cursor(current.from + markdown.length),
+        annotations: [
+          Transaction.userEvent.of('input.paste'),
+          isolateHistory.of('full'),
+        ],
+      });
+    },
+  };
+  try {
+    await options.persist(readPng, target);
+  } finally {
+    if (range()) view.dispatch({ effects: remove.of(token) });
+  }
+}
+
 export function imagePaste(options: ImagePasteOptions): Extension {
   return [
     positions,
@@ -110,45 +154,10 @@ export function imagePaste(options: ImagePasteOptions): Extension {
           options.report('貼り付け画像はPNG/JPEG/GIF/WebPに対応しています。');
           return true;
         }
-        const token = {};
-        const selection = view.state.selection.main;
-        view.dispatch({
-          effects: add.of({
-            token,
-            range: { from: selection.from, to: selection.to, valid: true },
-          }),
-        });
-        const range = () => view.state.field(positions, false)?.get(token);
-        const target: PasteTarget = {
-          valid: () => range()?.valid === true && !view.state.readOnly,
-          insert(filename) {
-            if (!/^\d{8}_\d{6}\.png$/.test(filename))
-              throw new Error('画像のファイル名が不正です。');
-            const current = range();
-            if (!current?.valid || view.state.readOnly)
-              throw new Error(
-                '貼り付け位置が変更されたため挿入を中止しました。保存したPNGは文書フォルダーに残っています。',
-              );
-            const markdown = `![画像](${filename})`;
-            view.dispatch({
-              changes: { from: current.from, to: current.to, insert: markdown },
-              effects: remove.of(token),
-              selection: EditorSelection.cursor(current.from + markdown.length),
-              annotations: [
-                Transaction.userEvent.of('input.paste'),
-                isolateHistory.of('full'),
-              ],
-            });
-          },
-        };
-        void options
-          .persist(() => clipboardPng(file), target)
-          .catch((error) =>
+        void insertPastedImage(view, () => clipboardPng(file), options).catch(
+          (error) =>
             options.report(`画像を貼り付けできませんでした: ${String(error)}`),
-          )
-          .finally(() => {
-            if (range()) view.dispatch({ effects: remove.of(token) });
-          });
+        );
         return true;
       },
     }),

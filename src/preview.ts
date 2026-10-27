@@ -110,8 +110,13 @@ export class Preview {
             if (
               (event.ctrlKey &&
                 !event.altKey &&
-                ['n', 'o', 's', 'w', 'p'].includes(key)) ||
-              (event.altKey && !event.ctrlKey && key === 'f')
+                ['n', 'o', 's', 'w', 'p', 'f', 'h', 'z', 'x', 'v'].includes(
+                  key,
+                )) ||
+              (event.altKey && !event.ctrlKey && ['f', 'e'].includes(key)) ||
+              (!event.ctrlKey &&
+                !event.altKey &&
+                ['F3', 'F5'].includes(event.key))
             ) {
               event.preventDefault();
               document.dispatchEvent(

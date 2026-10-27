@@ -7,6 +7,7 @@ const sections = [
 ];
 const seen = new Set();
 const supplements = {
+  'clipboard-win': 'BSL-1.0.txt',
   'webview2-com': 'webview2-rs-MIT.txt',
   'webview2-com-macros': 'webview2-rs-MIT.txt',
   'webview2-com-sys': 'webview2-rs-MIT.txt',

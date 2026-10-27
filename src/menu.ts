@@ -1,67 +1,102 @@
-/** File menu with Windows access key and roving keyboard focus. */
-export function setupFileMenu(
-  trigger: HTMLButtonElement,
-  menu: HTMLElement,
-  blocked: () => boolean,
-): void {
-  const items = () =>
-    [...menu.querySelectorAll<HTMLButtonElement>('[role="menuitem"]')].filter(
-      (item) => !item.disabled,
-    );
+interface MenuEntry {
+  trigger: HTMLButtonElement;
+  menu: HTMLElement;
+  key: string;
+  onOpen?: () => void;
+}
+
+/** Windows-style access keys and keyboard navigation for the menu bar. */
+export function setupMenus(entries: MenuEntry[], blocked: () => boolean) {
+  let active: MenuEntry | undefined;
+  const items = (entry: MenuEntry) =>
+    [
+      ...entry.menu.querySelectorAll<HTMLButtonElement>('[role="menuitem"]'),
+    ].filter((item) => !item.disabled);
   const close = (restore = false) => {
-    menu.hidden = true;
-    trigger.setAttribute('aria-expanded', 'false');
-    if (restore) trigger.focus();
+    const previous = active;
+    for (const entry of entries) {
+      entry.menu.hidden = true;
+      entry.trigger.setAttribute('aria-expanded', 'false');
+    }
+    active = undefined;
+    if (restore) previous?.trigger.focus();
   };
-  const open = (last = false) => {
+  const open = (entry: MenuEntry, last = false) => {
     if (blocked()) return;
-    menu.hidden = false;
-    trigger.setAttribute('aria-expanded', 'true');
-    const enabled = items();
+    close();
+    entry.onOpen?.();
+    active = entry;
+    entry.menu.hidden = false;
+    entry.trigger.setAttribute('aria-expanded', 'true');
+    const enabled = items(entry);
     (last ? enabled.at(-1) : enabled[0])?.focus();
   };
-  trigger.addEventListener('click', () => (menu.hidden ? open() : close()));
-  trigger.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      event.preventDefault();
-      open(event.key === 'ArrowUp');
-    }
-  });
-  menu.addEventListener('click', (event) => {
-    if ((event.target as Element).closest('[role="menuitem"]')) close(true);
-  });
+  for (const entry of entries) {
+    entry.trigger.addEventListener('click', () => {
+      if (active === entry) close();
+      else open(entry);
+    });
+    entry.trigger.addEventListener('pointerenter', () => {
+      if (active && active !== entry) open(entry);
+    });
+    entry.trigger.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        event.stopPropagation();
+        open(entry, event.key === 'ArrowUp');
+      }
+    });
+    // Close before the command runs, so the command can focus the editor/search field.
+    entry.menu.addEventListener(
+      'click',
+      (event) => {
+        if ((event.target as Element).closest('[role="menuitem"]')) close(true);
+      },
+      { capture: true },
+    );
+  }
+  const inside = (target: EventTarget | null) =>
+    target instanceof Node &&
+    entries.some((entry) => entry.trigger.parentElement!.contains(target));
   document.addEventListener('pointerdown', (event) => {
-    if (
-      !(event.target instanceof Node) ||
-      !trigger.parentElement!.contains(event.target)
-    )
-      close();
+    if (!inside(event.target)) close();
   });
   document.addEventListener('focusin', (event) => {
-    if (!trigger.parentElement!.contains(event.target as Node)) close();
+    if (!inside(event.target)) close();
   });
   window.addEventListener('blur', () => close());
   document.addEventListener('keydown', (event) => {
     if (event.isComposing || event.keyCode === 229 || blocked()) return;
-    if (
-      event.altKey &&
-      !event.ctrlKey &&
-      !event.shiftKey &&
-      event.key.toLowerCase() === 'f'
-    ) {
+    const entry = entries.find(
+      (entry) =>
+        event.altKey &&
+        !event.ctrlKey &&
+        !event.shiftKey &&
+        event.key.toLowerCase() === entry.key,
+    );
+    if (entry) {
       event.preventDefault();
-      if (menu.hidden) open();
-      else close(true);
-    } else if (!menu.hidden && event.key === 'Escape') {
+      if (active === entry) close(true);
+      else open(entry);
+    } else if (active && event.key === 'Escape') {
       event.preventDefault();
-      event.stopPropagation();
       close(true);
+    } else if (active && ['ArrowLeft', 'ArrowRight'].includes(event.key)) {
+      event.preventDefault();
+      open(
+        entries[
+          (entries.indexOf(active) +
+            (event.key === 'ArrowRight' ? 1 : -1) +
+            entries.length) %
+            entries.length
+        ],
+      );
     } else if (
-      !menu.hidden &&
+      active &&
       ['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)
     ) {
       event.preventDefault();
-      const enabled = items();
+      const enabled = items(active);
       const current = enabled.indexOf(
         document.activeElement as HTMLButtonElement,
       );
@@ -75,6 +110,7 @@ export function setupFileMenu(
                 enabled.length) %
               enabled.length;
       enabled[next]?.focus();
-    } else if (!menu.hidden && event.key === 'Tab') close();
+    } else if (active && event.key === 'Tab') close();
   });
+  return { close, isOpen: () => active !== undefined };
 }

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { setupFileMenu } from '../src/menu';
+import { setupMenus } from '../src/menu';
 
 describe('file menu', () => {
   let button: HTMLButtonElement;
@@ -22,7 +22,17 @@ describe('file menu', () => {
     button = document.querySelector('#file-menu-button')!;
     menu = document.querySelector('#file-menu')!;
     blocked = false;
-    setupFileMenu(button, menu, () => blocked);
+    setupMenus(
+      [
+        { trigger: button, menu, key: 'f' },
+        {
+          trigger: document.querySelector('#edit-menu-button')!,
+          menu: document.querySelector('#edit-menu')!,
+          key: 'e',
+        },
+      ],
+      () => blocked,
+    );
   });
   beforeEach(() => {
     blocked = false;
@@ -60,11 +70,11 @@ describe('file menu', () => {
     expect(menu.hidden).toBe(true);
     button.click();
     document
-      .querySelector('#path')!
+      .querySelector('#editor')!
       .dispatchEvent(new Event('pointerdown', { bubbles: true }));
     expect(menu.hidden).toBe(true);
     button.click();
-    document.querySelector<HTMLButtonElement>('#search')!.focus();
+    document.querySelector<HTMLElement>('#divider')!.focus();
     expect(menu.hidden).toBe(true);
   });
   it('does not intercept IME or open over an exclusive operation/dialog', () => {
@@ -74,5 +84,20 @@ describe('file menu', () => {
     key('f', { altKey: true });
     button.click();
     expect(menu.hidden).toBe(true);
+  });
+  it('opens Edit with Alt+E and switches between menus with arrow keys', () => {
+    key('e', { altKey: true });
+    expect(document.querySelector<HTMLElement>('#edit-menu')!.hidden).toBe(
+      false,
+    );
+    expect(menu.hidden).toBe(true);
+    expect(document.activeElement?.id).toBe('undo');
+    expect(document.querySelector('#timestamp')?.textContent).toContain('F5');
+    key('ArrowLeft');
+    expect(menu.hidden).toBe(false);
+    key('ArrowRight');
+    expect(document.activeElement?.id).toBe('undo');
+    key('Escape');
+    expect(document.activeElement?.id).toBe('edit-menu-button');
   });
 });

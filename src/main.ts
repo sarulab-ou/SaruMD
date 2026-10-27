@@ -8,7 +8,7 @@ import { confirmDialog } from './dialog';
 import { setupSplit } from './split';
 import type { PasteTarget } from './image-paste';
 import { ExternalSync } from './external-sync';
-import { setupFileMenu } from './menu';
+import { setupMenus } from './menu';
 
 const state = new DocumentState();
 const saves = new SerialTasks();
@@ -19,13 +19,38 @@ let ready = false;
 let saving = false;
 let exclusive = false;
 let printing = false;
+let clipboardBusy = false;
 const modalOpen = () =>
   document.querySelector<HTMLDialogElement>('#confirm')!.open;
-setupFileMenu(
-  document.querySelector('#file-menu-button')!,
-  document.querySelector('#file-menu')!,
+const menus = setupMenus(
+  [
+    {
+      trigger: document.querySelector('#file-menu-button')!,
+      menu: document.querySelector('#file-menu')!,
+      key: 'f',
+    },
+    {
+      trigger: document.querySelector('#edit-menu-button')!,
+      menu: document.querySelector('#edit-menu')!,
+      key: 'e',
+      onOpen: refreshEditMenu,
+    },
+  ],
   () => !ready || exclusive || modalOpen(),
 );
+
+function refreshEditMenu(): void {
+  const disabled: Record<string, boolean> = {
+    undo: !editor.canUndo,
+    cut: !editor.canEdit || !editor.hasSelection || clipboardBusy,
+    paste: !editor.canEdit || clipboardBusy,
+    delete: !editor.canEdit || !editor.hasSelection,
+    replace: !editor.canEdit,
+    timestamp: !editor.canEdit,
+  };
+  for (const [id, value] of Object.entries(disabled))
+    document.querySelector<HTMLButtonElement>(`#${id}`)!.disabled = value;
+}
 const report = (message: string) => {
   status.textContent = message;
   status.classList.add('error');
@@ -44,6 +69,7 @@ const canAutoReload = () =>
   !state.dirty &&
   !saving &&
   !exclusive &&
+  !clipboardBusy &&
   !editor.view.composing &&
   !document.querySelector<HTMLDialogElement>('#confirm')!.open;
 const externalSync = new ExternalSync(
@@ -75,11 +101,6 @@ const externalSync = new ExternalSync(
 );
 
 function refresh(): void {
-  document.querySelector('#path')!.textContent =
-    state.path ?? '新規文書 — 保存先は未指定';
-  document
-    .querySelector('#path')!
-    .setAttribute('title', state.path ?? '新規文書');
   document.querySelector('#format')!.textContent =
     `UTF-8${state.format.bom ? ' BOM' : ''} · ${state.format.lineEnding === 'Mixed' ? '改行混在・読み取り専用' : state.format.lineEnding}`;
   if (!status.classList.contains('error'))
@@ -227,7 +248,6 @@ async function printDocument(pdf: boolean): Promise<void> {
       saves.run(async () => {
         exclusive = true;
         editor.setReadOnly(true);
-        document.querySelector<HTMLInputElement>('#remote')!.disabled = true;
         status.classList.remove('error');
         status.textContent = pdf ? 'PDFを準備中…' : '印刷を準備中…';
         try {
@@ -249,7 +269,6 @@ async function printDocument(pdf: boolean): Promise<void> {
         } finally {
           exclusive = false;
           editor.setReadOnly(state.readOnly);
-          document.querySelector<HTMLInputElement>('#remote')!.disabled = false;
           editor.focus();
         }
       }),
@@ -259,40 +278,93 @@ async function printDocument(pdf: boolean): Promise<void> {
   }
 }
 
+async function clipboardAction(cut: boolean): Promise<void> {
+  if (clipboardBusy || !editor.canEdit) return;
+  clipboardBusy = true;
+  try {
+    await operations.run(() =>
+      cut
+        ? editor.cut(bridge.writeClipboardText)
+        : editor.pasteClipboard(bridge.readClipboard),
+    );
+  } finally {
+    clipboardBusy = false;
+  }
+}
+
 const handlers: Record<string, () => Promise<unknown> | void> = {
   new: bridge.newDocument,
   open: bridge.open,
   save: () => save(),
   'save-as': () => save(true),
-  search: () => editor.search(),
   reload: () => operations.run(reload),
   print: () => printDocument(false),
   'export-pdf': () => printDocument(true),
   exit: bridge.requestExit,
+  undo: () => editor.undo(),
+  cut: () => clipboardAction(true),
+  paste: () => clipboardAction(false),
+  delete: () => editor.deleteSelection(),
+  find: () => editor.search(),
+  'find-next': () => editor.findNext(),
+  'find-previous': () => editor.findNext(true),
+  replace: () => editor.replace(),
+  timestamp: () => editor.insertTimestamp(),
 };
 for (const [id, handler] of Object.entries(handlers)) {
   document.getElementById(id)!.addEventListener('click', () => {
     if (ready && !exclusive && !modalOpen()) guard(async () => handler());
   });
 }
-document.querySelector<HTMLInputElement>('#remote')!.onchange = (event) =>
-  preview.allowRemote((event.target as HTMLInputElement).checked);
 document.addEventListener(
   'keydown',
   (event) => {
     if (event.ctrlKey && !event.altKey && event.key.toLowerCase() === 'p')
       event.preventDefault();
+    if (event.key === 'F5') event.preventDefault(); // Never let the browser reload the editor.
     if (
       !ready ||
       exclusive ||
       event.isComposing ||
       event.keyCode === 229 ||
-      !event.ctrlKey ||
-      event.altKey ||
       modalOpen()
     )
       return;
     const key = event.key.toLowerCase();
+    let editAction: string | undefined;
+    if (!event.altKey && !event.ctrlKey) {
+      if (event.key === 'F5' && !event.shiftKey) editAction = 'timestamp';
+      else if (event.key === 'F3')
+        editAction = event.shiftKey ? 'find-previous' : 'find-next';
+      else if (event.key === 'Delete' && menus.isOpen()) editAction = 'delete';
+    } else if (
+      event.ctrlKey &&
+      !event.altKey &&
+      !event.shiftKey &&
+      (menus.isOpen() || !editor.view.hasFocus)
+    ) {
+      // Text fields keep their native cut/paste/undo. Menu commands always target the source.
+      const input =
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement;
+      if (!input)
+        editAction = (
+          {
+            z: 'undo',
+            x: 'cut',
+            v: 'paste',
+            f: 'find',
+            h: 'replace',
+          } as Record<string, string>
+        )[key];
+    }
+    if (editAction) {
+      event.preventDefault();
+      menus.close();
+      guard(async () => handlers[editAction]());
+      return;
+    }
+    if (!event.ctrlKey || event.altKey) return;
     const action =
       key === 'n'
         ? handlers.new

@@ -6,7 +6,7 @@ A Markdown editor for Windows. **Each document opens in its own independent wind
 
 ## Install
 
-**[Windows x64 installer v0.1.3](target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/WinMD_0.1.3_x64-setup.exe)**
+**[Windows x64 installer v0.1.8](target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/WinMD_0.1.8_x64-setup.exe)**
 
 This link points to the generated installer in this build workspace. No GitHub release has been published yet, and the installer is not included in source checkouts.
 
@@ -25,11 +25,21 @@ The current installer is an unsigned GNU trial build. GUI and installation accep
 5. Changes made by Codex or another editor reload automatically when WinMD has no unsaved edits. Otherwise, WinMD keeps your edits and shows a conflict notification.
 6. Press **Alt+F** for the File menu. Choose **PDFにエクスポート** to save a PDF, or **印刷 (Ctrl+P)** to open the print dialog.
 
-PDF export and printing include the rendered document and unsaved edits. PDFs use A4 portrait and exclude the editor and menus. They do not save or change the Markdown source. Remote image permission follows the preview setting. Exit asks each window to save its changes; canceled documents remain open.
+PDF export and printing include the rendered document and unsaved edits. PDFs use A4 portrait and exclude the editor and menus. They do not save or change the Markdown source. Remote images are blocked in both preview and output. Exit asks each window to save its changes; canceled documents remain open.
 
 Image paste accepts PNG, JPEG, GIF, and WebP, saving as PNG. The limit is 16 MiB and 16 megapixels. If a file with the same timestamp already exists, wait one second and paste again.
 
 ## Shortcuts
+
+The Edit menu **編集 (E)** opens with **Alt+E**. F5 inserts local time as `2026/01/27 08:38:02` (`yyyy/mm/dd hh:mm:ss`, 24-hour clock). Image filenames remain `YYYYMMDD_HHMMSS.png`.
+
+| Edit action                      | Shortcut               |
+| -------------------------------- | ---------------------- |
+| Undo                             | Ctrl+Z                 |
+| Cut / Paste / Delete selection   | Ctrl+X / Ctrl+V / Del  |
+| Find / Find next / Find previous | Ctrl+F / F3 / Shift+F3 |
+| Replace                          | Ctrl+H                 |
+| Insert timestamp                 | F5                     |
 
 | Action                            | Shortcut                        |
 | --------------------------------- | ------------------------------- |
@@ -45,9 +55,11 @@ Image paste accepts PNG, JPEG, GIF, and WebP, saving as PNG. The limit is 16 MiB
 
 ## Files and preview
 
+The title bar shows `filename (full path)`, without Windows' `\\?\` prefix. Unsaved changes keep the leading `*` indicator; new documents without a path show 無題.
+
 - UTF-8 BOM settings, LF/CRLF line endings, and trailing newlines are preserved. Mixed line endings open read-only.
 - There is no autosave or crash recovery. Save changes with Ctrl+S.
-- Raw HTML is escaped and preview output is sanitized. Remote images are blocked until you allow them for that document.
+- Raw HTML is escaped and preview output is sanitized. Remote images are blocked. The top bar shows File (F) and Edit (E); Find and Replace are available from Edit or through Ctrl+F and Ctrl+H.
 - Local images must stay within the document's folder. Documents are limited to 32 MiB; local images to 16 MiB each and the first 100 images.
 
 ## Development

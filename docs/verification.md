@@ -1,5 +1,55 @@
 # 検証記録（最終更新：2026-10-27）
 
+## 更新版0.1.8：タイムスタンプ形式
+
+Windows x64 GNUリリース・NSIS生成と7-Zipの`t`が成功（`.tools/final-build-0.1.8.log`）。成果物は`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/WinMD_0.1.8_x64-setup.exe`、6,242,916バイト、SHA-256 `c16e57ca25f9763fe7cd2c2666dec21cff9fe352ed96e37678ff08b39880e3db`。既存の署名なし・クロスビルド・チャンクサイズ警告は継続。既存インストールの置き換えとcommit/pushはしていない。
+
+F5/編集メニューで挿入する日時を`yyyy/mm/dd hh:mm:ss`（PCローカル時刻・24時間制）へ変更。年は4桁、月日・時分秒は2桁とし、画像ファイル名の形式は変更していない。入力日時と出力例に食い違いがあったため、指定された形式に従って実際の日時をそのまま表示する実装とした。
+
+既存テストの日時を2026年1月3日8時32分2秒へ更新し、`2026/01/03 08:32:02`の出力・選択置換・Undo/Redoを確認。Vitest 9ファイル32件、型検査、ESLint、Prettier、Vite buildが成功。RustのLinux14件・Windows15件、all-targets clippy（Windows desktop/Linux core、-D warnings）、fmt checkも成功（`.tools/validate-0.1.8.log`）。実GUI操作は今回未実施。
+
+## 更新版0.1.7：左右の見出し行を削除
+
+Windows x64 GNUリリース・NSIS生成と7-Zipの`t`が成功（`.tools/final-build-0.1.7.log`）。成果物は`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/WinMD_0.1.7_x64-setup.exe`、6,242,383バイト、SHA-256 `4a2cc052cd8bf289df057723d9535ff9cff864f472f6963cc0eb8c47798c5bcd`。既存の署名なし・クロスビルド警告は継続。インストール済みアプリの置き換えとcommit/pushはしていない。
+
+「MARKDOWN／ソース」「PREVIEW／プレビュー」の2行と専用CSSを削除。左右のsectionのaria-label、iframeのtitle、編集領域のラベルは残し、画面上の見出し行だけをなくした。
+
+型検査、Vitest 9ファイル32件、ESLint、Prettier、Vite buildが成功。RustのLinux14件・Windows15件、all-targets clippy（Windows desktop/Linux core、-D warnings）、fmt checkも成功（`.tools/validate-0.1.7.log`）。既存のチャンクサイズ警告は継続。実GUIでの表示・操作は今回未実施。manual-tests.mdへ確認手順を追加した。
+
+## 更新版0.1.6：フルパスをタイトルへ移動
+
+タイトルを`ファイル名 (フルパス)`形式に変更し、メニュー直下のパス行・CSS・DOM参照を削除。表示ではWindowsの`\\?\`を外し、`\\?\UNC\server\share\...`は通常の`\\server\share\...`にする。I/Oに使用するcanonical pathは加工しない。未保存の`*`と保存先のない文書の「無題」を維持し、既存のrefresh経由でSave As後もタイトルを更新する。
+
+TypeScript型検査、Vitest 9ファイル32件、ESLint、Prettier、Vite buildが成功。削除したパス行を使っていた既存メニューテストの外側クリック先は編集領域に変更した。RustはLinux14件・Windows15件、all-targets clippy（Windows desktop/Linux core、-D warnings）、fmt checkが成功（`.tools/validate-0.1.6.log`）。Windows x64 GNUリリース・NSIS生成と7-Zipの`t`が成功（`.tools/final-build-0.1.6.log`）。既存のチャンクサイズ・署名なし・クロスビルド警告は継続。
+
+成果物：`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/WinMD_0.1.6_x64-setup.exe`、6,245,036バイト、SHA-256 `fb9f8804da1843894047fd3e525cfdee8aa2e5844bf667ef5efef3d31f8dcb91`。
+
+実GUIのタイトル表示・UNC共有・Save Asと、インストーラーの対話操作は今回未実施。manual-tests.mdへ手順を追加した。既存インストールの置き換えとcommit/pushはしていない。
+
+## 更新版0.1.5：編集メニュー
+
+「編集 (E)」（Alt+E）に、元に戻す（Ctrl+Z）、切り取り（Ctrl+X）、貼り付け（Ctrl+V）、選択削除（Del）、検索（Ctrl+F）、次/前（F3/Shift+F3）、置換（Ctrl+H）、タイムスタンプ（F5）を追加し、キーを各項目右に表示した。タイムスタンプはローカル時刻の年2桁`YYMMDD_HHMMSS`（例：`261027_123456`）。F5によるWebView再読み込みを抑止する。画像ファイル名の年4桁形式は維持する。ファイル/編集のメニュー操作を共有し、左右移動、disabled項目、最小ウィンドウのスクロールに対応した。
+
+切り取り・メニュー貼り付けは公式Tauri clipboard-manager 2.5.0をRustから使用。所有文書を検証する専用コマンドに限定し、汎用JSプラグイン権限は追加していない。通常のCtrl+X/Vはエディタの標準動作を維持する。画像のメニュー貼り付けはPNGへ変換し、既存の保存/位置追跡処理へ渡す。切り取りは書き込み成功前に本文を消さず、非同期処理中の文書/選択変更を検出して中止する。メニュー表示・起動時にクリップボードの内容は読み取らない。
+
+実施済み：TypeScript型検査、ESLint、Prettier、Vite build、Vitest 9ファイル32件。追加試験はタイムスタンプの選択置換とUndo/Redo、クリップボード失敗時の本文保持・途中変更の拒否、テキスト改行正規化、画像メニューと既存保存処理の接続、検索の前後/折り返し、置換欄のフォーカス、読み取り専用、Alt+Eと左右メニュー移動。クリップボードはモックを使用し、実ユーザーの内容を読み書きしていない。
+
+RustはLinux14件・Windows15件のcore test、desktop Windows/core Linuxのall-targets clippy（-D warnings）、fmt checkが成功（`.tools/validate-0.1.5.log`）。Windows x64 GNUリリースとNSIS生成に成功（`.tools/final-build-0.1.5.log`）。7-Zipの`t`、展開後exeの標準UNK→NSSマーカー正規化比較、ライセンス通知全文のハッシュ照合が成功した。追加依存の全文通知を再生成し、clipboard-winのBSL-1.0本文も公式SPDXから補足した。既存のチャンクサイズ・署名なし・クロスビルド警告は継続。
+
+インストーラー：`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/WinMD_0.1.5_x64-setup.exe`、6,243,013バイト、SHA-256 `03600e24b59d19de014fa4f2f4270fe500eef538fe131b64fb81fea74b4df790`。
+
+未実施：実GUIのメニュー/キー操作、実クリップボードのテキスト・画像貼り付け、IMEとの組み合わせ、v0.1.5インストーラーの対話受入。手順はmanual-tests.mdへ追加済み。既存インストールの置き換え、commit/pushは行っていない。
+
+## 更新版0.1.4：上部バーの簡素化
+
+右上の「検索・置換」と外部画像許可チェックを削除し、それらを参照していたイベント登録・印刷時のdisabled切り替え・CSSも削除した。左上を「ファイル (F)」に変更し、Fを下線表示。既存のAlt+F、Ctrl+F／Ctrl+Hを維持する。外部画像は初期ブロックのままで、現在のUIには許可操作を置かない。
+
+`pnpm run check`、`pnpm run test`（8ファイル25件）、`pnpm run lint`、`pnpm run build`が成功。削除したボタンをフォーカスする既存メニューテストは、既存の分割境界へ変更した。RustはLinux14件・Windows15件のtest、desktop Windowsとcore Linuxのclippy（all-targets、-D warnings）、fmt checkが成功。フロントエンド約724 kBのチャンク警告は継続。
+
+Windows x64 GNUリリースとNSIS生成が成功し、`.tools/final-build-0.1.4.log`の`Finished 1 bundle`を確認。7-Zipの`t`も成功。署名なし・クロスビルド警告は継続。インストーラーは4,994,430バイト、SHA-256は`37637689702aad9aa6a772dc56890ae0c25151c1188afad06552c9671791b527`。
+
+成果物：`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/WinMD_0.1.4_x64-setup.exe`。実GUIでの表示・キー操作・インストールは今回未実施。既存インストールは置き換えていない。manual-tests.mdへ受入手順を追加し、README両言語の説明とインストーラーリンクを更新した。
+
 ## 更新版0.1.3：ファイルメニュー・PDF・印刷
 
 ファイルメニュー（Alt+F、キー表示、矢印/Home/End/Esc操作）、PDF保存先選択、印刷（Ctrl+P）、全ウィンドウへの安全な終了要求を追加。タブは追加せず、画面内ロゴとタイトルの「— WinMD」を削除した。PDF/印刷は未保存本文のサニタイズ済みプレビューを使用し、原本を自動保存しない。PDFはネイティブWebView2で生成後、既存のatomic_saveで保存する。32 MiB上限、.pdf以外の保存先拒否、開いている文書の上書き拒否、上書き確認後の外部変更比較を実装した。
