@@ -19,12 +19,11 @@ https://github.com/sarulab-ou/winmd
 #Markdown #Windows
 ```
 
-添付は[日本語の編集画面](screenshots/editor-ja.jpg)を1枚目、[PDF出力のメニュー](screenshots/file-menu.jpg)を2枚目にします。
+添付は[編集画面のPNG](screenshots/editor-ja.png)を1枚使います。
 
 画像の代替テキスト案：
 
-1. 「WinMDの実画面。左にMarkdownのソース、右に見出し・チェックリスト・表・コードのプレビュー。同じ内容を並べて確認できる。」
-2. 「WinMDのファイルメニュー。新しいウィンドウ、開く、保存、名前を付けて保存、PDFにエクスポート、印刷、終了を表示。対応するショートカットも記載。」
+「WinMDの実画面。左にMarkdownのソース、右に見出し・チェックリスト・表・コードのプレビュー。同じ内容を並べて確認できる。」
 
 ## 別案：使いどころを伝える
 
@@ -40,7 +39,7 @@ https://github.com/sarulab-ou/winmd
 #Markdown #Windows
 ```
 
-添付：[日本語の編集画面](screenshots/editor-ja.jpg)。ソース公開後に使用します。バイナリ配布を約束しない文面です。
+添付：[編集画面のPNG](screenshots/editor-ja.png)。バイナリ配布を約束しない文面です。
 
 ## 別案：試用版の配布を伝える
 
@@ -55,27 +54,12 @@ https://github.com/sarulab-ou/winmd
 #Markdown #Windows
 ```
 
-添付：[日本語の編集画面](screenshots/editor-ja.jpg)と[PDF出力のメニュー](screenshots/file-menu.jpg)。配布版は署名なしのプレリリースです。
-
-## English draft
-
-The source and preview installer are available from the repository and Releases.
-
-```text
-Introducing WinMD, a Markdown editor for Windows.
-
-Live preview, Ctrl+V image paste, PDF export and printing. One document per window. MIT licensed. The app UI is currently Japanese.
-
-https://github.com/sarulab-ou/winmd
-#Markdown #Windows
-```
-
-Attach [the English sample screen](screenshots/editor-en.jpg). Suggested alt text: “WinMD on Windows, with Markdown source on the left and a live preview of headings, a checklist, a table, and code on the right. Application menus are Japanese.”
+添付：[編集画面のPNG](screenshots/editor-ja.png)。配布版は署名なしのプレリリースです。
 
 ## 画像と投稿前の確認
 
-- 画像はv0.1.8の実画面です。英語版の画像も文書本文だけが英語で、アプリUIの英語対応を示すものではありません。
-- 撮影したサンプルは[日本語](examples/notes.ja.md)・[英語](examples/notes.en.md)。撮り直しの手順は[スクリーンショットの説明](screenshots/README.md)にあります。
-- [GitHub Releases](https://github.com/sarulab-ou/winmd/releases/tag/v0.1.8)で署名なしのWindows x64試用版とチェックサムを配布しています。両READMEも公開先へ更新済みです。
+- 画像はユーザー提供のv0.1.8の実画面です。PNGを加工せず使用しています。
+- 画面の文書は[日本語サンプル](examples/notes.ja.md)です。画像の説明は[スクリーンショットの説明](screenshots/README.md)にあります。
+- [GitHub Releases](https://github.com/sarulab-ou/winmd/releases/tag/v0.1.8)で署名なしのWindows x64試用版とチェックサムを配布しています。READMEも公開先へ更新済みです。
 - 実施済みと未実施の確認範囲は[検証記録](verification.md)、受入手順は[手動テスト](manual-tests.md)を参照してください。
 - 各文面は1件ずつ投稿する想定です。アカウント名や追加のハッシュタグを付ける場合は、投稿画面の文字数表示で収まることを確認してください。

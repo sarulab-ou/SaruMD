@@ -1,5 +1,13 @@
 # 検証記録（最終更新：2026-10-28）
 
+## スクリーンショットのPNG差し替え・READMEの日本語一本化
+
+ユーザー提供の`editor-ja.png`を`docs/screenshots/editor-ja.png`へ加工せずコピーした。PillowでPNG形式・1477×1039ピクセル・149,817バイトを確認し、原本とコピーのSHA-256が`5459f1515f08827b62f6d68efa8a2b3e11610bc7aabfd4f1da92959bf0c99257`で一致した。JPEGからの変換や撮り直しはしていない。
+
+README.mdを日本語へ統一し、宣伝的な冒頭の一文と言語切り替えを削除。独立したREADME.ja.mdは削除し、開発ガイドの参照先をREADME.mdへ変更した。READMEと日本語の告知案には提供PNGを1枚掲載し、従来のJPEG3枚とそれらへのリンク・英語の告知案を整理した。過去の検証記録と公開済みv0.1.8タグの内容は履歴として維持する。
+
+Prettier全体チェックに成功し、READMEとdocs配下のMarkdown全11ファイルに含まれるローカルリンク/画像29件がすべて存在することを確認した。リリースノート末尾の使い方リンクは現在のREADMEへ変更し、古いJPEGを参照するタグ内READMEへの案内を外した。アプリコードと配布インストーラーは変更していないため、アプリのテスト・再ビルドは繰り返していない。
+
 ## v0.1.8公開結果
 
 ユーザーの明示的な依頼により、`sarulab-ou/winmd`をPUBLICへ変更し、[v0.1.8](https://github.com/sarulab-ou/winmd/releases/tag/v0.1.8)を2026-10-28 09:49:29 JSTに公開した。GitHub APIで`visibility=PUBLIC`、`isDraft=false`、`isPrerelease=true`を確認。リリース対象は`40f2d6e814a9ac9e10132c5cad504088d9921d41`で、Assetsには`WinMD_0.1.8_x64-setup.exe`（6,242,916バイト）と`SHA256SUMS.txt`（92バイト）がある。GitHub側のexeのdigestも記録済みSHA-256と一致した。

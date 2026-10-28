@@ -1,91 +1,81 @@
 # WinMD
 
-**Write Markdown on Windows. See the result as you type.**
+Windows向けのMarkdownエディタです。左でソースを編集し、右でプレビューを確認できます。1文書につき1つのウィンドウが開きます。
 
-English | [日本語](README.ja.md)
+[ダウンロード](https://github.com/sarulab-ou/winmd/releases) · [使い方](#使い方) · [MITライセンス](LICENSE)
 
-WinMD is a Markdown editor with source on the left and a live preview on the right. Each document opens in its own window, so you can arrange notes and guides side by side. The application UI is currently Japanese.
+![Windows上のWinMD。左に日本語のMarkdownソース、右に見出し・チェックリスト・表・コードを整形したプレビューを表示しています。](docs/screenshots/editor-ja.png)
 
-[Downloads](https://github.com/sarulab-ou/winmd/releases) · [Quick start](#quick-start) · [MIT License](LICENSE)
+_WinMD v0.1.8の実画面。[サンプル文書](docs/examples/notes.ja.md)を表示しています。_
 
-![WinMD on Windows: an English Markdown note on the left and its rendered headings, checklist, table, and code on the right. The application menus are Japanese.](docs/screenshots/editor-en.jpg)
+## できること
 
-_An actual WinMD v0.1.8 window displaying the [English sample](docs/examples/notes.en.md)._
+- **書きながらプレビュー。** 見出し、箇条書き、表、コードブロックの仕上がりを確認できます。中央の境界をドラッグして幅も調整できます。
+- **Ctrl+Vで画像を貼り付け。** 文書と同じフォルダーに`YYYYMMDD_HHMMSS.png`形式で保存し、画像リンクを挿入します。
+- **ほかのエディタと一緒に使える。** Codexなどが外部で更新すると、未保存の編集がない場合は自動反映します。WinMDでも編集中なら、編集を保持して競合を通知します。
+- **PDFにエクスポート・印刷。** 未保存の編集も含め、プレビューの本文を出力できます。
+- **1文書、1ウィンドウ。** 文書を好きな位置に並べて使えます。タブはありません。
+- **慣れたショートカットで操作。** 検索・置換・保存に加え、F5で現在の日時を挿入できます。
 
-## What you can do
+## ダウンロード・インストール
 
-- **Write and preview together.** Check headings, lists, tables, and code blocks while editing. Drag the divider to adjust the panes.
-- **Paste images with Ctrl+V.** Images are saved beside your Markdown file as `YYYYMMDD_HHMMSS.png`, and an image link is inserted for you.
-- **Work alongside other editors.** Changes made by Codex or another tool reload automatically when there are no unsaved edits. If you are editing in WinMD too, your edits are kept and a conflict notice appears.
-- **Export to PDF or print.** Output the rendered document, including your latest unsaved edits.
-- **Keep documents in separate windows.** Arrange each document where you need it. There are no tabs.
-- **Use familiar shortcuts.** Find, replace, save, and insert the current date and time with F5.
+**[WinMD v0.1.8 Windows x64インストーラーをダウンロード](https://github.com/sarulab-ou/winmd/releases/download/v0.1.8/WinMD_0.1.8_x64-setup.exe)**
 
-## Download and install
+WinMD v0.1.8をプレリリース（試用版）として公開しています。[リリースノート](https://github.com/sarulab-ou/winmd/releases/tag/v0.1.8) · [SHA-256チェックサム](https://github.com/sarulab-ou/winmd/releases/download/v0.1.8/SHA256SUMS.txt) · [ソースからのビルド](docs/development.md)
 
-**[Download WinMD v0.1.8 for Windows x64](https://github.com/sarulab-ou/winmd/releases/download/v0.1.8/WinMD_0.1.8_x64-setup.exe)**
+1. `WinMD_0.1.8_x64-setup.exe`をダウンロードし、**Windows 11 x64**で実行します。
+2. WebView2 Runtimeがない場合は、インストーラーがダウンロードします。この場合はインターネット接続が必要です。
+3. `.md`をダブルクリックで開きたい場合は、Windowsの既定アプリ設定でWinMDを選択します。インストーラーから設定画面を開けます。
 
-WinMD v0.1.8 is available as a preview release. [Release notes](https://github.com/sarulab-ou/winmd/releases/tag/v0.1.8) · [SHA-256 checksums](https://github.com/sarulab-ou/winmd/releases/download/v0.1.8/SHA256SUMS.txt) · [Build from source](docs/development.md)
+現在のv0.1.8は、GNUツールでクロスビルドした署名なしの試用版です。インストール・実GUI全体の受入確認は未完了です。[検証記録](docs/verification.md)を参照してください。
 
-1. Download `WinMD_0.1.8_x64-setup.exe` and run it on **Windows 11 x64**.
-2. If WebView2 Runtime is missing, the installer downloads it; this step requires internet access.
-3. To open `.md` files by double-clicking, choose WinMD in Windows' default app settings. The installer can open those settings for you.
+## 使い方
 
-The current v0.1.8 build is unsigned and was cross-compiled with GNU tools. Installation and full GUI acceptance testing are still incomplete; see the [verification record](docs/verification.md).
+1. **Ctrl+N**で新しいウィンドウ、**Ctrl+O**で既存のMarkdownファイルを開きます。[サンプル文書](docs/examples/notes.ja.md)でも試せます。
+2. 左側で編集し、右側で仕上がりを確認します。
+3. **Ctrl+S**で保存します。新規文書は保存先のフォルダーとファイル名を選びます。
+4. 画像をコピーして、エディタで**Ctrl+V**。文書の隣に`20261026_231824.png`のようなPNGを保存し、Markdownの画像リンクを挿入します。新規文書は先に保存します。
+5. **Alt+F**で「ファイル (F)」を開き、**PDFにエクスポート**または**印刷（Ctrl+P）**を選びます。
 
-## Quick start
+PDFはA4縦で、本文だけを出力します。PDF出力・印刷によってMarkdownの原本を保存することはありません。外部画像はプレビュー・出力ともにブロックします。
 
-1. Press **Ctrl+N** for a new window or **Ctrl+O** to open an existing Markdown file. You can also try the [sample note](docs/examples/notes.en.md).
-2. Write on the left and check the preview on the right.
-3. Press **Ctrl+S** to save. For a new document, choose a folder and filename.
-4. Copy an image and press **Ctrl+V** in the editor. WinMD saves a PNG such as `20261026_231824.png` next to the document and inserts its Markdown link. A new document must be saved first.
-5. Open **ファイル (F)** with **Alt+F**, then choose **PDFにエクスポート** (Export to PDF) or **印刷** (Print, **Ctrl+P**).
+## 主なショートカット
 
-![The WinMD File menu with shortcuts, Export to PDF, and Print, over a Japanese sample document.](docs/screenshots/file-menu.jpg)
+| 操作                           | キー                                |
+| ------------------------------ | ----------------------------------- |
+| ファイル / 編集メニュー        | Alt+F / Alt+E                       |
+| 新しい文書を別ウィンドウで開く | Ctrl+N                              |
+| 開く                           | Ctrl+O                              |
+| 保存 / 名前を付けて保存        | Ctrl+S / Ctrl+Shift+S               |
+| 元に戻す / やり直す            | Ctrl+Z / Ctrl+Y または Ctrl+Shift+Z |
+| 切り取り / コピー / 貼り付け   | Ctrl+X / Ctrl+C / Ctrl+V            |
+| 選択範囲の削除                 | Del                                 |
+| 検索 / 置換                    | Ctrl+F / Ctrl+H                     |
+| 次を検索 / 前を検索            | F3 / Shift+F3                       |
+| タイムスタンプを挿入           | F5                                  |
+| 印刷                           | Ctrl+P                              |
+| 現在のウィンドウを閉じる       | Ctrl+W / Alt+F4                     |
 
-_PDF export and printing are available from the File menu. Only the rendered document is output; the editor and menus are excluded._
+F5はPCのローカル時刻を使い、`2026/01/27 08:38:02`のように`yyyy/mm/dd hh:mm:ss`（24時間制）で挿入します。画像の保存名は`YYYYMMDD_HHMMSS.png`です。
 
-PDF export uses A4 portrait. Exporting or printing does not save the Markdown source. Remote images are blocked in both preview and output.
+## ファイルの扱いと制限
 
-## Shortcuts
+- 文書は通常のMarkdownファイル、画像はローカルファイルとして保存します。タイトルは`ファイル名 (フルパス)`で、未保存の変更は`*`で示します。
+- **保存はCtrl+Sで。** 自動保存・クラッシュ復元はありません。既存文書や同名の貼り付け画像を無断で上書きしません。
+- UTF-8のBOM有無、LF/CRLF、末尾改行の有無を保持します。改行混在は読み取り専用、不正UTF-8は読み込みを拒否します。
+- 生HTMLはエスケープし、プレビューをサニタイズします。外部画像はブロックします。
+- 文書は32 MiB以下。ローカル画像は文書フォルダー配下のPNG/JPEG/GIF/WebPで、1枚16 MiB以下・先頭100件までです。
+- 画像貼り付けは16 MiB・16メガピクセルまで。同じ秒の同名画像がある場合は、1秒待って再度貼り付けてください。画像リンクをUndoしてもPNGファイルは残ります。
 
-The Japanese menus are **ファイル (F)** (File) and **編集 (E)** (Edit).
+## Codexから開く
 
-| Action                            | Shortcut                        |
-| --------------------------------- | ------------------------------- |
-| File / Edit menu                  | Alt+F / Alt+E                   |
-| New document in a separate window | Ctrl+N                          |
-| Open                              | Ctrl+O                          |
-| Save / Save As                    | Ctrl+S / Ctrl+Shift+S           |
-| Undo / Redo                       | Ctrl+Z / Ctrl+Y or Ctrl+Shift+Z |
-| Cut / Copy / Paste                | Ctrl+X / Ctrl+C / Ctrl+V        |
-| Delete selection                  | Del                             |
-| Find / Replace                    | Ctrl+F / Ctrl+H                 |
-| Find next / previous              | F3 / Shift+F3                   |
-| Insert timestamp                  | F5                              |
-| Print                             | Ctrl+P                          |
-| Close the current window          | Ctrl+W / Alt+F4                 |
+Windowsで`.md`をWinMDに関連付けると、Codexの「アプリで開く」→ **Default app**からMarkdownをWinMDで開けます。
 
-F5 inserts the PC's local date and time as `2026/01/27 08:38:02` (`yyyy/mm/dd hh:mm:ss`, 24-hour clock). Pasted image filenames use `YYYYMMDD_HHMMSS.png`.
+メニューに**WinMD**という項目を追加したい場合は、ユーザー設定の`~/.codex/config.toml`にカスタムハンドラーを登録し、Codexを再起動します。これは任意の設定で、全ファイルの優先エディタを変更する必要はありません。[公式の登録手順](https://learn.chatgpt.com/docs/config-file/config-advanced#add-custom-file-handlers)を参照してください。
 
-## Files and limits
+## 開発
 
-- Files stay as ordinary Markdown and local images. The title bar shows `filename (full path)`; `*` marks unsaved edits.
-- **Save with Ctrl+S.** There is no autosave or crash recovery. Existing documents and same-named pasted images are not silently overwritten.
-- UTF-8 BOM settings, LF/CRLF line endings, and trailing newlines are preserved. Mixed line endings open read-only; invalid UTF-8 is rejected.
-- Raw HTML is escaped, preview output is sanitized, and remote images are blocked.
-- Documents are limited to 32 MiB. Local images must be inside the document's folder: PNG/JPEG/GIF/WebP, up to 16 MiB each, first 100 images.
-- Image paste is limited to 16 MiB and 16 megapixels. If a timestamp filename already exists, wait one second and paste again. Undoing the inserted link leaves the PNG file in place.
-
-## Use with Codex
-
-Associate `.md` with WinMD in Windows, then choose **Default app** in Codex's **Open in** menu to open Markdown files in WinMD.
-
-To add a separate **WinMD** entry to that menu, register a custom handler in your user-level `~/.codex/config.toml`, then restart Codex. This is optional and does not require changing your preferred editor for all files. See the [official custom handler instructions](https://learn.chatgpt.com/docs/config-file/config-advanced#add-custom-file-handlers).
-
-## Development
-
-Built with Tauri 2, TypeScript, Vite, CodeMirror 6, marked, DOMPurify, and Rust.
+Tauri 2、TypeScript、Vite、CodeMirror 6、marked、DOMPurify、Rustで実装しています。
 
 ```powershell
 $env:CI='true'
@@ -93,10 +83,10 @@ pnpm install --frozen-lockfile
 pnpm desktop:dev
 ```
 
-See the [development and build guide](docs/development.md) for prerequisites and validation commands. Use `pnpm run check`, `pnpm run test`, `pnpm run lint`, and `pnpm run build` for frontend validation. Build the Windows installer with `pnpm desktop:build`.
+前提環境と検証コマンドは[開発・ビルドガイド](docs/development.md)を参照してください。フロントエンドの検証は`pnpm run check`、`pnpm run test`、`pnpm run lint`、`pnpm run build`、Windowsインストーラーのビルドは`pnpm desktop:build`です。
 
-[Design decisions](docs/design.md) · [Manual tests](docs/manual-tests.md) · [Verification record](docs/verification.md)
+[設計判断](docs/design.md) · [手動テスト](docs/manual-tests.md) · [検証記録](docs/verification.md)
 
-## License
+## ライセンス
 
-[MIT License](LICENSE). Dependencies retain their own licenses; see [third-party notices](docs/third-party-licenses.txt).
+[MITライセンス](LICENSE)。依存ライブラリのライセンスはそれぞれ維持します。[第三者ライセンス通知](docs/third-party-licenses.txt)を参照してください。
