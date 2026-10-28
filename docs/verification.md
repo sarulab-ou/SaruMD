@@ -1,5 +1,13 @@
 # 検証記録（最終更新：2026-10-28）
 
+## v0.1.8公開結果
+
+ユーザーの明示的な依頼により、`sarulab-ou/winmd`をPUBLICへ変更し、[v0.1.8](https://github.com/sarulab-ou/winmd/releases/tag/v0.1.8)を2026-10-28 09:49:29 JSTに公開した。GitHub APIで`visibility=PUBLIC`、`isDraft=false`、`isPrerelease=true`を確認。リリース対象は`40f2d6e814a9ac9e10132c5cad504088d9921d41`で、Assetsには`WinMD_0.1.8_x64-setup.exe`（6,242,916バイト）と`SHA256SUMS.txt`（92バイト）がある。GitHub側のexeのdigestも記録済みSHA-256と一致した。
+
+curlの設定ファイル・認証ヘッダー・Cookieを使わず、リポジトリHTML、リリースHTML、両READMEのraw、日本語READMEのHTML、スクリーンショット3枚、チェックサム、インストーラーの計10 URLを取得した。両READMEと画像3枚はローカルとバイト一致し、取得したexeは`sha256sum -c SHA256SUMS.txt`でOKとなった。結果は`.tools/public-release-0.1.8/`に保存した。ブラウザの描画・インストーラーの新規実行はこの公開確認には含まない。
+
+両READMEにv0.1.8の直接ダウンロード・リリースノート・チェックサムのリンクを追加し、公開準備中の説明を公開済みプレリリースへ更新した。開発ガイドと告知案も同じ配布状況へ更新。Prettier全体チェックが成功し、README・告知案・リリースノート内のローカルリンク/画像39件が存在することを確認した。アプリコードは変更していないため、直前の公開資料更新で成功した型検査・32件のフロントエンドテスト・ESLint・Vite build、Linux14件/Windows15件のRust test・clippy・fmtの記録を引き継ぐ。Twitter投稿はしていない。
+
 ## v0.1.8配布前の成果物確認
 
 既存のv0.1.8インストーラー（6,242,916バイト）のSHA-256が、0.1.8ビルド時の記録`c16e57ca25f9763fe7cd2c2666dec21cff9fe352ed96e37678ff08b39880e3db`と一致した。7-Zipの`t`と隔離フォルダーへの展開に成功。展開したexeはTauri標準のNSIS識別マーカーNSS/UNKだけを正規化してビルド済みexeと完全一致し、WebView2Loader.dll・MIT LICENSE・第三者ライセンス通知は現在の原本とハッシュ一致した。FileVersion/ProductVersionはいずれも0.1.8。
