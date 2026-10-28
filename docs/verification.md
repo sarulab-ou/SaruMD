@@ -1,4 +1,18 @@
-# 検証記録（最終更新：2026-10-27）
+# 検証記録（最終更新：2026-10-28）
+
+## 公開準備：README・スクリーンショット・告知文
+
+日本語・英語READMEを、実画面、主な機能、公開用ダウンロード先、使い方、ショートカット、制限の順に更新した。作業フォルダー内のインストーラーへのリンクを一般利用者向けのGitHub Releasesへ変更し、バイナリ未公開の説明を付けた。開発ガイドの生成物名は現行0.1.8へ更新。アプリのコード・バージョン・依存のlockfileは変更していない。
+
+GitHubの確認時点でリポジトリはPRIVATE、`gh release list --limit 5`は空だった。リポジトリの公開範囲変更・リリース作成・Twitter投稿は行っていない。公開後に使う文案と公開準備中の文案を`docs/announcement.md`へ分け、添付順と代替テキスト案を付けた。
+
+Windows上のインストール済みWinMD（exeのFileVersion/ProductVersionともに0.1.8）で、`docs/examples/notes.ja.md`と`notes.en.md`をCtrl+Oから開いた。見出し・チェックリスト・表・コードの左右表示、Alt+FでPDF出力/印刷/ショートカットの表示、Escでメニューを閉じる操作を確認。サンプルの外部整形後、変更内容の反映と「外部の変更を反映しました」の表示も確認した。撮影は対象のWinMDウィンドウだけに限定し、JPEG3枚（各1182×831）を再圧縮せず保存した。撮影手順と対象サンプルは`docs/screenshots/README.md`に記載した。
+
+型検査、Vitest 9ファイル32件、ESLint、Prettier全体チェック、Vite buildが成功。プロジェクトスクリプトと同じ各ローカルCLIを直接実行した。RustはLinux14件・Windows15件のcore test、Windows desktop/Linux coreのall-targets clippy（-D warnings）、fmt checkが成功（`.tools/validate-readme-publication-20261028.log`）。既存のViteチャンクサイズ警告は継続。README・告知・画像説明・サンプル内のローカルリンク/画像46件はすべて存在し、PillowでJPEGの形式・寸法を確認した。
+
+初回のpnpm実行はサンドボックス内でnode_modulesの再構成が停滞したため中止し、通常権限の実行でローカルキャッシュからoffline/frozen-lockfile復元した。esbuildのサンドボックス内での読み取り拒否も、通常の実行環境で再検証して解消した。依存バージョンやlockfileの更新はない。
+
+今回のGUI確認は文書表示・メニュー・外部更新に限る。実クリップボード、PDF保存ダイアログ、実プリンター、IME、インストーラー全体の受入を完了したとは扱わない。新しいネイティブビルド・インストーラーは生成していない。GitHubの非ログイン状態でのREADME/画像表示も、まだ非公開のため未確認。公開後の確認手順をmanual-tests.mdへ追加した。
 
 ## 更新版0.1.8：タイムスタンプ形式
 

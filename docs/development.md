@@ -26,10 +26,10 @@ Corepackがない場合はpnpmを別途導入してください。`pnpm dev`は�
 
 ```powershell
 $env:CI='true'
-pnpm check
-pnpm test
-pnpm lint
-pnpm build
+pnpm run check
+pnpm run test
+pnpm run lint
+pnpm run build
 cargo test --workspace --locked
 cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo fmt --all -- --check
@@ -53,9 +53,9 @@ pnpm desktop:build
 設定されたbeforeBuildCommandが型チェックとフロントエンドビルドを実行し、NSISを作成します。ワークスペースルートの標準出力先：
 
 - `target/x86_64-pc-windows-msvc/release/winmd.exe`
-- `target/x86_64-pc-windows-msvc/release/bundle/nsis/WinMD_0.1.2_x64-setup.exe`
+- `target/x86_64-pc-windows-msvc/release/bundle/nsis/WinMD_0.1.8_x64-setup.exe`
 
-`CARGO_TARGET_DIR`で出力先を変更できます。今回生成したGNU試用版は`target/verified/x86_64-pc-windows-gnu/release/`にあります。[生成済みNSIS](../target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/WinMD_0.1.2_x64-setup.exe)はこの作業フォルダー限定のリンクです。
+`CARGO_TARGET_DIR`で出力先を変更できます。今回生成したGNU試用版は`target/verified/x86_64-pc-windows-gnu/release/`にあります。[生成済みNSIS v0.1.8](../target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/WinMD_0.1.8_x64-setup.exe)はこの作業フォルダー限定のリンクです。一般配布先は[GitHub Releases](https://github.com/sarulab-ou/winmd/releases)です（初回バイナリリリースは準備中）。
 
 MSVC版は今回未生成です。Tauriが公式にサポートするWindowsターゲットはMSVCです。[公式Windowsビルド資料](https://v2.tauri.app/distribute/windows-installer/)
 
