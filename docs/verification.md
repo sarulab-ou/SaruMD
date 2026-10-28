@@ -1,5 +1,11 @@
 # 検証記録（最終更新：2026-10-28）
 
+## v0.1.11公開結果
+
+実装・資料をコミット`445d07fb78bb98dbbff37798ce998accb085d7c2`としてmasterへpushし、2026-10-28 17:00:51 JSTに[v0.1.11](https://github.com/sarulab-ou/winmd/releases/tag/v0.1.11)を公開した。GitHub APIで`isDraft=false`、`isPrerelease=true`、タグの対象が同コミットであることを確認。Assetsのインストーラーは6,309,487バイトで、GitHub側のdigestが下記のローカルSHA-256と一致した。`SHA256SUMS.txt`も添付した。
+
+認証ヘッダー・Cookie・curl設定ファイルを使わずに公開URLからインストーラーとチェックサムを再取得し、`sha256sum -c SHA256SUMS.txt`でOKとなった。masterの公開READMEも現在の原本とバイト一致し、リリースHTMLが取得できることを確認。取得結果は`.tools/public-release-0.1.11/`へ保存した。公開直前に型検査、Vitest 12ファイル56件、ESLintとPrettier全体チェックを再確認し、成功した。コード・依存・配布物はビルド完了後に変更しておらず、既存のRust・PDF・配布物照合の記録を引き継ぐ。v0.1.8のタグと配布物は変更していない。
+
 ## v0.1.11の実ウィンドウ確認・公開準備
 
 Windowsデスクトップでビルド済みのv0.1.11を直接起動し、新規文書へ日本語とTeXのサンプルを入力した。起動プロセスのパスを`target/verified/x86_64-pc-windows-gnu/release/winmd.exe`と照合し、実画面で分数・根号・総和・積分・行列・alignedの表示を確認した。ユーザーから「OKです」と動作確認を受け、release/add/commit/pushの依頼を受けた。先頭へ戻す操作時にEscで操作が停止したため、その移動は完了と扱わない。試験文書は未保存で開いたままとし、実ユーザー文書は変更していない。実プリンター、インストーラーの対話受入、GUI全体の試験は引き続き未完了。
