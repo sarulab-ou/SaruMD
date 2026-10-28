@@ -55,7 +55,7 @@ pnpm desktop:build
 - `target/x86_64-pc-windows-msvc/release/winmd.exe`
 - `target/x86_64-pc-windows-msvc/release/bundle/nsis/WinMD_0.1.8_x64-setup.exe`
 
-`CARGO_TARGET_DIR`で出力先を変更できます。今回生成したGNU試用版は`target/verified/x86_64-pc-windows-gnu/release/`にあります。[生成済みNSIS v0.1.8](../target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/WinMD_0.1.8_x64-setup.exe)はこの作業フォルダー限定のリンクです。一般配布先は[GitHub Releases](https://github.com/sarulab-ou/winmd/releases)です（初回バイナリリリースは準備中）。
+`CARGO_TARGET_DIR`で出力先を変更できます。今回生成したGNU試用版は`target/verified/x86_64-pc-windows-gnu/release/`にあります。公開用の[v0.1.8リリース](https://github.com/sarulab-ou/winmd/releases/tag/v0.1.8)からインストーラーとSHA-256チェックサムを取得できます。
 
 MSVC版は今回未生成です。Tauriが公式にサポートするWindowsターゲットはMSVCです。[公式Windowsビルド資料](https://v2.tauri.app/distribute/windows-installer/)
 

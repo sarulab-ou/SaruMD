@@ -23,11 +23,11 @@ _An actual WinMD v0.1.8 window displaying the [English sample](docs/examples/not
 
 ## Download and install
 
-**[Windows x64 installers — GitHub Releases](https://github.com/sarulab-ou/winmd/releases)**
+**[Download WinMD v0.1.8 for Windows x64](https://github.com/sarulab-ou/winmd/releases/download/v0.1.8/WinMD_0.1.8_x64-setup.exe)**
 
-The first binary release is being prepared. No installer has been published to GitHub Releases yet. Until then, you can [build from source](docs/development.md).
+WinMD v0.1.8 is available as a preview release. [Release notes](https://github.com/sarulab-ou/winmd/releases/tag/v0.1.8) · [SHA-256 checksums](https://github.com/sarulab-ou/winmd/releases/download/v0.1.8/SHA256SUMS.txt) · [Build from source](docs/development.md)
 
-1. Download `WinMD_<version>_x64-setup.exe` from a release when available and run it on **Windows 11 x64**.
+1. Download `WinMD_0.1.8_x64-setup.exe` and run it on **Windows 11 x64**.
 2. If WebView2 Runtime is missing, the installer downloads it; this step requires internet access.
 3. To open `.md` files by double-clicking, choose WinMD in Windows' default app settings. The installer can open those settings for you.
 

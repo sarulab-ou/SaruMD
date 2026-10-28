@@ -23,11 +23,11 @@ _WinMD v0.1.8の実画面。[サンプル文書](docs/examples/notes.ja.md)を�
 
 ## ダウンロード・インストール
 
-**[Windows x64インストーラー — GitHub Releases](https://github.com/sarulab-ou/winmd/releases)**
+**[WinMD v0.1.8 Windows x64インストーラーをダウンロード](https://github.com/sarulab-ou/winmd/releases/download/v0.1.8/WinMD_0.1.8_x64-setup.exe)**
 
-初回のバイナリリリースを準備中です。GitHub Releasesにインストーラーはまだ公開していません。公開前に試す場合は、[ソースからのビルド手順](docs/development.md)を参照してください。
+WinMD v0.1.8をプレリリース（試用版）として公開しています。[リリースノート](https://github.com/sarulab-ou/winmd/releases/tag/v0.1.8) · [SHA-256チェックサム](https://github.com/sarulab-ou/winmd/releases/download/v0.1.8/SHA256SUMS.txt) · [ソースからのビルド](docs/development.md)
 
-1. リリース公開後、`WinMD_<version>_x64-setup.exe`をダウンロードし、**Windows 11 x64**で実行します。
+1. `WinMD_0.1.8_x64-setup.exe`をダウンロードし、**Windows 11 x64**で実行します。
 2. WebView2 Runtimeがない場合は、インストーラーがダウンロードします。この場合はインターネット接続が必要です。
 3. `.md`をダブルクリックで開きたい場合は、Windowsの既定アプリ設定でWinMDを選択します。インストーラーから設定画面を開けます。
 

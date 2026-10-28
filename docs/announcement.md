@@ -1,10 +1,10 @@
 # WinMDの公開告知案
 
-以下はTwitter（X）へ手動投稿するための文面案です。投稿・リリース公開はまだ行っていません。
+以下はTwitter（X）へ手動投稿するための文面案です。リポジトリと[v0.1.8インストーラー](https://github.com/sarulab-ou/winmd/releases/tag/v0.1.8)は公開済みです。Twitterへの投稿はまだ行っていません。
 
 ## まず使う案：公開後の告知
 
-GitHubのソースと初回インストーラーを公開してから使用します。
+GitHubのソースと試用版インストーラーを紹介する文面です。
 
 ```text
 Windows向けMarkdownエディタ「WinMD」を公開しました。
@@ -42,23 +42,24 @@ https://github.com/sarulab-ou/winmd
 
 添付：[日本語の編集画面](screenshots/editor-ja.jpg)。ソース公開後に使用します。バイナリ配布を約束しない文面です。
 
-## 先に紹介する案：リリース準備中
+## 別案：試用版の配布を伝える
 
 ```text
-Windows向けMarkdownエディタ「WinMD」を公開準備中です。
+Windows向けMarkdownエディタ「WinMD」の試用版を公開しました。
 
 左で編集、右でプレビュー。画像はCtrl+Vで保存＆挿入でき、PDF出力・印刷にも対応。
 1文書1ウィンドウで使えます。
 
-まずは実際の画面を。メモや手順書を書くためのシンプルなエディタです。
+メモや手順書を書くためのシンプルなエディタです。
+https://github.com/sarulab-ou/winmd
 #Markdown #Windows
 ```
 
-添付：[日本語の編集画面](screenshots/editor-ja.jpg)と[PDF出力のメニュー](screenshots/file-menu.jpg)。リポジトリが非公開の段階でも使えます。
+添付：[日本語の編集画面](screenshots/editor-ja.jpg)と[PDF出力のメニュー](screenshots/file-menu.jpg)。配布版は署名なしのプレリリースです。
 
 ## English draft
 
-Use after the source and Windows installer have been published.
+The source and preview installer are available from the repository and Releases.
 
 ```text
 Introducing WinMD, a Markdown editor for Windows.
@@ -71,10 +72,10 @@ https://github.com/sarulab-ou/winmd
 
 Attach [the English sample screen](screenshots/editor-en.jpg). Suggested alt text: “WinMD on Windows, with Markdown source on the left and a live preview of headings, a checklist, a table, and code on the right. Application menus are Japanese.”
 
-## 画像と公開前の確認
+## 画像と投稿前の確認
 
 - 画像はv0.1.8の実画面です。英語版の画像も文書本文だけが英語で、アプリUIの英語対応を示すものではありません。
 - 撮影したサンプルは[日本語](examples/notes.ja.md)・[英語](examples/notes.en.md)。撮り直しの手順は[スクリーンショットの説明](screenshots/README.md)にあります。
-- 現在GitHub Releasesにインストーラーはありません。公開後、両READMEの「初回リリース準備中」の段落を実際のバージョン・配布状況に更新します。
-- インストーラー公開前に[手動テスト](manual-tests.md)の未実施項目を確認し、[検証記録](verification.md)を更新します。署名の有無と試用版の位置付けは、実際の成果物に合わせて記載します。
+- [GitHub Releases](https://github.com/sarulab-ou/winmd/releases/tag/v0.1.8)で署名なしのWindows x64試用版とチェックサムを配布しています。両READMEも公開先へ更新済みです。
+- 実施済みと未実施の確認範囲は[検証記録](verification.md)、受入手順は[手動テスト](manual-tests.md)を参照してください。
 - 各文面は1件ずつ投稿する想定です。アカウント名や追加のハッシュタグを付ける場合は、投稿画面の文字数表示で収まることを確認してください。
