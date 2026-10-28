@@ -1,6 +1,6 @@
 # WinMDの公開告知案
 
-以下はTwitter（X）へ手動投稿するための文面案です。リポジトリと[v0.1.8インストーラー](https://github.com/sarulab-ou/winmd/releases/tag/v0.1.8)は公開済みです。Twitterへの投稿はまだ行っていません。
+以下はTwitter（X）へ手動投稿するための文面案です。リポジトリと[v0.1.11インストーラー](https://github.com/sarulab-ou/winmd/releases/tag/v0.1.11)は公開済みです。Twitterへの投稿はまだ行っていません。
 
 ## まず使う案：公開後の告知
 
@@ -60,6 +60,6 @@ https://github.com/sarulab-ou/winmd
 
 - 画像はユーザー提供のv0.1.8の実画面です。PNGを加工せず使用しています。
 - 画面の文書は[日本語サンプル](examples/notes.ja.md)です。画像の説明は[スクリーンショットの説明](screenshots/README.md)にあります。
-- [GitHub Releases](https://github.com/sarulab-ou/winmd/releases/tag/v0.1.8)で署名なしのWindows x64試用版とチェックサムを配布しています。READMEも公開先へ更新済みです。
+- [GitHub Releases](https://github.com/sarulab-ou/winmd/releases/tag/v0.1.11)で署名なしのWindows x64試用版とチェックサムを配布しています。READMEも公開先へ更新済みです。
 - 実施済みと未実施の確認範囲は[検証記録](verification.md)、受入手順は[手動テスト](manual-tests.md)を参照してください。
 - 各文面は1件ずつ投稿する想定です。アカウント名や追加のハッシュタグを付ける場合は、投稿画面の文字数表示で収まることを確認してください。

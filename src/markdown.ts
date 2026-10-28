@@ -1,4 +1,6 @@
 import { Marked, Renderer, type Token, type Tokens } from 'marked';
+import { mathExtensions } from './math-renderer';
+export { safeHttpUrl } from './links';
 
 export function escapeHtml(value: string): string {
   return value.replace(
@@ -10,18 +12,18 @@ export function escapeHtml(value: string): string {
   );
 }
 
-const parser = new Marked({
-  gfm: true,
-  async: false,
-  renderer: {
-    html: (token) => escapeHtml(token.text),
-    // Never hand an unvalidated src to a DOM parser: even a detached image could fetch.
-    image: (token) =>
-      `<img data-winmd-src="${escapeHtml(token.href)}" alt="${escapeHtml(token.text)}">`,
-  },
-});
-
 export function markdownHtml(text: string): string {
+  const parser = new Marked({
+    gfm: true,
+    async: false,
+    extensions: mathExtensions(escapeHtml),
+    renderer: {
+      html: (token) => escapeHtml(token.text),
+      // Never hand an unvalidated src to a DOM parser: even a detached image could fetch.
+      image: (token) =>
+        `<img data-winmd-src="${escapeHtml(token.href)}" alt="${escapeHtml(token.text)}">`,
+    },
+  });
   return parser.parse(text) as string;
 }
 
@@ -32,6 +34,7 @@ export function mappedMarkdownHtml(text: string): string {
   for (let i = 0; i < source.length; i++)
     if (source[i] === '\n') starts.push(i + 1);
   const locations = new WeakMap<object, number>();
+  const offsets = new WeakMap<object, number>();
   const lineAt = (offset: number) => {
     let low = 0;
     let high = starts.length;
@@ -49,9 +52,10 @@ export function mappedMarkdownHtml(text: string): string {
       const offset = source.indexOf(token.raw, cursor);
       if (offset < 0 || offset + token.raw.length > to) continue;
       locations.set(token, lineAt(offset));
+      offsets.set(token, offset);
       if (token.type === 'list')
         locate((token as Tokens.List).items, offset, offset + token.raw.length);
-      else if (token.type === 'list_item' || token.type === 'blockquote')
+      else if ('tokens' in token && Array.isArray(token.tokens))
         locate(token.tokens as Token[], offset, offset + token.raw.length);
       cursor = offset + token.raw.length;
     }
@@ -66,6 +70,7 @@ export function mappedMarkdownHtml(text: string): string {
   const mapped = new Marked({
     gfm: true,
     async: false,
+    extensions: mathExtensions(escapeHtml, mark, (token) => offsets.get(token)),
     renderer: {
       html: (token) => escapeHtml(token.text),
       image: (token) =>
@@ -111,15 +116,4 @@ export function mappedMarkdownHtml(text: string): string {
   const tokens = mapped.lexer(source);
   locate(tokens, 0, source.length);
   return mapped.parser(tokens);
-}
-
-export function safeHttpUrl(raw: string): string | null {
-  try {
-    const url = new URL(raw);
-    return /^(https?:)$/.test(url.protocol) && !url.username && !url.password
-      ? url.href
-      : null;
-  } catch {
-    return null;
-  }
 }

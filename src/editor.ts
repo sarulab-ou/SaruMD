@@ -157,6 +157,15 @@ export class MarkdownEditor {
     this.view.focus();
     (backwards ? findPrevious : findNext)(this.view);
   }
+  revealSource(offset: number): void {
+    if (this.view.composing || !Number.isSafeInteger(offset)) return;
+    const position = Math.max(0, Math.min(this.view.state.doc.length, offset));
+    this.focus();
+    this.view.dispatch({
+      selection: { anchor: position },
+      effects: EditorView.scrollIntoView(position, { y: 'center' }),
+    });
+  }
   get canEdit(): boolean {
     return !this.view.state.readOnly && !this.view.composing;
   }

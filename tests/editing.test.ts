@@ -24,6 +24,20 @@ afterEach(() => {
 });
 
 describe('edit commands', () => {
+  it('reveals a source position without changing the document or adding undo history', () => {
+    const editor = setup('日本語\n次の行', true);
+    editor.revealSource(5);
+    expect(editor.view.state.selection.main.head).toBe(5);
+    expect(editor.view.state.doc.toString()).toBe('日本語\n次の行');
+    expect(editor.canUndo).toBe(false);
+    editor.revealSource(Number.NaN);
+    expect(editor.view.state.selection.main.head).toBe(5);
+    editor.revealSource(999);
+    expect(editor.view.state.selection.main.head).toBe(
+      editor.view.state.doc.length,
+    );
+    expect(editor.view.hasFocus).toBe(true);
+  });
   it('formats padded local date/time and inserts at the selection as one undo step', () => {
     const date = new Date(2026, 0, 3, 8, 32, 2);
     expect(formatTimestamp(date)).toBe('2026/01/03 08:32:02');

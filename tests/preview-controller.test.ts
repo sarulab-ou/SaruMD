@@ -1,5 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { Preview } from '../src/preview';
+import { mappedMarkdownHtml } from '../src/markdown';
 
 class WorkerStub {
   static current: WorkerStub;
@@ -113,4 +114,64 @@ it('prints the latest unsaved text and keeps raw HTML and blocked images safe', 
   expect(target.querySelector('[data-winmd-line]')).toBeNull();
   expect(target.textContent).toContain('ブロック中');
   expect(target.querySelector<HTMLInputElement>('input')!.disabled).toBe(true);
+});
+
+it('navigates on plain clicks but preserves links, selection, modifiers and stale snapshots', async () => {
+  const { frame, preview, worker } = await setup();
+  const source = '# 題\n\nクリック **強調** [リンク](https://example.com)';
+  const navigate = vi.fn();
+  preview.navigateToSource = navigate;
+  preview.update(source);
+  vi.advanceTimersByTime(200);
+  worker.reply(worker.sent.at(-1)!.revision, mappedMarkdownHtml(source));
+  await Promise.resolve();
+  await Promise.resolve();
+  const doc = frame.contentDocument!;
+  const strong = doc.querySelector('strong')!;
+  const text = strong.firstChild!;
+  Object.defineProperty(doc, 'caretPositionFromPoint', {
+    configurable: true,
+    value: () => ({ offsetNode: text, offset: 1 }),
+  });
+  strong.dispatchEvent(new MouseEvent('click', { bubbles: true, button: 0 }));
+  expect(navigate).toHaveBeenLastCalledWith(source.indexOf('強調') + 1);
+  navigate.mockClear();
+  doc
+    .querySelector('a')!
+    .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  strong.dispatchEvent(
+    new MouseEvent('click', { bubbles: true, ctrlKey: true }),
+  );
+  const selection = doc.getSelection()!;
+  const range = doc.createRange();
+  range.selectNodeContents(strong);
+  selection.addRange(range);
+  strong.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  selection.removeAllRanges();
+  preview.update('newer source');
+  strong.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  expect(navigate).not.toHaveBeenCalled();
+});
+
+it('preserves rendered inline/display math in the printable document', async () => {
+  const { preview, worker } = await setup();
+  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+    callback(0);
+    return 0;
+  });
+  const source = String.raw`式 $x^2$\n\n$$\frac{a}{b}$$`;
+  const target = document.createElement('article');
+  document.body.append(target);
+  const pending = preview.preparePrint(source, target);
+  await Promise.resolve();
+  const latest = worker.sent.at(-1)!;
+  worker.reply(latest.revision, mappedMarkdownHtml(source));
+  await pending;
+  expect(target.querySelectorAll('math')).toHaveLength(2);
+  expect(target.querySelector('mfrac')).not.toBeNull();
+  expect(
+    target.querySelector(
+      '[data-winmd-math],[data-winmd-line],[data-winmd-from]',
+    ),
+  ).toBeNull();
 });

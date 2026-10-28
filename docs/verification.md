@@ -1,5 +1,41 @@
 # 検証記録（最終更新：2026-10-28）
 
+## v0.1.11の実ウィンドウ確認・公開準備
+
+Windowsデスクトップでビルド済みのv0.1.11を直接起動し、新規文書へ日本語とTeXのサンプルを入力した。起動プロセスのパスを`target/verified/x86_64-pc-windows-gnu/release/winmd.exe`と照合し、実画面で分数・根号・総和・積分・行列・alignedの表示を確認した。ユーザーから「OKです」と動作確認を受け、release/add/commit/pushの依頼を受けた。先頭へ戻す操作時にEscで操作が停止したため、その移動は完了と扱わない。試験文書は未保存で開いたままとし、実ユーザー文書は変更していない。実プリンター、インストーラーの対話受入、GUI全体の試験は引き続き未完了。
+
+公開対象は検証済みの0.1.11インストーラー（下記ハッシュ）と`SHA256SUMS.txt`。READMEのダウンロード先・開発ガイド・告知案を0.1.11へ更新し、`docs/releases/v0.1.11.md`に変更点・確認範囲をまとめた。公開済みv0.1.8のタグと配布物は保持する。以下の各節の「未公開・未コミット」は、各更新版を作成した時点の記録である。
+
+## 更新版0.1.11：TeX数式表示
+
+`$...$`のインライン数式と`$$...$$`の独立/複数行数式に対応した。KaTeX 0.19.1でMathMLをWorker生成し、HTML用/MathML用の2段階のDOMPurifyを通して表示する。通常のコード・エスケープしたドル・生HTMLは数式として解釈しない。TeXの外部通信/HTML拡張はtrust=falseで無効にし、式長・個数・生成量・展開回数・指定サイズを制限した。エラーは元式を保持して表示し、本文全体の変換を止めない。前の未コミットのクリック移動も引き継いだ。
+
+型検査、Vitest 12ファイル56件、ESLintが成功。MathMLの名前空間/分数/根号/行列、インライン/複数行、空白・エスケープ・コード除外・不正構文・再帰マクロ・個数/式長の上限・TeXからのURL/画像/HTML/CSS拒否・印刷DOM・数式の元位置を確認。実描画試験もPASSで、4数式、上下に積まれた分数（間隔9.265625 px）と2行の行列を確認し、数式クリックがソース位置31と一致した。既存の双方向スクロールと見出し/コード/表クリックも成功した。
+
+実描画の印刷DOMから`.tools/math-print.html`を出力し、非表示のWebView2プローブで製品のPDF生成関数を実行した。終了コード0、`PASS: native WebView2 PDF: 39800 bytes`を確認。`.tools/math-print-0.1.11.pdf`はA4・1ページで、末尾`MATH_PRINT_END`を含むことを確認し、全ページをPNGへ描画して目視した。文中の上付き/分数、独立した総和・分数・行列の文字・記号・罫線が表示され、重なりや欠落はなかった。終了時の既知のWebView2 unregister class 1412メッセージは出たが、PDF生成とプロセス終了は成功した。
+
+RustのLinux14件・Windows15件、all-targets clippy（Windows desktop/Linux core、-D warnings）、fmt checkとPDFプローブのビルドが成功（`.tools/validate-0.1.11.log`、`.tools/build-math-print-probe.log`）。新しいnpm依存KaTeXとcommanderを含む502パッケージの第三者通知を再生成した。数式フォントはOSフォントを使い、新しいフォントファイルは同梱しない。
+
+Prettier全体チェック、Vite build、Windows x64 GNUリリースとNSIS生成が成功（`.tools/final-build-0.1.11.log`）。7-Zipの`t`と隔離展開が成功し、展開exeは標準NSIS識別マーカーを正規化してビルドexeと一致した。WebView2Loader.dll・LICENSE・第三者通知も一致。現在の3アセット（`index-B1Wlxx9u.css`、`index-BHHEUHe1.js`、`preview-worker-BjJGxgIi.js`）の同梱と、FileVersion/ProductVersionが0.1.11であることを確認した。既存のチャンクサイズ・署名なし・クロスビルド警告は継続。
+
+成果物：`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/WinMD_0.1.11_x64-setup.exe`、6,309,487バイト、SHA-256 `4b5351c626627718bbc30123a5da1ffd822a590e7e5521022edae46aa230179b`。
+
+最終アプリの手動操作・実プリンター・インストーラーの対話受入は今回未実施。PDF保存ダイアログを含めた受入全体の完了とは扱わない。既存インストールの置き換え、commit/push、0.1.11のGitHubリリース公開は行っていない。
+
+## 更新版0.1.10：プレビューのクリック位置からソースへ移動
+
+プレビューの文字を通常クリックすると、左側の対応する文字へカーソルを移し、編集領域にフォーカスして表示位置を調整する機能を追加した。現在の描画元テキストと一致する場合だけ位置を採用する。太字などの繰り返し、コードフェンスの言語指定、引用の接頭辞、表の行/列を考慮し、一意の対応が見つからない書式はブロック先頭へ移動する。リンク・範囲選択・修飾付き/複数クリック・変換待ち・IME・モーダル・PDF準備中は移動しない。文書内容とUndo履歴を変えず、読み取り専用でもカーソル移動は可能とした。
+
+型検査、Vitest 11ファイル47件、ESLintが成功。位置照合5件、文書/Undoを変更しない移動1件、選択・リンク・修飾キー・古いスナップショットを尊重する制御1件を追加。既存の位置付きプレビュー、印刷時のマーカー除去、1万行試験なども成功した。RustのLinux14件・Windows15件、all-targets clippy（Windows desktop/Linux core、-D warnings）、fmt checkが成功（`.tools/validate-0.1.10.log`）。依存ライブラリは増やしていない。
+
+既存のヘッドレスEdge試験を拡張し、実際のDOM文字の描画座標をクリックした場合のソースUTF-16位置を確認した。見出し5350、コード5854、表セル5827で、期待値と実際のカーソル位置が完全一致し、本文の不変とフォーカスも確認した。既存の双方向スクロール・リサイズ・遅延画像・逆流防止もPASS。結果は`.tools/scroll-smoke-result.json`、手順は`node scripts/test-scroll.mjs`。Tauri最終アプリでの手動クリック・ドラッグ/コピー・IMEのGUI受入は今回未実施。
+
+TeX数式は既存のコード/依存を確認し、数式レンダラー未実装であることを確認した。今回も`$...$`や`$$...$$`の数式描画は追加せず、READMEへ未対応の説明を追記した。
+
+Vite build、Windows x64 GNUリリース、NSIS生成が成功（`.tools/final-build-0.1.10.log`）。7-Zipの`t`と隔離展開が成功し、exeは標準NSIS識別マーカーを正規化してビルドexeと一致、WebView2Loader.dll・LICENSE・第三者通知も一致した。現在のフロントエンド3アセットをexe内で照合し、FileVersion/ProductVersionが0.1.10であることを確認した。既存のチャンクサイズ・署名なし・クロスビルド警告は継続。
+
+成果物：`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/WinMD_0.1.10_x64-setup.exe`、6,247,041バイト、SHA-256 `84d70218ee3fc0a05661d23a552cfcc6d88abd0f408d2be7231fa99a841401eb`。既存インストールの置き換え、commit/push、0.1.10のGitHubリリース公開は行っていない。
+
 ## 更新版0.1.9：左右のスクロール連動
 
 左右どちらの操作でも追従するスクロール連動を実装した。Markdownの生成ブロックの元行と、CodeMirror/プレビューの実際の高さを対応付け、間を補間する。幅変更・画像読み込み後の位置保持、追従の逆流防止、古いプレビューでの追従停止を追加した。文書端はスクロール可能範囲に制限し、段落・引用・コード内部などは補間とする。HTMLエスケープ、DOMPurify、iframe sandbox/CSPを維持し、行番号マーカーは印刷前に除去する。

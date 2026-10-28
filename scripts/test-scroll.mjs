@@ -30,6 +30,7 @@ const server = await createServer({
             return;
           }
           let body = '';
+          req.setEncoding('utf8');
           req.on('data', (data) => {
             body += data;
             if (body.length > 65536) req.destroy();
@@ -78,11 +79,14 @@ const timer = setTimeout(
 );
 try {
   const value = await result;
+  const { printHtml, ...report } = value;
+  if (typeof printHtml === 'string')
+    fs.writeFileSync('.tools/math-print.html', printHtml);
   fs.writeFileSync(
     '.tools/scroll-smoke-result.json',
-    JSON.stringify(value, null, 2) + '\n',
+    JSON.stringify(report, null, 2) + '\n',
   );
-  console.log(JSON.stringify(value, null, 2));
+  console.log(JSON.stringify(report, null, 2));
   if (value.status !== 'PASS') process.exitCode = 1;
 } finally {
   clearTimeout(timer);

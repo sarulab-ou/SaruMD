@@ -37,6 +37,12 @@ fn main() {
             let css = include_str!("../../src/style.css");
             let rows: String = (1..=90).map(|i| format!("<tr><td>{i}</td><td>日本語の表を複数ページで確認します。</td></tr>")).collect();
             let html = format!("<!doctype html><html lang='ja'><meta charset='utf-8'><style>{css}</style><body><div id='app'>SHOULD_NOT_PRINT: menu and editor</div><article id='print-content'><h1>日本語PDF出力テスト</h1><p>未保存の編集・見出し・表・コードが本文だけで出力されます。</p><h2>コードと引用</h2><pre><code>const message = '日本語';\nconsole.log(message);</code></pre><blockquote>印刷余白と文字の読みやすさを確認します。</blockquote><table><thead><tr><th>番号</th><th>内容</th></tr></thead><tbody>{rows}</tbody></table><p>END_OF_DOCUMENT</p></article></body></html>");
+            // Optional scriptless fixture emitted by the frontend math/print test.
+            let html = if let Some(path) = std::env::args_os().nth(2) {
+                let fixture = std::fs::read_to_string(path)?;
+                if fixture.len() > 1024 * 1024 { return Err("Print fixture exceeds 1 MiB".into()); }
+                fixture
+            } else { html };
             // Serve a fixed fixture on loopback; do not enable production data-url permissions.
             let listener = std::net::TcpListener::bind("127.0.0.1:0")?;
             let url = format!("http://{}/", listener.local_addr()?);

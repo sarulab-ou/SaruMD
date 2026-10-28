@@ -24,14 +24,21 @@ export interface PreviewBlock {
 export function collectPreviewBlocks(
   root: ParentNode,
   lines: number,
+  locations?: WeakMap<Element, number>,
 ): PreviewBlock[] {
   const blocks: PreviewBlock[] = [];
   for (const element of root.querySelectorAll('[data-winmd-line]')) {
     const value = element.getAttribute('data-winmd-line')!;
     element.removeAttribute('data-winmd-line');
     const line = Number(value);
-    if (/^[1-9]\d*$/.test(value) && Number.isSafeInteger(line) && line <= lines)
+    if (
+      /^[1-9]\d*$/.test(value) &&
+      Number.isSafeInteger(line) &&
+      line <= lines
+    ) {
+      locations?.set(element, line);
       blocks.push({ line, element });
+    }
   }
   blocks.sort((a, b) => a.line - b.line);
   return blocks.filter(

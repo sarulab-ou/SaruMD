@@ -10,8 +10,12 @@ import type { PasteTarget } from './image-paste';
 import { ExternalSync } from './external-sync';
 import { setupMenus } from './menu';
 import { editorScrollPane, ScrollSync } from './scroll-sync';
+import { mathStyles } from './math-preview';
 
 const state = new DocumentState();
+const mathStyle = document.createElement('style');
+mathStyle.textContent = mathStyles;
+document.head.append(mathStyle);
 const saves = new SerialTasks();
 const operations = new SerialTasks();
 const status = document.querySelector<HTMLElement>('#status')!;
@@ -414,6 +418,17 @@ async function start(): Promise<void> {
     () => ready && !printing && preview.renderedText === state.text,
   );
   preview.layoutChanged = () => scrollSync.refresh(true);
+  preview.navigateToSource = (offset) => {
+    if (
+      ready &&
+      !printing &&
+      !exclusive &&
+      !clipboardBusy &&
+      !modalOpen() &&
+      preview.renderedText === state.text
+    )
+      editor.revealSource(offset);
+  };
   editor.layoutChanged = () => scrollSync.refresh();
   const resize = new ResizeObserver((entries) =>
     scrollSync.refresh(

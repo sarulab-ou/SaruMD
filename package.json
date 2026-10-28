@@ -1,6 +1,6 @@
 {
   "name": "winmd",
-  "version": "0.1.9",
+  "version": "0.1.11",
   "private": true,
   "type": "module",
   "license": "MIT",
@@ -28,6 +28,7 @@
     "@tauri-apps/api": "^2.9.0",
     "codemirror": "^6.0.2",
     "dompurify": "^3.2.7",
+    "katex": "0.19.1",
     "marked": "^16.4.1"
   },
   "devDependencies": {
