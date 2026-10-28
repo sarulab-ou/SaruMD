@@ -1,6 +1,6 @@
 {
   "name": "winmd",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "private": true,
   "type": "module",
   "license": "MIT",
@@ -9,6 +9,7 @@
     "dev": "vite --host 127.0.0.1",
     "check": "tsc --noEmit",
     "test": "vitest run",
+    "test:scroll": "node scripts/test-scroll.mjs",
     "lint": "eslint src tests scripts && prettier --check .",
     "format": "prettier --write .",
     "build": "tsc --noEmit && vite build",

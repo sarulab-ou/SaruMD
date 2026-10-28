@@ -35,6 +35,10 @@ cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo fmt --all -- --check
 ```
 
+スクロール連動の実描画試験は`pnpm run test:scroll`で実行できます。Windowsの既存Edgeを専用プロファイルのヘッドレス環境で起動し、ローカル検証サーバーだけを使用します。別のChromium系ブラウザを使う場合は、`WINMD_BROWSER`に実行ファイルのパスを指定してください。結果は`.tools/scroll-smoke-result.json`に保存します。
+
+この試験では左右からの追従、幅変更による折り返し、遅れて読み込まれる画像、追従の逆流がないことを確認します。Tauriのネイティブウィンドウを操作するGUI受入とは区別します。
+
 今回の環境ではRustをプロジェクト内の`.tools/`に置き、WSLから`bash scripts/rust-wsl.sh test -p winmd-core`を実行しました。Windows API試験は`--target x86_64-pc-windows-gnu`を追加します。通常環境では直接cargoを使用できます。
 
 実行済みと未実施の区別は[検証記録](verification.md)、GUI受入手順は[手動テスト](manual-tests.md)を参照してください。現在のGNU試用ビルドはMSVCビルド・実クリップボード・関連付けなどの実GUI受入が未完了です。

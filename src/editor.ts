@@ -23,6 +23,7 @@ import { formatTimestamp, type ClipboardContents } from './editing';
 
 export class MarkdownEditor {
   readonly view: EditorView;
+  layoutChanged?: () => void;
   private readonly access = new Compartment();
   constructor(
     parent: HTMLElement,
@@ -99,6 +100,7 @@ export class MarkdownEditor {
           '&': { height: '100%', fontSize: '14px' },
           '.cm-scroller': {
             overflow: 'auto',
+            overflowAnchor: 'none',
             fontFamily:
               '"Cascadia Code", "BIZ UDGothic", "Yu Gothic UI", Consolas, monospace',
             lineHeight: '1.85',
@@ -115,6 +117,8 @@ export class MarkdownEditor {
         }),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) onEdit(update.state.doc.toString());
+          if (update.geometryChanged || update.viewportChanged)
+            requestAnimationFrame(() => this.layoutChanged?.());
         }),
       ],
     });

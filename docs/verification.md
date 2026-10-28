@@ -1,5 +1,21 @@
 # 検証記録（最終更新：2026-10-28）
 
+## 更新版0.1.9：左右のスクロール連動
+
+左右どちらの操作でも追従するスクロール連動を実装した。Markdownの生成ブロックの元行と、CodeMirror/プレビューの実際の高さを対応付け、間を補間する。幅変更・画像読み込み後の位置保持、追従の逆流防止、古いプレビューでの追従停止を追加した。文書端はスクロール可能範囲に制限し、段落・引用・コード内部などは補間とする。HTMLエスケープ、DOMPurify、iframe sandbox/CSPを維持し、行番号マーカーは印刷前に除去する。
+
+型検査、Vitest 10ファイル40件、ESLint、Vite buildが成功。新しい8件の試験は元行の対応・不正HTML/マーカー・異なる高さの補間・双方向/ループ抑止・先頭/末尾・古いプレビュー・高さ再計測・リサイズ・iframe外側のスクロールバー入力などを確認した。既存の1万行試験も実際のWorkerと同じ位置付きMarkdown変換へ切り替えた。Linux14件・Windows15件のRust test、Windows desktop/Linux coreのall-targets clippy（-D warnings）、fmt checkが成功（`.tools/validate-0.1.9.log`）。既存のViteチャンクサイズ警告は継続。
+
+`node scripts/test-scroll.mjs`で、40セクションの日本語・折り返し・リスト・表・コード・遅延PNGを含むfixtureを既存Edgeの隔離プロファイルで実行し、PASSとなった。アプリと同じCodeMirror・Preview・Worker・sandbox iframe・スクロール制御を使用。実描画での対応見出しのずれは、左→右0.734375 px、右→左0.484375 px、幅変更後0.53125 px、遅延画像の読み込み後0.65625 px、待機後0.65625 pxで、確認したケースでは1 px未満だった。結果は`.tools/scroll-smoke-result.json`、再実行可能なfixtureは`tests/browser/scroll-sync.*`、実行スクリプトは`scripts/test-scroll.mjs`にある。
+
+検証中に単純な論理行内補間で折り返しとのずれ、追従先の再計測が操作元を奪う逆流、幅変更で物理scrollTopだけを保持するずれを検出した。両側の対応ブロックの実ピクセル間を補間し、入力により操作元を選び、レイアウト変更では共通の文書位置を保持する方式へ修正して再検証した。初期の一時サーバーは検証用ブラウザのプロファイルを監視して停止したため、正式な検証スクリプトではファイル監視を止め、実時間で結果を回収する。
+
+これはヘッドレスEdgeでの描画試験であり、Tauri最終アプリの実ホイール・トラックパッド・スクロールバー・IME・PDFダイアログの受入を完了したとは扱わない。手順はmanual-tests.mdへ追加した。0.1.8の公開済みリリース・タグ・インストーラーは変更せず、0.1.9をローカル更新版として用意する。
+
+Windows x64 GNUリリース・NSIS生成が成功し、`.tools/final-build-0.1.9.log`で`Finished 1 bundle`を確認した。7-Zipの`t`と隔離展開に成功。展開exeはNSISの標準NSS/UNK識別マーカーだけを正規化してビルドexeと一致し、WebView2Loader.dll・LICENSE・第三者ライセンス通知も一致した。現在のdistの3アセット名（`index-B1Wlxx9u.css`、`index-Ce5ODZZp.js`、`preview-worker-C2-P0i1N.js`）がexeに含まれることを確認し、最新フロントエンドの同梱を検証した。署名なしGNUクロスビルドの既存警告は継続。
+
+成果物：`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/WinMD_0.1.9_x64-setup.exe`、6,244,288バイト、SHA-256 `952dea46f455e25b44ef149baa59d8cb19249668d1a8269e6bbc532dc339370c`。インストール済みアプリの置き換え、commit/push、GitHubへの0.1.9リリース公開は行っていない。
+
 ## スクリーンショットのPNG差し替え・READMEの日本語一本化
 
 ユーザー提供の`editor-ja.png`を`docs/screenshots/editor-ja.png`へ加工せずコピーした。PillowでPNG形式・1477×1039ピクセル・149,817バイトを確認し、原本とコピーのSHA-256が`5459f1515f08827b62f6d68efa8a2b3e11610bc7aabfd4f1da92959bf0c99257`で一致した。JPEGからの変換や撮り直しはしていない。

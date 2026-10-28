@@ -53,6 +53,7 @@ it('accepts a bounded snapshot during continuous input, then refuses older resul
   expect(frame.contentDocument!.querySelector('article')!.textContent).toBe(
     'first',
   );
+  expect(preview.renderedText).toBe('first');
   vi.advanceTimersByTime(200);
   const latest = worker.sent[1].revision;
   worker.reply(latest, '<p>latest</p>');
@@ -63,6 +64,7 @@ it('accepts a bounded snapshot during continuous input, then refuses older resul
   expect(frame.contentDocument!.querySelector('article')!.textContent).toBe(
     'latest',
   );
+  expect(preview.renderedText).toBe('still typing');
 });
 
 it('blocks external image loading by default and never gives links script URLs', async () => {
@@ -103,11 +105,12 @@ it('prints the latest unsaved text and keeps raw HTML and blocked images safe', 
   worker.reply(old, '<p>old</p>');
   worker.reply(
     latest.revision,
-    '<h1>unsaved 最新</h1><script>bad()</script><img data-winmd-src="https://tracking.invalid/x"><input type="checkbox" checked>',
+    '<h1 data-winmd-line="1">unsaved 最新</h1><script>bad()</script><img data-winmd-src="https://tracking.invalid/x"><input type="checkbox" checked>',
   );
   await pending;
   expect(target.querySelector('h1')?.textContent).toBe('unsaved 最新');
   expect(target.querySelector('script,img')).toBeNull();
+  expect(target.querySelector('[data-winmd-line]')).toBeNull();
   expect(target.textContent).toContain('ブロック中');
   expect(target.querySelector<HTMLInputElement>('input')!.disabled).toBe(true);
 });

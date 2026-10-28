@@ -9,6 +9,7 @@ import { setupSplit } from './split';
 import type { PasteTarget } from './image-paste';
 import { ExternalSync } from './external-sync';
 import { setupMenus } from './menu';
+import { editorScrollPane, ScrollSync } from './scroll-sync';
 
 const state = new DocumentState();
 const saves = new SerialTasks();
@@ -403,6 +404,31 @@ async function start(): Promise<void> {
     state.readOnly,
     onEdit,
     { persist: pasteImage, report },
+  );
+  await preview.ready;
+  const scrollSync = new ScrollSync(
+    [
+      editorScrollPane(editor.view, () => preview.sourceLines),
+      preview.scrollPane(),
+    ],
+    () => ready && !printing && preview.renderedText === state.text,
+  );
+  preview.layoutChanged = () => scrollSync.refresh(true);
+  editor.layoutChanged = () => scrollSync.refresh();
+  const resize = new ResizeObserver((entries) =>
+    scrollSync.refresh(
+      entries.some((entry) => entry.target === editor.view.scrollDOM),
+    ),
+  );
+  resize.observe(editor.view.scrollDOM);
+  resize.observe(editor.view.contentDOM);
+  window.addEventListener(
+    'unload',
+    () => {
+      resize.disconnect();
+      scrollSync.destroy();
+    },
+    { once: true },
   );
   ready = true;
   refresh();

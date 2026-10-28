@@ -1,6 +1,6 @@
 import { it, expect } from 'vitest';
 import { EditorState } from '@codemirror/state';
-import { markdownHtml } from '../src/markdown';
+import { mappedMarkdownHtml } from '../src/markdown';
 import { sanitizePreview } from '../src/preview';
 
 it('processes a reproducible 10,000-line document without truncation', () => {
@@ -15,7 +15,7 @@ it('processes a reproducible 10,000-line document without truncation', () => {
       changes: { from: state.doc.length, insert: '追' },
     }).state;
   const editTime = performance.now();
-  const html = markdownHtml(state.doc.toString());
+  const html = mappedMarkdownHtml(state.doc.toString());
   const parseTime = performance.now();
   const fragment = sanitizePreview(html);
   const sanitizeTime = performance.now();

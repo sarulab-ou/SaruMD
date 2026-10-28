@@ -5032,7 +5032,7 @@ checksum = "d6bbff5f0aada427a1e5a6da5f1f98158182f26556f345ac9e04d36d0ebed650"
 
 [[package]]
 name = "winmd"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "chrono",
  "notify",
@@ -5052,7 +5052,7 @@ dependencies = [
 
 [[package]]
 name = "winmd-core"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "base64 0.22.1",
  "percent-encoding",
