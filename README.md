@@ -2,7 +2,7 @@
 
 Windows向けのMarkdownエディタです。WinMDからSaruMDへ名前を変更しました。左でソースを編集し、右でプレビューを確認できます。1文書につき1つのウィンドウが開きます。同じファイルをもう一度開くと、既存のウィンドウへ移動します。
 
-[ダウンロード](https://github.com/sarulab-ou/SaruMD/releases) · [使い方](#使い方) · [MITライセンス](LICENSE)
+**[ダウンロード（Windows x64・インストーラー.exe）](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.12/SaruMD_0.1.12_x64-setup.exe)** · [使い方](#使い方) · [MITライセンス](LICENSE)
 
 ![Windows上のSaruMD。左に日本語のMarkdownソース、右に見出し・チェックリスト・表・コードを整形したプレビューを表示しています。](docs/screenshots/editor-ja.png)
 
