@@ -1,5 +1,11 @@
 # 検証記録（最終更新：2026-10-29）
 
+## v0.1.12公開結果
+
+実装・公開資料をコミット`387b7f03fdc3a378141c1f5591246aa1e01e1e8d`としてmasterへpushし、2026-10-29 12:33:05 JSTに[SaruMD v0.1.12](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.12)を公開した。APIで`isDraft=false`、`isPrerelease=true`、タグ対象が同コミットであることを確認した。Assetsは`SaruMD_0.1.12_x64-setup.exe`（6,312,241バイト）と`SHA256SUMS.txt`で、GitHub側digestは下記の検証済みインストーラーのSHA-256と一致する。
+
+公開URLから認証ヘッダー・Cookie・curl設定ファイルを使わずに両Assetsを再取得し、`sha256sum -c SHA256SUMS.txt`でOKを確認した。masterの公開READMEも現在の原本とバイト一致し、リリースHTMLを取得できることを確認。取得結果は`.tools/public-release-0.1.12/`へ保存した。公開直前の型検査、Vitest 12ファイル56件、ESLint、Prettier全体チェックも成功した。コード・依存・配布物はビルド後に変更していないため、既存のRust・実起動・関連付け・配布物照合の確認を引き継ぐ。v0.1.8とv0.1.11のタグ・配布物は保持した。
+
 ## v0.1.12公開準備
 
 生成済みの`SaruMD.exe`をユーザーの依頼で起動し、ProductName=SaruMD、ProductVersion=0.1.12を照合した。追加起動後も既存PID 29416の「無題」ウィンドウが存在することを確認。ユーザーから「OKです。release add commit push」と公開指示を受けた。README・開発ガイド・告知案のダウンロード先を0.1.12へ更新し、`docs/releases/v0.1.12.md`へ変更点・旧版からの切り替え・確認範囲をまとめた。以下の更新版0.1.12節の「未コミット・未公開」は、生成時点の記録として保持する。
