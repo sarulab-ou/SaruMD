@@ -268,7 +268,7 @@ pub async fn save_document(
                     "既存ファイルを上書きしますか？\n{}",
                     target.display()
                 ))
-                .title("WinMD — 上書き確認")
+                .title("SaruMD — 上書き確認")
                 .parent(&window)
                 .buttons(MessageDialogButtons::OkCancelCustom(
                     "上書き".into(),

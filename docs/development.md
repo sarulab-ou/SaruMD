@@ -47,7 +47,7 @@ cargo fmt --all -- --check
 
 関連付けを変更した場合は、Windows PowerShellから`./scripts/test-associations.ps1`も実行します。実際のNSIS書き込み行をコンパイルし、GUID付きの隔離レジストリへ書いて、コマンド・アイコンの引用符を確認します。テスト後に隔離キーを削除し、実際のUserChoiceや関連付けは変更しません。ネイティブのmakensis.exe、または今回の`.tools/nsis`のWSLコンパイラを使用します。
 
-0.1.1で誤登録された引用符だけを修復する場合は`./scripts/repair-associations.ps1 -WhatIf`で確認してから同スクリプトを実行できます。既存WinMDのexe/DLL、既知の不正値との一致を確認し、変更前の値を`.tools/association-backups/`へバックアップします。UserChoiceは変更しません。不明な値や別インストールは上書きせず停止します。通常は0.1.2以降のインストーラーを使用してください。
+0.1.1で誤登録された引用符だけを修復する場合は`./scripts/repair-associations.ps1 -WhatIf`で確認してから同スクリプトを実行できます。既存SaruMDのexe/DLL、既知の不正値との一致を確認し、変更前の値を`.tools/association-backups/`へバックアップします。UserChoiceは変更しません。不明な値や別インストールは上書きせず停止します。通常は0.1.2以降のインストーラーを使用してください。
 
 ## Windows MSVCビルド
 
@@ -58,10 +58,10 @@ pnpm desktop:build
 
 設定されたbeforeBuildCommandが型チェックとフロントエンドビルドを実行し、NSISを作成します。ワークスペースルートの標準出力先：
 
-- `target/x86_64-pc-windows-msvc/release/winmd.exe`
-- `target/x86_64-pc-windows-msvc/release/bundle/nsis/WinMD_0.1.11_x64-setup.exe`
+- `target/x86_64-pc-windows-msvc/release/SaruMD.exe`
+- `target/x86_64-pc-windows-msvc/release/bundle/nsis/SaruMD_0.1.12_x64-setup.exe`
 
-`CARGO_TARGET_DIR`で出力先を変更できます。今回生成したGNU試用版は`target/verified/x86_64-pc-windows-gnu/release/`にあります。公開用の[v0.1.11リリース](https://github.com/sarulab-ou/winmd/releases/tag/v0.1.11)からインストーラーとSHA-256チェックサムを取得できます。
+`CARGO_TARGET_DIR`で出力先を変更できます。今回生成したGNU試用版は`target/verified/x86_64-pc-windows-gnu/release/`にあります。公開用の[v0.1.12リリース](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.12)からインストーラーとSHA-256チェックサムを取得できます。
 
 MSVC版は今回未生成です。Tauriが公式にサポートするWindowsターゲットはMSVCです。[公式Windowsビルド資料](https://v2.tauri.app/distribute/windows-installer/)
 
@@ -85,7 +85,7 @@ pnpm licenses
 
 `scripts/licenses.mjs`はインストール済みnpm依存、Cargoメタデータ、`docs/licenses/`の補足通知を統合します。現在の通知はGNU対象と開発依存も含みます。MSVCで再配布する前には対象を合わせて再生成してください。[補足通知の出典](licenses/README.md)
 
-WinMD自身のライセンスは[MIT](../LICENSE)です。依存ライブラリのライセンスはそれぞれ維持します。
+SaruMD自身のライセンスは[MIT](../LICENSE)です。依存ライブラリのライセンスはそれぞれ維持します。
 
 ## 設計と制限
 

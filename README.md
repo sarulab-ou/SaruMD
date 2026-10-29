@@ -1,12 +1,12 @@
-# WinMD
+# SaruMD
 
-Windows向けのMarkdownエディタです。左でソースを編集し、右でプレビューを確認できます。1文書につき1つのウィンドウが開きます。
+Windows向けのMarkdownエディタです。WinMDからSaruMDへ名前を変更しました。左でソースを編集し、右でプレビューを確認できます。1文書につき1つのウィンドウが開きます。同じファイルをもう一度開くと、既存のウィンドウへ移動します。
 
-[ダウンロード](https://github.com/sarulab-ou/winmd/releases) · [使い方](#使い方) · [MITライセンス](LICENSE)
+[ダウンロード](https://github.com/sarulab-ou/SaruMD/releases) · [使い方](#使い方) · [MITライセンス](LICENSE)
 
-![Windows上のWinMD。左に日本語のMarkdownソース、右に見出し・チェックリスト・表・コードを整形したプレビューを表示しています。](docs/screenshots/editor-ja.png)
+![Windows上のSaruMD。左に日本語のMarkdownソース、右に見出し・チェックリスト・表・コードを整形したプレビューを表示しています。](docs/screenshots/editor-ja.png)
 
-_WinMD v0.1.8の実画面。[サンプル文書](docs/examples/notes.ja.md)を表示しています。_
+_旧称WinMD v0.1.8の実画面。[サンプル文書](docs/examples/notes.ja.md)を表示しています。_
 
 ## できること
 
@@ -15,22 +15,24 @@ _WinMD v0.1.8の実画面。[サンプル文書](docs/examples/notes.ja.md)を�
 - **プレビューから移動。** 右側の本文をクリックすると、左側の対応する位置へカーソルが移動します。文字位置を確定できない書式では、対応するブロックの先頭へ移動します。リンクを開く操作と文字の範囲選択は維持します。
 - **TeX数式。** `$...$`で文中の数式、`$$...$$`で独立した数式を表示します。PDF出力・印刷にも対応します。[数式のサンプル](docs/examples/math.md)で試せます。
 - **Ctrl+Vで画像を貼り付け。** 文書と同じフォルダーに`YYYYMMDD_HHMMSS.png`形式で保存し、画像リンクを挿入します。
-- **ほかのエディタと一緒に使える。** Codexなどが外部で更新すると、未保存の編集がない場合は自動反映します。WinMDでも編集中なら、編集を保持して競合を通知します。
+- **ほかのエディタと一緒に使える。** Codexなどが外部で更新すると、未保存の編集がない場合は自動反映します。SaruMDでも編集中なら、編集を保持して競合を通知します。
 - **PDFにエクスポート・印刷。** 未保存の編集も含め、プレビューの本文を出力できます。
 - **1文書、1ウィンドウ。** 文書を好きな位置に並べて使えます。タブはありません。
 - **慣れたショートカットで操作。** 検索・置換・保存に加え、F5で現在の日時を挿入できます。
 
 ## ダウンロード・インストール
 
-**[WinMD v0.1.11 Windows x64インストーラーをダウンロード](https://github.com/sarulab-ou/winmd/releases/download/v0.1.11/WinMD_0.1.11_x64-setup.exe)**
+**[SaruMD v0.1.12 Windows x64インストーラーをダウンロード](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.12/SaruMD_0.1.12_x64-setup.exe)**
 
-WinMD v0.1.11をプレリリース（試用版）として公開しています。[リリースノート](https://github.com/sarulab-ou/winmd/releases/tag/v0.1.11) · [SHA-256チェックサム](https://github.com/sarulab-ou/winmd/releases/download/v0.1.11/SHA256SUMS.txt) · [ソースからのビルド](docs/development.md)
+SaruMD v0.1.12をプレリリース（試用版）として公開しています。[リリースノート](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.12) · [SHA-256チェックサム](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.12/SHA256SUMS.txt) · [ソースからのビルド](docs/development.md)
 
-1. `WinMD_0.1.11_x64-setup.exe`をダウンロードし、**Windows 11 x64**で実行します。
+1. `SaruMD_0.1.12_x64-setup.exe`をダウンロードし、**Windows 11 x64**で実行します。
 2. WebView2 Runtimeがない場合は、インストーラーがダウンロードします。この場合はインターネット接続が必要です。
-3. `.md`をダブルクリックで開きたい場合は、Windowsの既定アプリ設定でWinMDを選択します。インストーラーから設定画面を開けます。
+3. `.md`をダブルクリックで開きたい場合は、Windowsの既定アプリ設定でSaruMDを選択します。インストーラーから設定画面を開けます。
 
-現在のv0.1.11は、GNUツールでクロスビルドした署名なしの試用版です。インストール・実GUI全体の受入確認は未完了です。[検証記録](docs/verification.md)を参照してください。
+配布用ビルドはGNUツールでクロスビルドした署名なしの試用版です。インストール・実GUI全体の受入確認は未完了です。[検証記録](docs/verification.md)を参照してください。
+
+旧版WinMDから切り替える場合は、編集中の文書を保存してWinMDを終了してください。SaruMDをインストールした後、必要に応じて`.md`の既定アプリをSaruMDへ選び直します。旧版はWindowsの設定から別途アンインストールできます。
 
 ## 使い方
 
@@ -92,9 +94,9 @@ F5はPCのローカル時刻を使い、`2026/01/27 08:38:02`のように`yyyy/m
 
 ## Codexから開く
 
-Windowsで`.md`をWinMDに関連付けると、Codexの「アプリで開く」→ **Default app**からMarkdownをWinMDで開けます。
+Windowsで`.md`をSaruMDに関連付けると、Codexの「アプリで開く」→ **Default app**からMarkdownをSaruMDで開けます。
 
-メニューに**WinMD**という項目を追加したい場合は、ユーザー設定の`~/.codex/config.toml`にカスタムハンドラーを登録し、Codexを再起動します。これは任意の設定で、全ファイルの優先エディタを変更する必要はありません。[公式の登録手順](https://learn.chatgpt.com/docs/config-file/config-advanced#add-custom-file-handlers)を参照してください。
+メニューに**SaruMD**という項目を追加したい場合は、ユーザー設定の`~/.codex/config.toml`にカスタムハンドラーを登録し、Codexを再起動します。これは任意の設定で、全ファイルの優先エディタを変更する必要はありません。[公式の登録手順](https://learn.chatgpt.com/docs/config-file/config-advanced#add-custom-file-handlers)を参照してください。
 
 ## 開発
 

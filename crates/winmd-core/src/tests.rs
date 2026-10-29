@@ -60,6 +60,15 @@ fn independent_documents_and_same_file_focus_identity() {
     assert_ne!(aid, bid);
     assert_eq!(docs.open(&a).unwrap(), (aid.clone(), false));
     docs.edit(&aid, "A2".into(), 1).unwrap();
+    // A repeated launch must return ownership without reloading dirty text from disk.
+    assert_eq!(docs.open(&a).unwrap(), (aid.clone(), false));
+    assert_eq!(docs.docs.len(), 2);
+    assert_eq!(docs.get(&aid).unwrap().snapshot.text, "A2");
+    assert_eq!(docs.get(&aid).unwrap().snapshot.saved_text, "A");
+    let alias_before_save = dir.path().join("same file alias.md");
+    fs::hard_link(&a, &alias_before_save).unwrap();
+    assert_eq!(docs.open(&alias_before_save).unwrap(), (aid.clone(), false));
+    assert_eq!(docs.get(&aid).unwrap().snapshot.text, "A2");
     let baseline = docs.get(&aid).unwrap().baseline.clone().unwrap();
     docs.save(&aid, &a, Some(&baseline), "A2", 1, &NoFault)
         .unwrap();

@@ -1,6 +1,6 @@
 {
-  "name": "winmd",
-  "version": "0.1.11",
+  "name": "sarumd",
+  "version": "0.1.12",
   "private": true,
   "type": "module",
   "license": "MIT",

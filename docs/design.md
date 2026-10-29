@@ -1,5 +1,13 @@
 # 設計判断
 
+## SaruMDへの名称変更
+
+0.1.12から製品名と配布実行ファイルをSaruMDに変更した。実行ファイルは`SaruMD.exe`、インストーラーは`SaruMD_0.1.12_x64-setup.exe`。GitHubリポジトリは`https://github.com/sarulab-ou/SaruMD`。
+
+アプリ識別子`jp.winmd.editor`は継続し、single-instanceの同じキューとWebView2データを利用する。内部のRustパッケージ名・`crates/winmd-core/`・プレビューのDOM属性名も互換性のため維持する。旧版を起動したまま新exeを開くと旧プロセスへ要求が転送されるため、切り替え前に旧版を保存・終了する。関連付けはSaruMD専用のProgID/Capabilitiesで登録し、旧WinMDの登録・WindowsのUserChoiceを自動変更しない。
+
+同一ファイルはファイルIDで既存文書へ解決し、既存ウィンドウをshow→unminimize→set_focusする。元の未保存テキストを再読込せず、別ウィンドウも作らない。
+
 ## 文書とウィンドウ
 
 Tauri 2の1バックエンドが `Documents` を管理し、`doc-N` ごとに独立したWebviewWindowを生成する。タブや共有プレビューは作らない。各WebViewのCodeMirror、Undo、DocumentState、保存キュー、Worker、外部画像の許可状態は独立している。未編集の空ウィンドウも再利用せず、例外処理を減らした。

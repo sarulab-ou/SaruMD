@@ -1,6 +1,6 @@
 # Write. Preview. Keep going.
 
-Turn everyday notes into Markdown with **WinMD**.
+Turn everyday notes into Markdown with **SaruMD**.
 Edit on the left. See the result on the right.
 
 ## Today's notes

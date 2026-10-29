@@ -1,4 +1,24 @@
-# 検証記録（最終更新：2026-10-28）
+# 検証記録（最終更新：2026-10-29）
+
+## v0.1.12公開準備
+
+生成済みの`SaruMD.exe`をユーザーの依頼で起動し、ProductName=SaruMD、ProductVersion=0.1.12を照合した。追加起動後も既存PID 29416の「無題」ウィンドウが存在することを確認。ユーザーから「OKです。release add commit push」と公開指示を受けた。README・開発ガイド・告知案のダウンロード先を0.1.12へ更新し、`docs/releases/v0.1.12.md`へ変更点・旧版からの切り替え・確認範囲をまとめた。以下の更新版0.1.12節の「未コミット・未公開」は、生成時点の記録として保持する。
+
+## 更新版0.1.12：SaruMDへの名称変更と同一文書の再オープン
+
+製品名・Windows実行ファイルをSaruMD / `SaruMD.exe`へ変更し、NSIS・関連付け・エラー表示・README・開発ガイド・告知案・サンプル・ライセンス通知の現在名を揃えた。既存のタグ、公開済みWinMDの配布物、過去の検証記録と提供PNGは保持した。アプリ識別子`jp.winmd.editor`、内部Rustパッケージ、DOM属性名は互換性のため維持する。旧版WinMDからの切り替え手順をREADMEへ記載し、SaruMDのProgID/Capabilitiesを専用に登録する。旧WinMDの登録とUserChoiceは自動変更しない。
+
+既存文書を開く場合は、元のDocumentsの所有判定を使い、show→unminimize→set_focusで既存ウィンドウを表示・復元する。既存ウィンドウが消失した場合も無言で成功させずエラーにする。Rustの既存回帰試験へ、再オープン/hard linkが文書数・未保存テキスト・保存済みテキストを変えない検証を追加した。
+
+型検査、Vitest 12ファイル56件、ESLint、Prettier全体チェック、Vite buildが成功。RustはLinux14件・Windows15件、Windows desktop/Linux coreのall-targets clippy（-D warnings）、fmt check、metadataが成功（`.tools/validate-0.1.12.log`）。502パッケージのライセンス通知を再生成。`scripts/test-associations.ps1`で実NSIS行を隔離HKCUへコンパイル・実行し、空白/日本語パスの6つのcommand/icon値とUserChoice不変を確認した。
+
+Windows x64 GNUリリースとNSIS生成が成功（`.tools/final-build-0.1.12.log`）。初回は前日に失敗したサンドボックス試験プロセス（エラー通知のみ）がWebView2Loader.dllを保持していたためPermission deniedとなった。その試験プロセスだけを終了して再実行し、`Finished 1 bundle`を確認した。製品exeのProductNameはSaruMD、FileVersion/ProductVersionは0.1.12。7-Zipの`t`と隔離展開が成功し、`SaruMD.exe`はNSIS標準識別マーカーNSS/UNKだけを正規化してビルドexeと一致。現行UIの3アセット、WebView2Loader.dll、LICENSE、第三者通知を照合した。梱包に旧`winmd.exe`はない。既存のチャンクサイズ・GNUクロスビルド・署名なし警告は継続。
+
+成果物：`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/SaruMD_0.1.12_x64-setup.exe`、6,312,241バイト、SHA-256 `477e20517854af1ef92f56297dbda10cb7a6d8b8018ee908bd18476ccb080404`。
+
+実Windowsデスクトップで試験用の日本語/空白パスを起動した。同じ相対パスの追加起動は終了コード0で既存プロセス・同じウィンドウID 529750を保持した。hard linkの最初の試行は追加プロセスが15秒以内に終了せず、その時点で元プロセスも消失していたため合格に含めない。その後、起動中のPID 29416を開始前後で照合して元パスを再度開く試験を行い、追加プロセスは終了コード0、PID 29416とhard link文書のウィンドウID 2893484が変わらず、1プロセス・1ウィンドウを確認した。画面取得は`Computer Use was not approved to use sarumd`で拒否されたため、最小化/非表示からの復元とOSの前面フォーカスのGUI受入は未実施。試験文書だけを開いたままとし、ユーザーの実文書を変更していない。
+
+ユーザーの依頼によりGitHubリポジトリを`https://github.com/sarulab-ou/SaruMD`へ改名し、originも同URLの.gitへ更新した。APIで名前とPUBLICを確認し、認証なしで新URLを取得、旧`/winmd` URLが新URLへ転送されること、v0.1.11の公開リリースが維持されることも確認した。ローカルの作業フォルダー名は維持。コードのcommit/push、0.1.12のReleases公開、実インストール/アンインストールは実行していない。
 
 ## v0.1.11公開結果
 

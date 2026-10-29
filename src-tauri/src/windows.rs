@@ -49,7 +49,7 @@ fn create_window(app: &AppHandle, id: &str) -> Result<()> {
 pub fn show_error(app: &AppHandle, error: &str) {
     app.dialog()
         .message(error)
-        .title("WinMD — エラー")
+        .title("SaruMD — エラー")
         .show(|_| {});
 }
 
@@ -70,8 +70,12 @@ pub fn open_path(app: &AppHandle, path: &Path) -> Result<()> {
             return Err(error);
         }
     } else if let Some(window) = app.get_webview_window(&id) {
+        // Reopening owns no new document: restore the existing window before focusing it.
+        window.show().map_err(|e| e.to_string())?;
         window.unminimize().map_err(|e| e.to_string())?;
         window.set_focus().map_err(|e| e.to_string())?;
+    } else {
+        return Err("開いている文書のウィンドウが見つかりません。".into());
     }
     Ok(())
 }

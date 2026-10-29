@@ -4,7 +4,11 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
-default-run = "winmd"
+default-run = "SaruMD"
+
+[[bin]]
+name = "SaruMD"
+path = "src/main.rs"
 
 [lib]
 name = "winmd_desktop"

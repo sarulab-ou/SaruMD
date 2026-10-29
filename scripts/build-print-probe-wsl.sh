@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# GNU/WSL probe needs the Common Controls v6 manifest that tauri-build embeds in winmd.exe.
+# GNU/WSL probe needs the Common Controls v6 manifest that tauri-build embeds in SaruMD.exe.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 export CI=true

@@ -4,12 +4,12 @@ param()
 $ErrorActionPreference = 'Stop'
 $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $testId = [Guid]::NewGuid().ToString('N')
-$prefix = 'Software\WinMD\InstallerTests\' + $testId
+$prefix = 'Software\SaruMD\InstallerTests\' + $testId
 $testDir = Join-Path $repoRoot ('.tools/association-probe-' + $testId)
 New-Item -ItemType Directory -Path $testDir | Out-Null
 $probeExe = Join-Path $testDir 'probe.exe'
 $probeSource = Join-Path $testDir 'probe.nsi'
-$fakeInstall = Join-Path ([IO.Path]::GetTempPath()) 'WinMD association (日本語)'
+$fakeInstall = Join-Path ([IO.Path]::GetTempPath()) 'SaruMD association (日本語)'
 
 function ConvertTo-WslPath([string]$value) {
     if ($value -notmatch '^([A-Za-z]):[\\/](.*)$') { throw 'A drive-qualified Windows path is required.' }
@@ -53,15 +53,15 @@ try {
     $process = Start-Process -FilePath $probeExe -ArgumentList '/S' -WindowStyle Hidden -Wait -PassThru
     if ($process.ExitCode -ne 0) { throw ('Association probe failed: ' + $process.ExitCode) }
 
-    $expectedCommand = '"' + (Join-Path $fakeInstall 'winmd.exe') + '" "%1"'
-    $expectedIcon = '"' + (Join-Path $fakeInstall 'winmd.exe') + '",0'
+    $expectedCommand = '"' + (Join-Path $fakeInstall 'SaruMD.exe') + '" "%1"'
+    $expectedIcon = '"' + (Join-Path $fakeInstall 'SaruMD.exe') + '",0'
     $checks = @(
-        @('Software\Classes\WinMD.md\shell\open\command', '', $expectedCommand),
-        @('Software\Classes\WinMD.markdown\shell\open\command', '', $expectedCommand),
-        @('Software\Classes\Applications\winmd.exe\shell\open\command', '', $expectedCommand),
-        @('Software\Classes\WinMD.md\DefaultIcon', '', $expectedIcon),
-        @('Software\Classes\WinMD.markdown\DefaultIcon', '', $expectedIcon),
-        @('Software\WinMD\Capabilities', 'ApplicationIcon', $expectedIcon)
+        @('Software\Classes\SaruMD.md\shell\open\command', '', $expectedCommand),
+        @('Software\Classes\SaruMD.markdown\shell\open\command', '', $expectedCommand),
+        @('Software\Classes\Applications\SaruMD.exe\shell\open\command', '', $expectedCommand),
+        @('Software\Classes\SaruMD.md\DefaultIcon', '', $expectedIcon),
+        @('Software\Classes\SaruMD.markdown\DefaultIcon', '', $expectedIcon),
+        @('Software\SaruMD\Capabilities', 'ApplicationIcon', $expectedIcon)
     )
     foreach ($check in $checks) {
         $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($prefix + '\' + $check[0])
@@ -75,6 +75,6 @@ try {
     Write-Output ('PASS: ' + $checks.Count + ' compiled NSIS association values; spaces/Japanese path; UserChoice unchanged.')
 } finally {
     # Remove only this run's GUID namespace, never real file associations.
-    $parent = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\WinMD\InstallerTests', $true)
+    $parent = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\SaruMD\InstallerTests', $true)
     if ($parent) { try { $parent.DeleteSubKeyTree($testId, $false) } finally { $parent.Dispose() } }
 }

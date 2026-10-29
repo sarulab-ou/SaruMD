@@ -68,5 +68,5 @@ pub fn run() {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("WinMD could not start");
+        .expect("SaruMD could not start");
 }
