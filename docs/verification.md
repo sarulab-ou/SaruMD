@@ -1,5 +1,11 @@
 # 検証記録（最終更新：2026-10-31）
 
+## v0.1.13公開結果
+
+アドレスバー・Alt+Dと公開資料をコミット`62b6d0fe8e3a6be238e80356203037476602eec2`としてmasterへpushし、2026-10-31 16:40:19 JSTに[SaruMD v0.1.13](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.13)を公開した。APIで`isDraft=false`、`isPrerelease=true`、タグ対象が同コミットであることを確認。Assetsの`SaruMD_0.1.13_x64-setup.exe`は6,312,347バイトで、GitHub側digestも以下のAlt+D対応版のSHA-256と一致した。`SHA256SUMS.txt`も添付した。
+
+公開URLから認証ヘッダー・Cookie・curl設定ファイルを使わずに両Assetsを取得し、`sha256sum -c SHA256SUMS.txt`でOKを確認した。公開READMEは現在の原本とバイト一致し、リリースHTMLにも冒頭のインストーラー直接リンクを確認した。取得結果は`.tools/public-release-0.1.13/`へ保存した。公開直前の型検査、Vitest 12ファイル56件、ESLint、Prettier全体チェックも成功。ビルド後にコード・依存・配布物は変更していないため、既存のRust・DOM・実起動・配布物照合の記録を引き継ぐ。旧リリースのタグ・配布物は保持した。
+
 ## v0.1.13公開準備
 
 ユーザーの依頼でAlt+D対応のビルド済みexeを実デスクトップへ起動し、ProductName=SaruMD、ProductVersion=0.1.13、PID 11348の「無題」ウィンドウを確認した。その後「Release add commit push」の指示を受け、README・開発ガイド・告知案を公開用の0.1.13へ更新した。README冒頭とリリースノート冒頭にはインストーラーへの直接リンクを掲載する。以下の「未コミット・未公開」は各ビルドの作成時点の履歴である。
