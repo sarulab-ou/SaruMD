@@ -98,6 +98,21 @@
           </div>
         </div>
       </header>
+      <div class="address-bar">
+        <label for="document-path">アドレス</label>
+        <input
+          id="document-path"
+          type="text"
+          aria-label="編集中のファイルのフルパス"
+          aria-keyshortcuts="Alt+d"
+          title="Alt+Dでパスを全選択"
+          placeholder="未保存の文書"
+          readonly
+          spellcheck="false"
+          autocomplete="off"
+          dir="ltr"
+        />
+      </div>
       <div id="notice" role="status" hidden>
         <span></span><button id="reload">再読み込み…</button>
       </div>

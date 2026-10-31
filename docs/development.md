@@ -59,9 +59,9 @@ pnpm desktop:build
 設定されたbeforeBuildCommandが型チェックとフロントエンドビルドを実行し、NSISを作成します。ワークスペースルートの標準出力先：
 
 - `target/x86_64-pc-windows-msvc/release/SaruMD.exe`
-- `target/x86_64-pc-windows-msvc/release/bundle/nsis/SaruMD_0.1.12_x64-setup.exe`
+- `target/x86_64-pc-windows-msvc/release/bundle/nsis/SaruMD_0.1.13_x64-setup.exe`
 
-`CARGO_TARGET_DIR`で出力先を変更できます。今回生成したGNU試用版は`target/verified/x86_64-pc-windows-gnu/release/`にあります。公開用の[v0.1.12リリース](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.12)からインストーラーとSHA-256チェックサムを取得できます。
+`CARGO_TARGET_DIR`で出力先を変更できます。今回生成したGNU試用版は`target/verified/x86_64-pc-windows-gnu/release/`にあります。公開用の[v0.1.13リリース](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.13)からインストーラーとSHA-256チェックサムを取得できます。
 
 MSVC版は今回未生成です。Tauriが公式にサポートするWindowsターゲットはMSVCです。[公式Windowsビルド資料](https://v2.tauri.app/distribute/windows-installer/)
 

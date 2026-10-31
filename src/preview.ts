@@ -171,7 +171,10 @@ export class Preview {
                 ['n', 'o', 's', 'w', 'p', 'f', 'h', 'z', 'x', 'v'].includes(
                   key,
                 )) ||
-              (event.altKey && !event.ctrlKey && ['f', 'e'].includes(key)) ||
+              (event.altKey &&
+                !event.ctrlKey &&
+                !event.metaKey &&
+                ['f', 'e', 'd'].includes(key)) ||
               (!event.ctrlKey &&
                 !event.altKey &&
                 ['F3', 'F5'].includes(event.key))

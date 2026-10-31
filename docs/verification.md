@@ -1,4 +1,30 @@
-# 検証記録（最終更新：2026-10-29）
+# 検証記録（最終更新：2026-10-31）
+
+## v0.1.13公開準備
+
+ユーザーの依頼でAlt+D対応のビルド済みexeを実デスクトップへ起動し、ProductName=SaruMD、ProductVersion=0.1.13、PID 11348の「無題」ウィンドウを確認した。その後「Release add commit push」の指示を受け、README・開発ガイド・告知案を公開用の0.1.13へ更新した。README冒頭とリリースノート冒頭にはインストーラーへの直接リンクを掲載する。以下の「未コミット・未公開」は各ビルドの作成時点の履歴である。
+
+## 0.1.13の追記：Alt+Dでアドレスバーへ移動・全選択
+
+Alt+Dでメニューを閉じ、アドレス欄にフォーカスして表示中のパスを全選択する処理を追加した。プレビューiframeからも既存のキー転送により動作する。空欄の新規文書、IME変換中・確認ダイアログ・排他的処理の保護を維持し、Ctrl/Shift/Metaを伴う組み合わせは対象にしない。inputのaria-keyshortcutsとツールチップ、READMEのショートカット表、手動受入手順も更新した。
+
+型検査、Vitest 12ファイル56件、ESLint、Prettier全体チェック、Vite buildが成功。RustのLinux14件・Windows15件、clippy（Windows desktop/Linux core、all-targets、-D warnings）、fmt checkも成功（`.tools/validate-address-shortcut-0.1.13.log`）。追加のDOM確認では現在のmain.tsのkeydownコールバック、menu.ts、preview.tsのiframeキー転送を読み込んで実行し、通常文書・iframe・開いたメニューの3経路でinputがactiveElementとなり、selectionStart=0、selectionEnd=パス長となることを確認した。余分な修飾キー・IME・モーダルでは移動せず、空パスと大文字Dでも安全に選択できた。結果は`.tools/address-shortcut-probe-result.json`。これはjsdomと状態の代替値による確認であり、Windows/WebView2での実AltキーやクリップボードのGUI受入は未実施。
+
+同じ未公開バージョン0.1.13を再ビルドし、`.tools/final-build-address-shortcut-0.1.13.log`でNSIS生成の成功を確認した。7-Zipの`t`・隔離展開が成功し、NSIS標準マーカーだけを正規化したexe、WebView2Loader.dll・LICENSE・第三者通知がビルド原本と一致した。現行3アセット（`index-CzDAZlA5.css`、`index-DmSTWvYf.js`、`preview-worker-BjJGxgIi.js`）の同梱も確認した。
+
+最新成果物：`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/SaruMD_0.1.13_x64-setup.exe`、6,312,347バイト、SHA-256 `28756cae7fa8a13851b5f84994aee756d3cbdff4d8395d9c72091235e94f7d56`。以下の初回0.1.13のハッシュはAlt+D追加前の履歴であり、再生成した現在の配布物には適用しない。実インストール、commit/push、GitHub Releases更新は行っていない。
+
+## 更新版0.1.13：編集中ファイルのアドレスバー
+
+メニューの下へ、現在のフルパスを選択・コピーできる読み取り専用inputを追加した。新規文書は空欄と「未保存の文書」のplaceholderを表示する。DocumentStateのpathをrefresh時に同期するため、初期読み込み・新規保存・名前を付けて保存の成功後は現在のパスが反映され、キャンセル/失敗では元のパスを維持する。表示用に`\\?\`を除去し、UNCも通常の`\\server\share`表記に整える。実際のI/O用のパス、文書内容、保存方法と権限は変更しない。
+
+同じパスではinputのvalueを再設定しないため、本文の編集時にパスの選択・横スクロールをリセットしない。長いパス用にinputと親要素のmin-widthを0にして、ペインを画面外へ押し出さないようにした。印刷では既存の`#app`非表示規則が適用され、本文だけを出力する。受入手順をmanual-tests.mdへ追加した。
+
+型検査、Vitest 12ファイル56件、ESLint、Prettier全体チェック、Vite buildが成功。RustのLinux14件・Windows15件、Windows desktop/Linux coreのall-targets clippy（-D warnings）、fmt check、metadataも成功（`.tools/validate-0.1.13.log`）。既存の大きなJSチャンク警告は継続。Tauri実ウィンドウでのアドレス欄の選択・コピー、保存ダイアログ経由の更新、UNC実共有のGUI受入は今回未実施であり、成功済みとは扱わない。
+
+Windows x64 GNUリリースとNSIS生成が成功し、`.tools/final-build-0.1.13.log`で`Finished 1 bundle`を確認した。7-Zipの`t`と隔離展開が成功。梱包exeはNSIS標準識別マーカーNSS/UNKだけを正規化してビルドexeと一致し、WebView2Loader.dll・LICENSE・第三者通知も一致した。exe内に現在の3アセット（`index-CzDAZlA5.css`、`index-DXzBj5b1.js`、`preview-worker-BjJGxgIi.js`）を確認し、ProductName=SaruMD、ProductVersion=0.1.13を照合した。署名なし・クロスビルドの既存警告は継続。
+
+成果物：`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/SaruMD_0.1.13_x64-setup.exe`、6,312,123バイト、SHA-256 `64f6e834c4e22ccb326884f2991ab7e0fde9582297c32796da44fc45fe3d9b07`。インストール・commit/push・GitHub Releasesの更新は実行していない。公開済み0.1.12へのREADMEダウンロードリンクは維持した。
 
 ## v0.1.12公開結果
 

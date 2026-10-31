@@ -19,6 +19,8 @@ document.head.append(mathStyle);
 const saves = new SerialTasks();
 const operations = new SerialTasks();
 const status = document.querySelector<HTMLElement>('#status')!;
+const documentPath =
+  document.querySelector<HTMLInputElement>('#document-path')!;
 let editor: MarkdownEditor;
 let ready = false;
 let saving = false;
@@ -106,6 +108,15 @@ const externalSync = new ExternalSync(
 );
 
 function refresh(): void {
+  const path = (state.path ?? '')
+    .replace(/^\\\\\?\\UNC\\/i, '\\\\')
+    .replace(/^\\\\\?\\/, '');
+  // Editing refreshes often; preserve the user's path selection/scroll unless it changes.
+  if (documentPath.value !== path) {
+    documentPath.value = path;
+    documentPath.title = `${path}\nAlt+Dでパスを全選択`;
+    documentPath.scrollLeft = 0;
+  }
   document.querySelector('#format')!.textContent =
     `UTF-8${state.format.bom ? ' BOM' : ''} · ${state.format.lineEnding === 'Mixed' ? '改行混在・読み取り専用' : state.format.lineEnding}`;
   if (!status.classList.contains('error'))
@@ -336,6 +347,19 @@ document.addEventListener(
     )
       return;
     const key = event.key.toLowerCase();
+    if (
+      event.altKey &&
+      !event.ctrlKey &&
+      !event.shiftKey &&
+      !event.metaKey &&
+      key === 'd'
+    ) {
+      event.preventDefault();
+      menus.close();
+      documentPath.focus();
+      documentPath.select();
+      return;
+    }
     let editAction: string | undefined;
     if (!event.altKey && !event.ctrlKey) {
       if (event.key === 'F5' && !event.shiftKey) editAction = 'timestamp';
