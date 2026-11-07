@@ -12,6 +12,7 @@ import { ExternalSync } from './external-sync';
 import { setupMenus } from './menu';
 import { editorScrollPane, ScrollSync } from './scroll-sync';
 import { mathStyles } from './math-preview';
+import { setupLinkStatus } from './links';
 
 const state = new DocumentState();
 const mathStyle = document.createElement('style');
@@ -20,6 +21,10 @@ document.head.append(mathStyle);
 const saves = new SerialTasks();
 const operations = new SerialTasks();
 const status = document.querySelector<HTMLElement>('#status')!;
+const showLinkTarget = setupLinkStatus(
+  status,
+  document.querySelector<HTMLElement>('#link-target')!,
+);
 const documentPath =
   document.querySelector<HTMLInputElement>('#document-path')!;
 let editor: MarkdownEditor;
@@ -76,6 +81,7 @@ const preview = new Preview(
   bridge.image,
   bridge.link,
   report,
+  showLinkTarget,
 );
 const canAutoReload = () =>
   ready &&
@@ -447,7 +453,7 @@ async function start(): Promise<void> {
     state.readOnly,
     onEdit,
     { persist: pasteImage, report },
-    { open: bridge.link, report },
+    { open: bridge.link, report, hover: showLinkTarget },
   );
   await preview.ready;
   const scrollSync = new ScrollSync(

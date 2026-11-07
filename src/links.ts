@@ -37,6 +37,23 @@ export function safeLinkReference(raw: string): string | null {
   return reference;
 }
 
+/** A temporary footer overlay: preserve the latest save/error message underneath. */
+export function setupLinkStatus(status: HTMLElement, target: HTMLElement) {
+  let current: string | null | undefined;
+  const show = (reference: string | null) => {
+    const value = reference === null ? null : safeLinkReference(reference);
+    if (value === current) return;
+    current = value;
+    target.textContent = value ?? '';
+    target.title = value ?? '';
+    target.hidden = value === null;
+    status.hidden = value !== null;
+  };
+  show(null);
+  status.ownerDocument.defaultView?.addEventListener('blur', () => show(null));
+  return show;
+}
+
 export const httpLinkPattern = /(?:https?:\/\/|www\.)[^\s<>"'`\\]+/gi;
 
 /** Match visible URL text without swallowing Markdown delimiters or sentence punctuation. */

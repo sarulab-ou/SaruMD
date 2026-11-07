@@ -110,6 +110,40 @@ try {
     });
     await delay(150);
   };
+  const hoverChecks = [];
+  for (const pane of ['source', 'preview']) {
+    for (const reference of [
+      pane === 'source'
+        ? 'https://example.com/source'
+        : 'https://example.org/preview',
+      'latest-continuation.md',
+      'summary.json',
+    ]) {
+      await call('Input.dispatchMouseEvent', {
+        type: 'mouseMoved',
+        ...(await point(pane, reference)),
+      });
+      const hovered = await evaluate('window.linksProbe.result()');
+      assert.equal(hovered.footer.target, reference);
+      assert.equal(hovered.footer.title, reference);
+      assert.equal(hovered.footer.targetHidden, false);
+      assert.equal(hovered.footer.statusHidden, true);
+      assert.equal(hovered.opens.length, 0);
+      await evaluate('window.linksProbe.status("最新の保存状態")');
+      await call('Input.dispatchMouseEvent', {
+        type: 'mouseMoved',
+        x: 10,
+        y: 10,
+      });
+      const cleared = await evaluate('window.linksProbe.result()');
+      assert.equal(cleared.footer.targetHidden, true);
+      assert.equal(cleared.footer.target, '');
+      assert.equal(cleared.footer.statusHidden, false);
+      assert.equal(cleared.footer.status, '最新の保存状態');
+      hoverChecks.push({ pane, reference, cleared: true });
+    }
+  }
+  await evaluate('window.linksProbe.status("保存済み")');
   await evaluate('window.linksProbe.synthetic()');
   assert.equal((await evaluate('window.linksProbe.result()')).opens.length, 0);
   await click('source', 'source');
@@ -171,6 +205,7 @@ try {
   const report = {
     status: 'PASS',
     trustedClicks: result.opens,
+    hoverChecks,
     syntheticIgnored: true,
     dragSelectionPreserved: true,
     readonlySource: true,

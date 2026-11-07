@@ -160,6 +160,7 @@ iframe {
 }
 footer {
   height: 30px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -168,6 +169,20 @@ footer {
   background: #fafbfd;
   font-size: 11px;
   color: #788397;
+  gap: 12px;
+}
+#status,
+#link-target {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#link-target {
+  color: #265fd6;
+}
+#format {
+  flex-shrink: 0;
 }
 #status.error {
   color: #b42d30;

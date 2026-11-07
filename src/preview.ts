@@ -118,13 +118,32 @@ export class Preview {
     private readonly image: (reference: string) => Promise<string>,
     private readonly link: (url: string) => Promise<void>,
     private readonly report: (message: string) => void,
+    private readonly hover?: (reference: string | null) => void,
   ) {
+    frame.addEventListener('mouseleave', () => this.hover?.(null));
     this.ready = new Promise((resolve) => {
       frame.addEventListener(
         'load',
         () => {
           const doc = frame.contentDocument!;
           this.body = doc.querySelector('article')!;
+          doc.addEventListener('mousemove', (event) => {
+            const node = event.target as Node | null;
+            const element =
+              node?.nodeType === 1 ? (node as Element) : node?.parentElement;
+            const anchor = element?.closest('a');
+            this.hover?.(
+              anchor && this.body.contains(anchor)
+                ? safeLinkReference(
+                    anchor.getAttribute('data-winmd-link') ??
+                      anchor.getAttribute('href') ??
+                      '',
+                  )
+                : null,
+            );
+          });
+          doc.addEventListener('mouseleave', () => this.hover?.(null));
+          doc.addEventListener('scroll', () => this.hover?.(null), true);
           if (typeof ResizeObserver !== 'undefined') {
             const observer = new ResizeObserver(() => this.layoutChanged?.());
             observer.observe(this.body);
@@ -335,6 +354,7 @@ export class Preview {
     const images = [...fragment.querySelectorAll('img')];
     // Insert the sanitized fragment without src first. All later changes use DOM properties.
     const scroll = this.frame.contentWindow!.scrollY;
+    this.hover?.(null);
     this.body.replaceChildren(fragment);
     this.blocks = blocks;
     this.locations = locations;

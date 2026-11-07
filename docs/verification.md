@@ -1,5 +1,21 @@
 # 検証記録（最終更新：2026-11-08）
 
+## v0.1.18公開準備
+
+ユーザーの「add commit push release」の指示を受け、リンク先のフッター表示を追加した0.1.18を公開対象とした。READMEの直接ダウンロードリンク、開発ガイド、告知案を0.1.18へ更新し、`docs/releases/v0.1.18.md`に変更点・導入手順・確認範囲・SHA-256を記載した。実装時の自動検査と検証済みインストーラーを引き継ぐ。以下の「未コミット・未公開」はビルド作成時点の履歴として保持する。
+
+## 更新版0.1.18：リンク先のフッター表示
+
+ソース・プレビューのリンクにマウスを重ねると、フッター左側へクリックと同じURL/ファイル参照を表示する。ローカルリンクでは内部の`http://tauri.localhost/#`ではなく、`linked-note.md`等のリンク先を使う。通常の保存状態・エラーは独立したDOMに保持してhover中だけ非表示にし、離した後に最新の状態を表示する。文字列はtextContentで設定し、長い値は1行省略する。ペインから離れたとき、スクロール/文書変更/再描画、ウィンドウのblurで古い表示を消す。hoverによるIPC・ファイルアクセス・外部アプリ起動はなく、クリック条件・保存・Undo・プレビューの安全性と権限は変更しない。
+
+型検査、Vitest 13ファイル63件、ESLint、Prettier全体チェック、Vite buildが成功。RustはLinux16件・Windows17件、Windows desktop/Linux coreのall-targets clippy（-D warnings）、fmt checkが成功（`.tools/validate-0.1.18.log`）。Rustの実装変更はなく、製品バージョンを0.1.18へ更新した。
+
+既存の隔離ヘッドレスEdge試験を拡張し、両ペインのHTTP URL・ローカルMarkdown・JSONの6通りで実マウス移動によるフッター表示を確認した。hover中に基礎の保存メッセージを変更し、ペイン外へ移動すると最新のメッセージへ戻り、hoverだけでは外部リンク処理を呼ばないことも確認した（`.tools/links-smoke-result.json`）。同じ試験で従来の11回のクリック配送、ドラッグ選択、合成clickの拒否、読み取り専用、本文・Undoの不変も成功した。外部起動は代替関数による配送検査であり、Windows/WebView2実アプリでのhoverのGUI受入は今回未実施。
+
+Windows x64 GNUリリースとNSIS生成が成功（`.tools/final-build-0.1.18.log`）。7-Zipの`t`・隔離展開が成功し、NSIS識別マーカーだけを正規化したexe、WebView2Loader.dll、LICENSE、第三者通知がビルド原本と一致した。現行3アセット（`index-B_THYj5z.js`、`index-BMysQ4lV.css`、`preview-worker-C5lvkIXX.js`）の同梱とProductName=SaruMD、ProductVersion=0.1.18を確認した。既存の大きなJSチャンク・署名なし・クロスビルド警告は継続する。
+
+成果物：`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/SaruMD_0.1.18_x64-setup.exe`、6,309,154バイト、SHA-256 `1a03069df0f77bd33aaed058f92d8faf3770171ca9ac43ba21e6833b1868c673`。実インストール、commit/push、GitHub Releases公開は行っていない。READMEの公開ダウンロードリンクは0.1.17を維持した。
+
 ## v0.1.17公開結果
 
 ローカル文書リンク対応とサンプル・公開資料をコミット`6143c5209d38f121c8fefc7511b8303cea5bae08`としてmasterへpushし、2026-11-08 07:28:32 JSTに[SaruMD v0.1.17](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.17)を公開した。APIで`isDraft=false`、`isPrerelease=true`を確認し、公開タグの対象も同コミットと一致した。Assetsは`SaruMD_0.1.17_x64-setup.exe`（6,311,127バイト）と`SHA256SUMS.txt`で、GitHub側digestは検証済み成果物のSHA-256 `5aac2dfefa0d241f4a6ec6f16df69f5192c65f209d91db9811ca35a5f66c1067`と一致した。
