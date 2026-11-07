@@ -1,5 +1,11 @@
 # 検証記録（最終更新：2026-11-08）
 
+## v0.1.17公開結果
+
+ローカル文書リンク対応とサンプル・公開資料をコミット`6143c5209d38f121c8fefc7511b8303cea5bae08`としてmasterへpushし、2026-11-08 07:28:32 JSTに[SaruMD v0.1.17](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.17)を公開した。APIで`isDraft=false`、`isPrerelease=true`を確認し、公開タグの対象も同コミットと一致した。Assetsは`SaruMD_0.1.17_x64-setup.exe`（6,311,127バイト）と`SHA256SUMS.txt`で、GitHub側digestは検証済み成果物のSHA-256 `5aac2dfefa0d241f4a6ec6f16df69f5192c65f209d91db9811ca35a5f66c1067`と一致した。
+
+認証ヘッダー・Cookie・curl設定ファイルを使わず公開URLから両Assetsを取得し、`sha256sum -c SHA256SUMS.txt`でOKを確認した。公開READMEは原本とバイト一致し、リリースHTMLにもexeへの直接リンクを確認した（`.tools/public-release-0.1.17/`）。公開前のPrettier全体・Git差分チェック、7-Zip検査、同梱exe/アセット/DLL/ライセンス照合も成功した。ビルド後に実装・依存・配布物は変更していないため、以下の63件のフロントエンドテスト・Rust検査・リンクとスクロール試験・実アプリでのMarkdown/JSON確認を引き継ぐ。別マシン、PDF/Excelの実起動、インストーラー全体のGUI受入は未実施のままである。過去のリリースは保持した。
+
 ## v0.1.17公開準備
 
 ユーザーの「Release add commit push」の指示を受け、ローカル文書リンク対応の0.1.17を公開対象とした。READMEの直接ダウンロードリンク、開発ガイド、告知案を0.1.17へ更新し、`docs/releases/v0.1.17.md`に変更点・相対リンクの使い方・導入手順・確認範囲・SHA-256を記載した。リンク確認用のサンプル3文書も公開対象に含む。実装時の自動検査・実GUI確認と検証済みインストーラーを引き継ぐ。以下の「未コミット・未公開」はビルド作成時点の履歴として保持する。
