@@ -184,6 +184,25 @@ footer {
 #format {
   flex-shrink: 0;
 }
+#link-popup {
+  position: fixed;
+  z-index: 1000;
+  width: max-content;
+  max-width: min(520px, calc(100vw - 24px));
+  max-height: min(180px, calc(100vh - 24px));
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  padding: 8px 12px;
+  border: 1px solid #d4ddea;
+  border-radius: 7px;
+  background: #fff;
+  color: #253247;
+  box-shadow: 0 4px 16px #14244024;
+  font-size: 12px;
+  line-height: 1.6;
+  pointer-events: none;
+}
 #status.error {
   color: #b42d30;
 }

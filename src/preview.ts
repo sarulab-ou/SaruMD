@@ -4,6 +4,7 @@ import {
   linkifyHttpText,
   safeHttpUrl,
   safeLinkReference,
+  type LinkPointer,
 } from './links';
 import { hydrateMath, mathStyles } from './math-preview';
 import { boundedDebounce } from './scheduler';
@@ -118,7 +119,10 @@ export class Preview {
     private readonly image: (reference: string) => Promise<string>,
     private readonly link: (url: string) => Promise<void>,
     private readonly report: (message: string) => void,
-    private readonly hover?: (reference: string | null) => void,
+    private readonly hover?: (
+      reference: string | null,
+      pointer?: LinkPointer,
+    ) => void,
   ) {
     frame.addEventListener('mouseleave', () => this.hover?.(null));
     this.ready = new Promise((resolve) => {
@@ -128,20 +132,26 @@ export class Preview {
           const doc = frame.contentDocument!;
           this.body = doc.querySelector('article')!;
           doc.addEventListener('mousemove', (event) => {
+            const frameRect = frame.getBoundingClientRect();
             const node = event.target as Node | null;
             const element =
               node?.nodeType === 1 ? (node as Element) : node?.parentElement;
             const anchor = element?.closest('a');
             this.hover?.(
-              anchor && this.body.contains(anchor)
+              !event.buttons && anchor && this.body.contains(anchor)
                 ? safeLinkReference(
                     anchor.getAttribute('data-winmd-link') ??
                       anchor.getAttribute('href') ??
                       '',
                   )
                 : null,
+              {
+                x: frameRect.left + event.clientX,
+                y: frameRect.top + event.clientY,
+              },
             );
           });
+          doc.addEventListener('pointerdown', () => this.hover?.(null));
           doc.addEventListener('mouseleave', () => this.hover?.(null));
           doc.addEventListener('scroll', () => this.hover?.(null), true);
           if (typeof ResizeObserver !== 'undefined') {
@@ -205,6 +215,7 @@ export class Preview {
           );
           // iframe keyboard events do not bubble to the app's menu/shortcut handlers.
           doc.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') this.hover?.(null);
             if (event.isComposing || event.keyCode === 229) return;
             const key = event.key.toLowerCase();
             if (

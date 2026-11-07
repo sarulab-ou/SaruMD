@@ -129,6 +129,16 @@ try {
       assert.equal(hovered.footer.targetHidden, false);
       assert.equal(hovered.footer.statusHidden, true);
       assert.equal(hovered.opens.length, 0);
+      await delay(400);
+      const popup = (await evaluate('window.linksProbe.result()')).popup;
+      assert.equal(popup.hidden, false);
+      assert.equal(popup.text, reference);
+      assert.equal(popup.pointerEvents, 'none');
+      assert(popup.bounds.left >= 0 && popup.bounds.top >= 0);
+      assert(
+        popup.bounds.right <= popup.viewport.width &&
+          popup.bounds.bottom <= popup.viewport.height,
+      );
       await evaluate('window.linksProbe.status("最新の保存状態")');
       await call('Input.dispatchMouseEvent', {
         type: 'mouseMoved',
@@ -140,7 +150,8 @@ try {
       assert.equal(cleared.footer.target, '');
       assert.equal(cleared.footer.statusHidden, false);
       assert.equal(cleared.footer.status, '最新の保存状態');
-      hoverChecks.push({ pane, reference, cleared: true });
+      assert.equal(cleared.popup.hidden, true);
+      hoverChecks.push({ pane, reference, cleared: true, popup: true });
     }
   }
   await evaluate('window.linksProbe.status("保存済み")');
@@ -202,6 +213,16 @@ try {
   assert(result.unchanged);
   assert(!result.canUndo);
   assert.deepEqual(result.errors, []);
+  await call('Input.dispatchMouseEvent', {
+    type: 'mouseMoved',
+    ...(await point('preview', 'summary.json')),
+  });
+  await delay(400);
+  const image = await call('Page.captureScreenshot', { format: 'png' });
+  fs.writeFileSync(
+    '.tools/link-popup-smoke.png',
+    Buffer.from(image.data, 'base64'),
+  );
   const report = {
     status: 'PASS',
     trustedClicks: result.opens,

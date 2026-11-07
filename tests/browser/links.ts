@@ -10,7 +10,8 @@ const errors: string[] = [];
 const frame = document.querySelector<HTMLIFrameElement>('#preview')!;
 const status = document.querySelector<HTMLElement>('#status')!;
 const target = document.querySelector<HTMLElement>('#link-target')!;
-const hover = setupLinkStatus(status, target);
+const popup = document.querySelector<HTMLElement>('#link-popup')!;
+const hover = setupLinkStatus(status, target, popup);
 const open = (pane: string) => async (url: string) => {
   opens.push({ pane, url });
 };
@@ -97,6 +98,21 @@ const probe = {
         targetHidden: target.hidden,
         statusHidden: status.hidden,
         status: status.textContent,
+      },
+      popup: {
+        hidden: popup.hidden,
+        text: popup.textContent,
+        bounds: (() => {
+          const rect = popup.getBoundingClientRect();
+          return {
+            left: rect.left,
+            top: rect.top,
+            right: rect.right,
+            bottom: rect.bottom,
+          };
+        })(),
+        viewport: { width: innerWidth, height: innerHeight },
+        pointerEvents: getComputedStyle(popup).pointerEvents,
       },
       previewHref: frame
         .contentDocument!.querySelector('a')

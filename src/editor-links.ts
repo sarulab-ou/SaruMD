@@ -12,12 +12,13 @@ import {
   isLinkClick,
   safeHttpUrl,
   safeLinkReference,
+  type LinkPointer,
 } from './links';
 
 export interface EditorLinks {
   open: (url: string) => Promise<void>;
   report: (message: string) => void;
-  hover?: (reference: string | null) => void;
+  hover?: (reference: string | null, pointer?: LinkPointer) => void;
 }
 
 export function editorLinks(options: EditorLinks): Extension {
@@ -54,7 +55,6 @@ export function editorLinks(options: EditorLinks): Extension {
                 class: 'cm-file-link',
                 attributes: {
                   'data-link-reference': reference,
-                  title: 'クリックしてリンク先のファイルを開く',
                 },
               }).range(node.from, node.to),
             );
@@ -76,7 +76,6 @@ export function editorLinks(options: EditorLinks): Extension {
             class: 'cm-http-link',
             attributes: {
               'data-http-url': link.url,
-              title: 'クリックして既定のブラウザで開く',
             },
           }),
         );
@@ -111,7 +110,14 @@ export function editorLinks(options: EditorLinks): Extension {
     ),
     EditorView.domEventHandlers({
       mousemove(event, view) {
-        options.hover?.(referenceAt(event.target, view));
+        options.hover?.(
+          event.buttons ? null : referenceAt(event.target, view),
+          { x: event.clientX, y: event.clientY },
+        );
+        return false;
+      },
+      mousedown() {
+        options.hover?.(null);
         return false;
       },
       mouseleave() {

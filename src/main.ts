@@ -24,6 +24,7 @@ const status = document.querySelector<HTMLElement>('#status')!;
 const showLinkTarget = setupLinkStatus(
   status,
   document.querySelector<HTMLElement>('#link-target')!,
+  document.querySelector<HTMLElement>('#link-popup')!,
 );
 const documentPath =
   document.querySelector<HTMLInputElement>('#document-path')!;

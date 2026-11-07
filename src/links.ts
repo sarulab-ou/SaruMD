@@ -37,20 +37,72 @@ export function safeLinkReference(raw: string): string | null {
   return reference;
 }
 
-/** A temporary footer overlay: preserve the latest save/error message underneath. */
-export function setupLinkStatus(status: HTMLElement, target: HTMLElement) {
+export interface LinkPointer {
+  x: number;
+  y: number;
+}
+
+/** Temporary link information; preserve the latest save/error message underneath. */
+export function setupLinkStatus(
+  status: HTMLElement,
+  target: HTMLElement,
+  popup?: HTMLElement,
+) {
+  const win = status.ownerDocument.defaultView;
   let current: string | null | undefined;
-  const show = (reference: string | null) => {
+  let pointer: LinkPointer | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const hidePopup = () => {
+    clearTimeout(timer);
+    timer = undefined;
+    if (popup) {
+      popup.hidden = true;
+      popup.textContent = '';
+    }
+  };
+  const placePopup = () => {
+    if (!popup || !win || !pointer || popup.hidden) return;
+    const rect = popup.getBoundingClientRect();
+    const x = Math.max(
+      8,
+      Math.min(pointer.x + 14, win.innerWidth - rect.width - 8),
+    );
+    const below = pointer.y + 20;
+    const y =
+      below + rect.height <= win.innerHeight - 8
+        ? below
+        : pointer.y - rect.height - 12;
+    popup.style.left = `${x}px`;
+    popup.style.top = `${Math.max(8, Math.min(y, win.innerHeight - rect.height - 8))}px`;
+  };
+  const show = (reference: string | null, position?: LinkPointer) => {
     const value = reference === null ? null : safeLinkReference(reference);
-    if (value === current) return;
+    pointer = position;
+    if (value === current) {
+      placePopup();
+      return;
+    }
+    hidePopup();
     current = value;
     target.textContent = value ?? '';
     target.title = value ?? '';
     target.hidden = value === null;
     status.hidden = value !== null;
+    if (popup && value && position) {
+      timer = setTimeout(() => {
+        timer = undefined;
+        popup.textContent = value;
+        popup.hidden = false;
+        placePopup();
+      }, 350);
+    }
   };
   show(null);
-  status.ownerDocument.defaultView?.addEventListener('blur', () => show(null));
+  win?.addEventListener('blur', () => show(null));
+  win?.addEventListener('resize', () => show(null));
+  status.ownerDocument.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') show(null);
+  });
   return show;
 }
 

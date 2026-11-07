@@ -1,5 +1,21 @@
 # 検証記録（最終更新：2026-11-08）
 
+## v0.1.19公開準備
+
+ユーザーの「release add commit push」の指示を受け、リンク先のポップアップを追加した0.1.19を公開対象とした。READMEの直接ダウンロードリンク、開発ガイド、告知案を0.1.19へ更新し、`docs/releases/v0.1.19.md`に変更点・導入手順・確認範囲・SHA-256を記載した。実装時の自動検査と検証済みインストーラーを引き継ぐ。以下の「未コミット・未公開」はビルド作成時点の履歴として保持する。
+
+## 更新版0.1.19：リンク先のポップアップ
+
+ユーザーが指定した「リンク先のURL・ファイルパスを吹き出し表示」に対応した。既存のフッター表示に加え、両ペインのリンクへマウスを約350ms重ねると、同じ検証済みリンク先をマウス付近のポップアップへ表示する。プレビューはiframeの座標を親ウィンドウへ変換し、画面内へ位置を補正する。長い参照は折り返し、最大幅/高さを制限する。textContentで表示し、pointer-events:noneでクリックや選択を遮らない。離脱・スクロール・文書変更/再描画・blur・クリック/ドラッグ・Esc・resizeでタイマーと表示を解除する。hoverによる外部通信やファイル読み込みは追加していない。
+
+型検査、Vitest 13ファイル63件、ESLint、Prettier全体チェック、Vite buildが成功。RustはLinux16件・Windows17件、Windows desktop/Linux coreのall-targets clippy（-D warnings）、fmt checkが成功（`.tools/validate-0.1.19.log`）。Rustの実装変更はなく、製品バージョンを0.1.19へ更新した。
+
+隔離したヘッドレスEdgeで、両ペインのHTTP URL・Markdown・JSONの6通りについて実マウス移動で吹き出しを表示し、文字列、画面内の配置、pointer-events:none、離脱後の消去と最新の保存状態への復帰を確認した。hoverだけでは外部リンク処理が呼ばれず、従来の11回のクリック配送、文字のドラッグ選択、合成clickの拒否、読み取り専用、本文・Undoの不変も成功した（`.tools/links-smoke-result.json`）。検証画面のPNGを`.tools/link-popup-smoke.png`へ保存し、JSONリンクの吹き出しとフッターの表示を目視確認した。外部起動は代替関数による配送検査であり、Windows/WebView2実アプリでのポップアップのGUI受入は今回未実施。
+
+Windows x64 GNUリリースとNSIS生成が成功（`.tools/final-build-0.1.19.log`）。7-Zipの`t`・隔離展開、NSIS識別マーカーだけを正規化したexe、WebView2Loader.dll、LICENSE、第三者通知の原本一致を確認した。現行3アセット（`index-CBPRTvY5.js`、`index-8pPc7Cnx.css`、`preview-worker-C5lvkIXX.js`）の同梱とProductName=SaruMD、ProductVersion=0.1.19を確認した。既存の大きなJSチャンク・署名なし・クロスビルド警告は継続する。
+
+成果物：`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/SaruMD_0.1.19_x64-setup.exe`、6,310,679バイト、SHA-256 `799729398c446269d25e5f12879808e6d406e1aef2d335e6334692d165f8a423`。実インストール、commit/push、GitHub Releases公開は行っていない。READMEの公開ダウンロードリンクは0.1.18を維持した。
+
 ## v0.1.18公開結果
 
 リンク先のフッター表示と公開資料をコミット`73568f2182971a8f422ae548b0f2ac6191380191`としてmasterへpushし、2026-11-08 07:37:19 JSTに[SaruMD v0.1.18](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.18)を公開した。APIで`isDraft=false`、`isPrerelease=true`を確認し、公開タグの対象も同コミットと一致した。Assetsは`SaruMD_0.1.18_x64-setup.exe`（6,309,154バイト）と`SHA256SUMS.txt`で、GitHub側digestは検証済み成果物のSHA-256 `1a03069df0f77bd33aaed058f92d8faf3770171ca9ac43ba21e6833b1868c673`と一致した。
