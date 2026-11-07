@@ -1,5 +1,6 @@
 import './style.css';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
+import { getVersion } from '@tauri-apps/api/app';
 import { bridge } from './bridge';
 import { DocumentState, SerialTasks } from './document';
 import { MarkdownEditor } from './editor';
@@ -41,6 +42,11 @@ const menus = setupMenus(
       menu: document.querySelector('#edit-menu')!,
       key: 'e',
       onOpen: refreshEditMenu,
+    },
+    {
+      trigger: document.querySelector('#help-menu-button')!,
+      menu: document.querySelector('#help-menu')!,
+      key: 'h',
     },
   ],
   () => !ready || exclusive || modalOpen(),
@@ -309,6 +315,15 @@ async function clipboardAction(cut: boolean): Promise<void> {
 }
 
 const handlers: Record<string, () => Promise<unknown> | void> = {
+  about: async () => {
+    const version = await getVersion();
+    if (exclusive || modalOpen()) return;
+    await confirmDialog(
+      'バージョン情報',
+      `SaruMD\nバージョン ${version}\n\nMITライセンス`,
+      [{ value: 'ok', label: 'OK' }],
+    );
+  },
   new: bridge.newDocument,
   open: bridge.open,
   save: () => save(),

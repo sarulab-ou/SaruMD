@@ -2,7 +2,7 @@
 
 Windows向けのMarkdownエディタです。WinMDからSaruMDへ名前を変更しました。左でソースを編集し、右でプレビューを確認できます。1文書につき1つのウィンドウが開きます。同じファイルをもう一度開くと、既存のウィンドウへ移動します。
 
-**[ダウンロード（Windows x64・インストーラー.exe）](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.15/SaruMD_0.1.15_x64-setup.exe)** · [使い方](#使い方) · [MITライセンス](LICENSE)
+**[ダウンロード（Windows x64・インストーラー.exe）](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.16/SaruMD_0.1.16_x64-setup.exe)** · [使い方](#使い方) · [MITライセンス](LICENSE)
 
 ![Windows上のSaruMD。左に日本語のMarkdownソース、右に見出し・チェックリスト・表・コードを整形したプレビューを表示しています。](docs/screenshots/editor-ja.png)
 
@@ -24,11 +24,11 @@ _旧称WinMD v0.1.8の実画面。[サンプル文書](docs/examples/notes.ja.md
 
 ## ダウンロード・インストール
 
-**[SaruMD v0.1.15 Windows x64インストーラーをダウンロード](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.15/SaruMD_0.1.15_x64-setup.exe)**
+**[SaruMD v0.1.16 Windows x64インストーラーをダウンロード](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.16/SaruMD_0.1.16_x64-setup.exe)**
 
-SaruMD v0.1.15をプレリリース（試用版）として公開しています。[リリースノート](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.15) · [SHA-256チェックサム](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.15/SHA256SUMS.txt) · [ソースからのビルド](docs/development.md)
+SaruMD v0.1.16をプレリリース（試用版）として公開しています。[リリースノート](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.16) · [SHA-256チェックサム](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.16/SHA256SUMS.txt) · [ソースからのビルド](docs/development.md)
 
-1. `SaruMD_0.1.15_x64-setup.exe`をダウンロードし、**Windows 11 x64**で実行します。
+1. `SaruMD_0.1.16_x64-setup.exe`をダウンロードし、**Windows 11 x64**で実行します。
 2. WebView2 Runtimeがない場合は、インストーラーがダウンロードします。この場合はインターネット接続が必要です。
 3. `.md`をダブルクリックで開きたい場合は、Windowsの既定アプリ設定でSaruMDを選択します。インストーラーから設定画面を開けます。
 
@@ -70,7 +70,7 @@ $$
 
 | 操作                             | キー                                |
 | -------------------------------- | ----------------------------------- |
-| ファイル / 編集メニュー          | Alt+F / Alt+E                       |
+| ファイル / 編集 / ヘルプメニュー | Alt+F / Alt+E / Alt+H               |
 | アドレスバーへ移動・パスを全選択 | Alt+D                               |
 | 新しい文書を別ウィンドウで開く   | Ctrl+N                              |
 | 開く                             | Ctrl+O                              |

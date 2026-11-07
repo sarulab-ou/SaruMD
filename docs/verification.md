@@ -1,4 +1,18 @@
-# 検証記録（最終更新：2026-11-07）
+# 検証記録（最終更新：2026-11-08）
+
+## v0.1.16公開準備
+
+ユーザーの「Release add commit push」の指示を受け、上記のヘルプ・バージョン情報を追加した0.1.16を公開対象とした。READMEの直接ダウンロードリンク、開発ガイド、告知案を0.1.16へ更新し、`docs/releases/v0.1.16.md`に変更点・導入手順・確認範囲・SHA-256を記載した。実装時の検査とビルド済みインストーラーを引き継ぐ。前回のリンク確認用サンプル2文書は未追跡のまま保持し、今回のコミット・リリースには含めない。以下の「未コミット・未公開」はビルド作成時点の履歴として保持する。
+
+## 更新版0.1.16：ヘルプとバージョン情報
+
+メニューバーに「ヘルプ (H)」と、その配下に「バージョン情報」を追加した。Alt+Hと既存のメニュー間の矢印移動を利用でき、プレビューiframeからもAlt+Hを転送する。バージョン情報はTauriの`getVersion()`で実行中のアプリから取得し、SaruMD・バージョン番号・MITライセンスを既存の確認ダイアログに表示する。バージョン取得中に別のモーダルや排他的処理が始まった場合は重ねて表示しない。文書ウィンドウのcapabilityには読み取り用の`core:app:allow-version`だけを追加した。
+
+型検査、Vitest 13ファイル60件、ESLint、Prettier全体チェック、Vite buildが成功。RustのLinux14件・Windows15件、all-targets clippy（Windows desktop/Linux core、-D warnings）、fmt checkも成功（`.tools/validate-0.1.16.log`）。追加のjsdom確認で現在のHTML・menu.ts・dialog.ts・main.tsのHelp登録とAbout処理を読み込み、Alt+HでAboutにフォーカスし、正しいタイトル・バージョン・OKボタンを表示して終了することを確認した（`.tools/about-probe-result.json`）。jsdomには`showModal()`がないため、この確認では同APIと`getVersion()`を代替した。Windows/WebView2実ウィンドウでのGUI受入と実APIからのバージョン取得は今回未実施。
+
+Windows x64 GNUリリースとNSIS生成が成功（`.tools/final-build-0.1.16.log`）。7-Zipの`t`・隔離展開が成功し、NSIS識別マーカーだけを正規化したexe、WebView2Loader.dll、LICENSE、第三者通知がビルド原本と一致した。現行3アセット（`index-Bn0tQyoS.js`、`index-XkLCYC2-.css`、`preview-worker-BjJGxgIi.js`）の同梱とProductName=SaruMD、ProductVersion=0.1.16も確認した。既存の大きなJSチャンク・署名なし・クロスビルド警告は継続。
+
+成果物：`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/SaruMD_0.1.16_x64-setup.exe`、6,313,815バイト、SHA-256 `fab084704e840d50373f3b6eb117a8c9ea40aee37ffbdea1ac80ae05f3a03454`。インストール、commit/push、GitHub Releases更新は行っていない。READMEの公開ダウンロードリンクは0.1.15を維持した。前回作成したリンク確認用のサンプル2文書はそのまま保持した。
 
 ## v0.1.15公開結果
 

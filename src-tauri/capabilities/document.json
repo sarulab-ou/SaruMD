@@ -5,6 +5,7 @@
   "windows": ["doc-*"],
   "permissions": [
     "allow-document-commands",
+    "core:app:allow-version",
     "core:event:allow-listen",
     "core:event:allow-unlisten"
   ]
