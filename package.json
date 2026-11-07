@@ -1,6 +1,6 @@
 {
   "name": "sarumd",
-  "version": "0.1.13",
+  "version": "0.1.15",
   "private": true,
   "type": "module",
   "license": "MIT",
@@ -16,7 +16,8 @@
     "tauri": "tauri",
     "desktop:dev": "tauri dev",
     "desktop:build": "tauri build --target x86_64-pc-windows-msvc --bundles nsis",
-    "licenses": "node scripts/licenses.mjs"
+    "licenses": "node scripts/licenses.mjs",
+    "test:links": "node scripts/test-links.mjs"
   },
   "dependencies": {
     "@codemirror/commands": "^6.10.0",

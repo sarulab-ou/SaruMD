@@ -1,4 +1,28 @@
-# 検証記録（最終更新：2026-10-31）
+# 検証記録（最終更新：2026-11-07）
+
+## v0.1.15公開準備
+
+ユーザーから「Release add commit push」の指示を受け、検証済みの0.1.15を公開対象とした。READMEの冒頭・ダウンロード節、開発ガイド、告知案を0.1.15へ更新し、`docs/releases/v0.1.15.md`に直接ダウンロードリンク・変更点・確認範囲をまとめた。未公開だった0.1.14の見出し削除も含む。以下の「未コミット・未公開」は各ビルド作成時点の履歴として保持する。
+
+## 更新版0.1.15：ソースとプレビューのURLクリック
+
+ソース側はリンククリック処理がなかったため、CodeMirrorの可視範囲に安全なURLマークを付け、通常クリックで既存の所有権確認付き`open_external_link`へ渡すようにした。プレビューには既存のa要素の処理があったが、コード内などのプレーンテキストURLも対象になるよう、サニタイズ後に安全なDOMプロパティでリンク化する処理を追加した。HTTP/HTTPSとwww形式を扱い、句読点・Markdownの対応しない閉じ括弧を除いて渡す。既存のリンク先とMathMLは変更しない。
+
+両ペインのクリックはtrusted・左ボタン・修飾キーなし・複数クリックではない・範囲選択なしに限定し、合成イベントやドラッグ選択での外部起動を避ける。文書・Undoを変えず、読み取り専用でも開く。RustのURL再検証とopener、文書所有権、既存の権限・画像制限・sandbox/CSPは維持する。未コミットの0.1.14のラベル削除を含む。
+
+型検査、Vitest 13ファイル60件、ESLint、Prettier全体チェック、Vite buildが成功。新しい4件はURL範囲（括弧・句読点・クエリ・fragment）、危険URLの拒否、リンク化後の可視テキスト不変、既存リンクの保持、クリック条件、ソースの編集/再読み込み後の装飾とUndo不変を確認する。RustのLinux14件・Windows15件、all-targets clippy（Windows desktop/Linux core、-D warnings）、fmt checkも成功（`.tools/validate-0.1.15.log`）。
+
+`node scripts/test-links.mjs`の隔離ヘッドレスEdgeでCDPのtrustedマウス入力を送り、ソースURL・プレビューのリンク・プレビューのコード内URL・読み取り専用ソースの計4回が正しいURLでコールバックへ渡ることを確認した。合成click、両ペインのドラッグ選択では起動せず、本文・Undoも変わらなかった。結果は`.tools/links-smoke-result.json`。外部ブラウザの起動はモックに置き換えた配送試験であり、OSの既定ブラウザ/WebView2実アプリでのGUI受入は未実施。`node scripts/test-scroll.mjs`もPASSで、スクロールのずれは0.515625px以下、見出し・コード・表・数式クリックの元位置一致、数式の印刷DOMを確認した。
+
+Windows x64 GNUリリースとNSIS生成が成功（`.tools/final-build-0.1.15.log`）。7-Zipの`t`・隔離展開が成功し、NSIS標準識別マーカーだけを正規化したexe、WebView2Loader.dll、LICENSE、第三者通知がビルド原本と一致した。現行3アセット（`index-DfaLbUjM.js`、`index-XkLCYC2-.css`、`preview-worker-BjJGxgIi.js`）の同梱とProductName=SaruMD、ProductVersion=0.1.15を確認した。既存の大きなJSチャンク・署名なし・クロスビルド警告は継続。
+
+成果物：`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/SaruMD_0.1.15_x64-setup.exe`、6,312,949バイト、SHA-256 `bf9e9b3f02d765af659e8940071fb718ca0682d461418687f08670a61d2456ae`。実インストール、commit/push、GitHub Releases更新は行っていない。
+
+## 更新版0.1.14：アドレス欄の見出しを削除
+
+アドレスバー左側の可視label「アドレス」を削除し、パス欄だけの表示にした。inputのaria-label・Alt+D・読み取り専用・コピー機能は維持する。型検査、Vitest 12ファイル56件、ESLint、Prettier全体チェック、Vite buildが成功。RustのLinux14件・Windows15件、Windows desktop/Linux coreのall-targets clippy（-D warnings）、fmt checkも成功（`.tools/validate-0.1.14.log`）。実ウィンドウのGUI受入は今回未実施。
+
+Windows x64 GNUリリースとNSIS生成が成功（`.tools/final-build-0.1.14.log`）。7-Zipの`t`と隔離展開が成功し、NSIS標準識別マーカーだけを正規化したexe、現行UIアセット、WebView2Loader.dll、LICENSEと第三者通知が原本と一致した。ProductName=SaruMD、ProductVersion=0.1.14も確認。成果物は`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/SaruMD_0.1.14_x64-setup.exe`、6,313,379バイト、SHA-256 `6ef5f914b64a02a7a61883a8c941157904323c7ca2adbb5150a27faf003db15c`。既存の署名なし・クロスビルド・大きなJSチャンク警告は継続。実インストール、commit/push、Releases公開は行っていない。
 
 ## v0.1.13公開結果
 

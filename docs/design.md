@@ -38,6 +38,8 @@ SaveHooksでwrite/sync/commit段階に失敗・外部書き込みを注入する
 
 ## プレビューの境界
 
+0.1.15ではHTTP/HTTPSとwww形式のURL検出を共通化し、通常クリックで既存のRust所有権確認付きopenerへ渡す。ソースはCodeMirrorの可視範囲にURLマークを付け、内容・Undoを変えずにクリックする。プレビューはサニタイズ後のプレーンテキスト/コードのURLも安全なDOMプロパティでa要素へ置換する。既存リンクとMathMLは再リンク化しない。句読点と対応しない閉じ括弧を線形時間で除く。クリックはtrusted・左ボタン・単一クリック・修飾キーなし・選択範囲なしに限定する。元のHTTP/HTTPS再検証、画像制限とsandbox/CSPは維持する。
+
 0.1.11ではmarkedのブロック/インライン拡張で`$$...$$`と`$...$`をトークン化し、コード内とエスケープを尊重する。KaTeX 0.19.1をWorker内だけで実行し、`output=mathml`、`trust=false`、`maxExpand=1000`、`maxSize=20`、数式ごとの独立したマクロ領域を使う。1式16,384文字、1文書1,000式・生成MathML 2 MiBに制限し、不正/上限超過の数式は元のTeXを残す。
 
 生成MathMLはそのままHTMLに混ぜず、エスケープしたメタデータと元のTeXを持つspanへ入れる。従来のMarkdown用DOMPurifyを通した後、取得したMathMLを別の限定したタグ/属性リストで再サニタイズして挿入する。パース前にも未知のタグ・URL/イベント/スタイル属性を拒否し、Markdown側にMathML・任意CSS・SVGを許可しない。静的CSSとOSの数式フォントで表示するため、CDN・追加の外部通信・Webフォントは不要。iframeのsandbox/CSPは変更しない。

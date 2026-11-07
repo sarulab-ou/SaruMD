@@ -432,6 +432,7 @@ async function start(): Promise<void> {
     state.readOnly,
     onEdit,
     { persist: pasteImage, report },
+    { open: bridge.link, report },
   );
   await preview.ready;
   const scrollSync = new ScrollSync(

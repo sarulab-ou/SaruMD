@@ -24,6 +24,8 @@ Corepackがない場合はpnpmを別途導入してください。`pnpm dev`は�
 
 ## テストと整形
 
+リンクの描画・通常クリック・ドラッグ選択・読み取り専用の検証は`pnpm test:links`でも実行できます。既存Edgeを隔離したヘッドレス環境で起動し、CDPからtrustedマウスイベントを送り、両ペインのリンクコールバックを照合します。外部ブラウザの起動関数はモックに置き換え、外部サイトへは接続しません。結果は`.tools/links-smoke-result.json`に保存します。
+
 ```powershell
 $env:CI='true'
 pnpm run check
@@ -59,9 +61,9 @@ pnpm desktop:build
 設定されたbeforeBuildCommandが型チェックとフロントエンドビルドを実行し、NSISを作成します。ワークスペースルートの標準出力先：
 
 - `target/x86_64-pc-windows-msvc/release/SaruMD.exe`
-- `target/x86_64-pc-windows-msvc/release/bundle/nsis/SaruMD_0.1.13_x64-setup.exe`
+- `target/x86_64-pc-windows-msvc/release/bundle/nsis/SaruMD_0.1.15_x64-setup.exe`
 
-`CARGO_TARGET_DIR`で出力先を変更できます。今回生成したGNU試用版は`target/verified/x86_64-pc-windows-gnu/release/`にあります。公開用の[v0.1.13リリース](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.13)からインストーラーとSHA-256チェックサムを取得できます。
+`CARGO_TARGET_DIR`で出力先を変更できます。今回生成したGNU試用版は`target/verified/x86_64-pc-windows-gnu/release/`にあります。公開用の[v0.1.15リリース](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.15)からインストーラーとSHA-256チェックサムを取得できます。
 
 MSVC版は今回未生成です。Tauriが公式にサポートするWindowsターゲットはMSVCです。[公式Windowsビルド資料](https://v2.tauri.app/distribute/windows-installer/)
 

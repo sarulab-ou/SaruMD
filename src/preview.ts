@@ -1,5 +1,5 @@
 import DOMPurify from 'dompurify';
-import { safeHttpUrl } from './links';
+import { isLinkClick, linkifyHttpText, safeHttpUrl } from './links';
 import { hydrateMath, mathStyles } from './math-preview';
 import { boundedDebounce } from './scheduler';
 import { waitForPrintImage } from './printing';
@@ -125,7 +125,10 @@ export class Preview {
             if (anchor) {
               event.preventDefault();
               const url = safeHttpUrl(anchor.getAttribute('href') ?? '');
-              if (url && event.isTrusted)
+              if (
+                url &&
+                isLinkClick(event, doc.getSelection()?.isCollapsed === false)
+              )
                 void this.link(url).catch((e) => this.report(String(e)));
               return;
             }
@@ -281,6 +284,7 @@ export class Preview {
     await this.ready;
     if (generation !== this.requested) return;
     const fragment = sanitizePreview(html);
+    linkifyHttpText(fragment);
     const locations = new PreviewLocations(source, fragment);
     this.lines = locations.lineCount;
     const blocks = locations.blocks;

@@ -20,6 +20,7 @@ import {
   type ImagePasteOptions,
 } from './image-paste';
 import { formatTimestamp, type ClipboardContents } from './editing';
+import { editorLinks, type EditorLinks } from './editor-links';
 
 export class MarkdownEditor {
   readonly view: EditorView;
@@ -31,6 +32,7 @@ export class MarkdownEditor {
     readOnly: boolean,
     onEdit: (text: string) => void,
     private readonly paste?: ImagePasteOptions,
+    private readonly links?: EditorLinks,
   ) {
     this.view = new EditorView({
       parent,
@@ -47,6 +49,7 @@ export class MarkdownEditor {
       extensions: [
         basicSetup,
         markdown(),
+        this.links ? editorLinks(this.links) : [],
         this.paste ? imagePaste(this.paste) : [],
         search({ top: true }),
         keymap.of([
