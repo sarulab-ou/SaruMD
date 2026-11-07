@@ -1,5 +1,11 @@
 # 検証記録（最終更新：2026-11-07）
 
+## v0.1.15公開結果
+
+URLクリック対応・アドレス欄の見出し削除と資料をコミット`7d060716aef35a32361ba5943d6b9997c016550f`としてmasterへpushし、2026-11-07 23:04:20 JSTに[SaruMD v0.1.15](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.15)を公開した。APIで`isDraft=false`、`isPrerelease=true`、タグ対象が同コミットであることを確認した。Assetsは`SaruMD_0.1.15_x64-setup.exe`（6,312,949バイト）と`SHA256SUMS.txt`で、GitHub側digestは下記のビルド済み成果物のSHA-256と一致した。
+
+認証ヘッダー・Cookie・curl設定ファイルを使わずに公開URLから両Assetsを取得し、`sha256sum -c SHA256SUMS.txt`でOKを確認した。masterの公開READMEは原本とバイト一致し、リリースHTMLにもインストーラーへの直接リンクを確認した。取得結果は`.tools/public-release-0.1.15/`へ保存した。資料更新後のPrettier全体チェック、Git差分チェック、インストーラーの7-Zip検査と同梱exe/アセット/DLL/ライセンス照合も成功した。ビルド後にコード・依存・配布物は変更していないため、実装時の60件のテスト・Rust・リンククリック・スクロール試験の記録を引き継ぐ。過去のタグ・配布物は保持した。
+
 ## v0.1.15公開準備
 
 ユーザーから「Release add commit push」の指示を受け、検証済みの0.1.15を公開対象とした。READMEの冒頭・ダウンロード節、開発ガイド、告知案を0.1.15へ更新し、`docs/releases/v0.1.15.md`に直接ダウンロードリンク・変更点・確認範囲をまとめた。未公開だった0.1.14の見出し削除も含む。以下の「未コミット・未公開」は各ビルド作成時点の履歴として保持する。
