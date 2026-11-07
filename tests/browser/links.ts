@@ -3,7 +3,7 @@ import { MarkdownEditor } from '../../src/editor';
 import { Preview } from '../../src/preview';
 
 const source =
-  '# リンク確認\n\nhttps://example.com/source\n\n[リンク](https://example.org/preview)\n\n`https://example.net/code`\n\n[危険](javascript:alert(1))\n';
+  '# リンク確認\n\nhttps://example.com/source\n\n[リンク](https://example.org/preview)\n\n`https://example.net/code`\n\n[今回の記録](latest-continuation.md) / [JSON](summary.json)\n\n[日本語](<sub folder/日本語.md>)\n\n[危険](javascript:alert(1))\n';
 const opens: { pane: string; url: string }[] = [];
 const errors: string[] = [];
 const frame = document.querySelector<HTMLIFrameElement>('#preview')!;
@@ -38,12 +38,25 @@ const probe = {
   point(pane: string, part: string) {
     const element =
       pane === 'source'
-        ? document.querySelector<HTMLElement>(
-            `.cm-http-link[data-http-url*="${part}"]`,
-          )!
-        : frame.contentDocument!.querySelector<HTMLElement>(
-            `a[href*="${part}"]`,
-          )!;
+        ? [
+            ...document.querySelectorAll<HTMLElement>(
+              '.cm-http-link, .cm-file-link',
+            ),
+          ].find((element) =>
+            (
+              element.dataset.httpUrl ??
+              element.dataset.linkReference ??
+              ''
+            ).includes(part),
+          )
+        : [...frame.contentDocument!.querySelectorAll<HTMLElement>('a')].find(
+            (element) =>
+              (
+                element.dataset.winmdLink ??
+                element.getAttribute('href') ??
+                ''
+              ).includes(part),
+          );
     if (!element) throw new Error(`Missing ${pane} link ${part}`);
     const rect = element.getBoundingClientRect(),
       offset =

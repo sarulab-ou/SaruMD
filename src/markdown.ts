@@ -1,5 +1,6 @@
 import { Marked, Renderer, type Token, type Tokens } from 'marked';
 import { mathExtensions } from './math-renderer';
+import { safeHttpUrl, safeLinkReference } from './links';
 export { safeHttpUrl } from './links';
 
 export function escapeHtml(value: string): string {
@@ -12,6 +13,14 @@ export function escapeHtml(value: string): string {
   );
 }
 
+function renderLink(this: Renderer, token: Tokens.Link): string {
+  const reference = safeLinkReference(token.href);
+  if (!reference || safeHttpUrl(reference))
+    return Renderer.prototype.link.call(this, token);
+  const title = token.title ? ` title="${escapeHtml(token.title)}"` : '';
+  return `<a data-winmd-link="${escapeHtml(reference)}"${title}>${this.parser.parseInline(token.tokens)}</a>`;
+}
+
 export function markdownHtml(text: string): string {
   const parser = new Marked({
     gfm: true,
@@ -19,6 +28,7 @@ export function markdownHtml(text: string): string {
     extensions: mathExtensions(escapeHtml),
     renderer: {
       html: (token) => escapeHtml(token.text),
+      link: renderLink,
       // Never hand an unvalidated src to a DOM parser: even a detached image could fetch.
       image: (token) =>
         `<img data-winmd-src="${escapeHtml(token.href)}" alt="${escapeHtml(token.text)}">`,
@@ -73,6 +83,7 @@ export function mappedMarkdownHtml(text: string): string {
     extensions: mathExtensions(escapeHtml, mark, (token) => offsets.get(token)),
     renderer: {
       html: (token) => escapeHtml(token.text),
+      link: renderLink,
       image: (token) =>
         `<img data-winmd-src="${escapeHtml(token.href)}" alt="${escapeHtml(token.text)}">`,
       heading(token) {

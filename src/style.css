@@ -216,7 +216,8 @@ dialog p {
 .cm-editor {
   outline: none;
 }
-.cm-http-link {
+.cm-http-link,
+.cm-file-link {
   color: #265fd6;
   text-decoration: underline;
   cursor: pointer;

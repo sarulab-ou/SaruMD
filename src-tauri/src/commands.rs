@@ -6,7 +6,9 @@ use tauri_plugin_opener::OpenerExt;
 use winmd_core::{
     document::{same_path, Snapshot},
     file_io::{self, NoFault},
-    images, Result,
+    images,
+    links::{self, LinkTarget},
+    Result,
 };
 
 async fn blocking<T: Send + 'static>(
@@ -382,12 +384,31 @@ pub async fn read_local_image(
 }
 
 #[tauri::command]
-pub fn open_external_link(app: AppHandle, window: WebviewWindow, url: String) -> Result<()> {
-    owned(&app, &window)?;
-    let parsed = images::external_url(&url)?;
-    app.opener()
-        .open_url(parsed.as_str(), None::<&str>)
-        .map_err(|e| e.to_string())
+pub async fn open_external_link(app: AppHandle, window: WebviewWindow, url: String) -> Result<()> {
+    let id = owned(&app, &window)?;
+    blocking(move || {
+        let document = app.state::<AppState>().lock()?.get(&id)?.path.clone();
+        match links::resolve(document.as_deref(), &url)? {
+            LinkTarget::Web(url) => app
+                .opener()
+                .open_url(url.as_str(), None::<&str>)
+                .map_err(|e| e.to_string()),
+            LinkTarget::Markdown(path) => windows::open_path(&app, &path),
+            LinkTarget::File(path) => {
+                let raw = path.to_str().ok_or("ファイルパスが不正です。")?;
+                // Shell applications need a normal Windows path, not the canonical device prefix.
+                let shell_path = if let Some(unc) = raw.strip_prefix(r"\\?\UNC\") {
+                    format!(r"\\{unc}")
+                } else {
+                    raw.strip_prefix(r"\\?\").unwrap_or(raw).to_string()
+                };
+                app.opener()
+                    .open_path(shell_path, None::<&str>)
+                    .map_err(|e| e.to_string())
+            }
+        }
+    })
+    .await
 }
 
 #[tauri::command]

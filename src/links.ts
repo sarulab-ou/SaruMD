@@ -9,6 +9,34 @@ export function safeHttpUrl(raw: string): string | null {
   }
 }
 
+/** Local references remain inert metadata until an intentional click reaches Rust. */
+export function safeLinkReference(raw: string): string | null {
+  const reference = raw.trim();
+  if (
+    !reference ||
+    reference.length > 8192 ||
+    [...reference].some(
+      (c) =>
+        c.charCodeAt(0) < 32 ||
+        (c.charCodeAt(0) >= 127 && c.charCodeAt(0) <= 159),
+    )
+  )
+    return null;
+  if (/^https?:/i.test(reference)) return safeHttpUrl(reference);
+  if (/^[#?]/.test(reference) || /^(?:\/\/|\\\\)/.test(reference)) return null;
+  if (/^file:/i.test(reference)) {
+    try {
+      const url = new URL(reference);
+      return !url.host && !url.search && url.pathname ? reference : null;
+    } catch {
+      return null;
+    }
+  }
+  if (/^[a-z][a-z\d+.-]*:/i.test(reference) && !/^[a-z]:[/\\]/i.test(reference))
+    return null;
+  return reference;
+}
+
 export const httpLinkPattern = /(?:https?:\/\/|www\.)[^\s<>"'`\\]+/gi;
 
 /** Match visible URL text without swallowing Markdown delimiters or sentence punctuation. */

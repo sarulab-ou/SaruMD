@@ -122,6 +122,20 @@ try {
     { pane: 'preview', url: 'https://example.net/code' },
   ]);
   for (const pane of ['source', 'preview']) {
+    await click(pane, 'latest-continuation.md');
+    await click(pane, 'summary.json');
+    await click(pane, 'sub folder/日本語.md');
+  }
+  result = await evaluate('window.linksProbe.result()');
+  assert.deepEqual(
+    result.opens.slice(3),
+    ['source', 'preview'].flatMap((pane) => [
+      { pane, url: 'latest-continuation.md' },
+      { pane, url: 'summary.json' },
+      { pane, url: 'sub folder/日本語.md' },
+    ]),
+  );
+  for (const pane of ['source', 'preview']) {
     await evaluate('window.linksProbe.clear()');
     const p = await point(pane, pane === 'source' ? 'source' : 'preview');
     await call('Input.dispatchMouseEvent', {
@@ -145,11 +159,12 @@ try {
     });
     await delay(150);
   }
-  assert.equal((await evaluate('window.linksProbe.result()')).opens.length, 3);
+  assert.equal((await evaluate('window.linksProbe.result()')).opens.length, 9);
   await evaluate('window.linksProbe.readonly()');
   await click('source', 'source');
+  await click('source', 'summary.json');
   result = await evaluate('window.linksProbe.result()');
-  assert.equal(result.opens.length, 4);
+  assert.equal(result.opens.length, 11);
   assert(result.unchanged);
   assert(!result.canUndo);
   assert.deepEqual(result.errors, []);

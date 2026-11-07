@@ -1,5 +1,27 @@
 # 検証記録（最終更新：2026-11-08）
 
+## v0.1.17公開準備
+
+ユーザーの「Release add commit push」の指示を受け、ローカル文書リンク対応の0.1.17を公開対象とした。READMEの直接ダウンロードリンク、開発ガイド、告知案を0.1.17へ更新し、`docs/releases/v0.1.17.md`に変更点・相対リンクの使い方・導入手順・確認範囲・SHA-256を記載した。リンク確認用のサンプル3文書も公開対象に含む。実装時の自動検査・実GUI確認と検証済みインストーラーを引き継ぐ。以下の「未コミット・未公開」はビルド作成時点の履歴として保持する。
+
+## 更新版0.1.17：ローカル文書リンク
+
+別マシンの0.1.16でクリックできないという報告画像を確認し、`[今回の記録](latest-continuation.md)`と`[判定・根拠・統計JSON](summary.json)`が相対ファイルリンクであることを特定した。0.1.16ではプレビューの非HTTPリンクからhrefを取り除き、ソースもHTTP URLだけを装飾するため、これらは開けない実装だった。
+
+既存の所有権確認付きリンクIPCにローカル文書の解決・振り分けを追加した。基準は呼び出し元の保存済みMarkdownの親フォルダーで、`../`、日本語・空白、URLエンコード、ドライブ名付き絶対パス、ローカルfile URLを扱う。Markdownは既存の文書管理とウィンドウ生成/復帰処理を通し、他の許可文書形式はWindowsの既定アプリへ渡す。未保存文書の相対リンク、欠落ファイル、フォルダー、実行ファイル/スクリプト/ショートカット、未知のスキーム、デバイス・ADS・リモート指定を拒否する。解決先のcanonicalパスの拡張子も検査し、既存の画像制限・sandbox/CSPとcapabilityは維持する。
+
+rendererのローカルリンクはhrefを生成せず、エスケープした不活性なメタデータに保持する。DOMPurify後に個別検証し、表示時は`href="#"`とクリックブリッジを使う。印刷クローンからはメタデータとローカルhrefを削除する。ソースはCodeMirrorの構文木でインライン形式のリンクを識別し、ラベル・リンク先をクリックできる。プレビューは参照形式もrendererで処理する。前回から未追跡だった`docs/examples/links.md`と`linked-note.md`をサンプルとして使い、JSONサンプルも追加した。
+
+型検査、Vitest 13ファイル63件、ESLint、Prettier全体チェック、Vite buildが成功。RustはLinux16件・Windows17件、Windows desktop/Linux coreのall-targets clippy（-D warnings）、fmt checkが成功（`.tools/validate-0.1.17.log`）。ネイティブテストは相対/絶対/file URLの同一ターゲット解決、Markdown/JSON/PDFの分類、日本語・空白・親フォルダー、既存文書の未保存テキスト保持、欠落/未保存/危険なパスとファイル種別の拒否を確認した。Unixでは許可拡張子のsymlinkがexeを指す場合の拒否も確認した。
+
+隔離したヘッドレスEdgeにtrustedマウス入力を送り、両ペインからローカルMarkdown・JSON・日本語/空白入りリンクが正しい参照でコールバックへ渡ることを確認した。Web URLと読み取り専用の経路を合わせて11回、合成clickとドラッグ選択では起動せず、本文・Undoも不変だった（`.tools/links-smoke-result.json`）。この試験での外部起動は代替関数である。スクロール回帰試験も成功し、対応位置の差は0.515625px以下、見出し/コード/表/数式からの元位置一致、数式の印刷DOMを確認した。
+
+生成したNSISから展開した実exe（ProductVersion=0.1.17）で`docs/examples/links.md`を起動し、Computer Useによる通常クリックを確認した。プレビューのMarkdownリンクで`linked-note.md`の別ウィンドウ（ID 8329612）が作られ、ソースの同リンクで同じウィンドウへ戻り、重複ウィンドウは作られなかった。プレビューのJSONリンクから、このPCの既定アプリであるVS Codeが起動し、対象が`docs/examples/summary.json`であることをUIのファイルパスとJSONモードで確認した。リンク元は保存済みのままだった。実GUIでの未保存ターゲット保持、PDF/Excelの既定アプリ起動、ユーザーの別マシンでの再確認は未実施。
+
+Windows x64 GNUリリースとNSIS生成が成功（`.tools/final-build-0.1.17.log`）。7-Zipの`t`と隔離展開、NSIS識別マーカーだけを正規化したexe、WebView2Loader.dll、LICENSE、第三者通知の原本一致を確認した。現行3アセット（`index-aZCLh_bM.js`、`index-CNEXjZ5q.css`、`preview-worker-C5lvkIXX.js`）の同梱、ProductName=SaruMD、ProductVersion=0.1.17も確認した。既存の大きなJSチャンク・署名なし・クロスビルド警告は継続する。
+
+成果物：`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/SaruMD_0.1.17_x64-setup.exe`、6,311,127バイト、SHA-256 `5aac2dfefa0d241f4a6ec6f16df69f5192c65f209d91db9811ca35a5f66c1067`。インストーラーによる更新、commit/push、GitHub Releasesの公開は行っていない。READMEの公開版ダウンロードリンクは0.1.16を維持した。
+
 ## v0.1.16公開結果
 
 ヘルプ・バージョン情報と公開資料をコミット`2ae68ca6c4d9b80bb0983f9535d8654d3ba407ac`としてmasterへpushし、2026-11-08 00:09:18 JSTに[SaruMD v0.1.16](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.16)を公開した。APIで`isDraft=false`、`isPrerelease=true`を確認し、公開タグの対象も同コミットと一致した。Assetsは`SaruMD_0.1.16_x64-setup.exe`（6,313,815バイト）と`SHA256SUMS.txt`で、GitHub側digestはビルド済み成果物のSHA-256 `fab084704e840d50373f3b6eb117a8c9ea40aee37ffbdea1ac80ae05f3a03454`と一致した。

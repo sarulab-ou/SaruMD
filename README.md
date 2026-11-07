@@ -2,7 +2,7 @@
 
 Windows向けのMarkdownエディタです。WinMDからSaruMDへ名前を変更しました。左でソースを編集し、右でプレビューを確認できます。1文書につき1つのウィンドウが開きます。同じファイルをもう一度開くと、既存のウィンドウへ移動します。
 
-**[ダウンロード（Windows x64・インストーラー.exe）](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.16/SaruMD_0.1.16_x64-setup.exe)** · [使い方](#使い方) · [MITライセンス](LICENSE)
+**[ダウンロード（Windows x64・インストーラー.exe）](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.17/SaruMD_0.1.17_x64-setup.exe)** · [使い方](#使い方) · [MITライセンス](LICENSE)
 
 ![Windows上のSaruMD。左に日本語のMarkdownソース、右に見出し・チェックリスト・表・コードを整形したプレビューを表示しています。](docs/screenshots/editor-ja.png)
 
@@ -15,6 +15,7 @@ _旧称WinMD v0.1.8の実画面。[サンプル文書](docs/examples/notes.ja.md
 - **スクロール連動。** 左右どちらをスクロールしても、見出し・段落・リスト・表などの対応箇所へもう一方が追従します。
 - **プレビューから移動。** 右側の本文をクリックすると、左側の対応する位置へカーソルが移動します。文字位置を確定できない書式では、対応するブロックの先頭へ移動します。リンクを開く操作と文字の範囲選択は維持します。
 - **URLをクリックして開く。** ソースとプレビューのどちらでも、HTTP/HTTPSのURLを普通にクリックすると既定のブラウザで開きます。ソースのURLには下線が付き、プレビューのコード内にあるURLも開けます。ドラッグでの文字選択は維持します。
+- **ローカルファイルへのリンク。** `[記録](latest-continuation.md)`や`[JSON](summary.json)`を両ペインから開けます。相対パスは編集中の文書のフォルダーが基準です。MarkdownはSaruMD、PDF・JSON・Excelなどの文書はWindowsの既定アプリで開きます。同じMarkdownが開いていれば、そのウィンドウへ移動します。
 - **TeX数式。** `$...$`で文中の数式、`$$...$$`で独立した数式を表示します。PDF出力・印刷にも対応します。[数式のサンプル](docs/examples/math.md)で試せます。
 - **Ctrl+Vで画像を貼り付け。** 文書と同じフォルダーに`YYYYMMDD_HHMMSS.png`形式で保存し、画像リンクを挿入します。
 - **ほかのエディタと一緒に使える。** Codexなどが外部で更新すると、未保存の編集がない場合は自動反映します。SaruMDでも編集中なら、編集を保持して競合を通知します。
@@ -24,11 +25,11 @@ _旧称WinMD v0.1.8の実画面。[サンプル文書](docs/examples/notes.ja.md
 
 ## ダウンロード・インストール
 
-**[SaruMD v0.1.16 Windows x64インストーラーをダウンロード](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.16/SaruMD_0.1.16_x64-setup.exe)**
+**[SaruMD v0.1.17 Windows x64インストーラーをダウンロード](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.17/SaruMD_0.1.17_x64-setup.exe)**
 
-SaruMD v0.1.16をプレリリース（試用版）として公開しています。[リリースノート](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.16) · [SHA-256チェックサム](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.16/SHA256SUMS.txt) · [ソースからのビルド](docs/development.md)
+SaruMD v0.1.17をプレリリース（試用版）として公開しています。[リリースノート](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.17) · [SHA-256チェックサム](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.17/SHA256SUMS.txt) · [ソースからのビルド](docs/development.md)
 
-1. `SaruMD_0.1.16_x64-setup.exe`をダウンロードし、**Windows 11 x64**で実行します。
+1. `SaruMD_0.1.17_x64-setup.exe`をダウンロードし、**Windows 11 x64**で実行します。
 2. WebView2 Runtimeがない場合は、インストーラーがダウンロードします。この場合はインターネット接続が必要です。
 3. `.md`をダブルクリックで開きたい場合は、Windowsの既定アプリ設定でSaruMDを選択します。インストーラーから設定画面を開けます。
 
@@ -94,6 +95,8 @@ F5はPCのローカル時刻を使い、`2026/01/27 08:38:02`のように`yyyy/m
 - 生HTMLはエスケープし、プレビューをサニタイズします。外部画像はブロックします。
 - 文書は32 MiB以下。ローカル画像は文書フォルダー配下のPNG/JPEG/GIF/WebPで、1枚16 MiB以下・先頭100件までです。
 - 画像貼り付けは16 MiB・16メガピクセルまで。同じ秒の同名画像がある場合は、1秒待って再度貼り付けてください。画像リンクをUndoしてもPNGファイルは残ります。
+- 相対ファイルリンクは文書の保存後に使えます。`../`、日本語・空白入りのパス、ドライブ名付き絶対パス、ローカルの`file:///`にも対応します。空白入りのパスは`[文書](<sub folder/メモ.md>)`のように書けます。リンク先の見出しへの位置移動は未対応です。
+- ファイルリンクから開けるのはMarkdown、PDF、JSON、テキスト、Office文書、一般的な画像・HTMLなどの文書形式です。実行ファイル・スクリプト・ショートカット、ネットワーク先を指定するリンクは開きません。既定アプリが未設定の場合はWindows側で設定してください。
 
 ## Codexから開く
 

@@ -88,6 +88,33 @@ it('blocks external image loading by default and never gives links script URLs',
   );
 });
 
+it('keeps local links inside the click bridge and strips their metadata from print output', async () => {
+  const { frame, preview, worker } = await setup();
+  const source = '[今回の記録](latest-continuation.md) / [JSON](summary.json)';
+  preview.update(source);
+  vi.advanceTimersByTime(200);
+  worker.reply(worker.sent[0].revision, mappedMarkdownHtml(source));
+  await Promise.resolve();
+  await Promise.resolve();
+  const anchors = [...frame.contentDocument!.querySelectorAll('a')];
+  expect(anchors.map((a) => a.getAttribute('data-winmd-link'))).toEqual([
+    'latest-continuation.md',
+    'summary.json',
+  ]);
+  expect(anchors.map((a) => a.getAttribute('href'))).toEqual(['#', '#']);
+  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+    callback(0);
+    return 0;
+  });
+  const target = document.createElement('article');
+  const pending = preview.preparePrint(source, target);
+  await Promise.resolve();
+  worker.reply(worker.sent.at(-1)!.revision, mappedMarkdownHtml(source));
+  await pending;
+  expect(target.querySelector('[data-winmd-link],a[href]')).toBeNull();
+  expect(target.textContent).toBe('今回の記録 / JSON\n');
+});
+
 it('prints the latest unsaved text and keeps raw HTML and blocked images safe', async () => {
   const { preview, worker } = await setup();
   vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {

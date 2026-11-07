@@ -1,11 +1,79 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { EditorSelection } from '@codemirror/state';
 import { MarkdownEditor } from '../src/editor';
-import { httpLinks, isLinkClick, linkifyHttpText } from '../src/links';
+import {
+  httpLinks,
+  isLinkClick,
+  linkifyHttpText,
+  safeLinkReference,
+} from '../src/links';
 import { sanitizePreview } from '../src/preview';
+import { mappedMarkdownHtml } from '../src/markdown';
 
 afterEach(() => {
   document.body.replaceChildren();
+});
+
+it('keeps local Markdown destinations inert through sanitization and rejects URL handlers', () => {
+  const fragment = sanitizePreview(
+    mappedMarkdownHtml(
+      '[今回の記録](latest-continuation.md) / [JSON](summary.json) / [空白](<sub folder/日本語.md>) / [file](file:///C:/notes/a.md)',
+    ),
+  );
+  expect(
+    [...fragment.querySelectorAll('a')].map((a) =>
+      a.getAttribute('data-winmd-link'),
+    ),
+  ).toEqual([
+    'latest-continuation.md',
+    'summary.json',
+    'sub folder/日本語.md',
+    'file:///C:/notes/a.md',
+  ]);
+  expect(fragment.querySelector('a[href]')).toBeNull();
+  expect(
+    sanitizePreview(
+      '<a data-winmd-link="javascript:alert(1)">x</a>',
+    ).querySelector('[data-winmd-link]'),
+  ).toBeNull();
+  for (const raw of [
+    'javascript:alert(1)',
+    'data:text/html,x',
+    'ms-settings:display',
+    '//server/x.md',
+    'file://server/share/x.md',
+    '#heading',
+    '?query',
+    'bad\0.md',
+  ])
+    expect(safeLinkReference(raw)).toBeNull();
+  expect(safeLinkReference('C:\\notes\\a.md')).toBe('C:\\notes\\a.md');
+});
+
+it('makes source Markdown labels and destinations clickable without changing text or code', () => {
+  const host = document.createElement('div');
+  document.body.append(host);
+  const text =
+    '[今回の記録](latest-continuation.md) / [JSON](summary.json)\n\n[空白](<sub folder/日本語.md>)\n\n`[コード](ignore.md)`\n\n![画像](image.png)';
+  const editor = new MarkdownEditor(host, text, false, vi.fn(), undefined, {
+    open: vi.fn(),
+    report: vi.fn(),
+  });
+  try {
+    expect(
+      [...host.querySelectorAll<HTMLElement>('.cm-file-link')].map(
+        (a) => a.dataset.linkReference,
+      ),
+    ).toEqual([
+      'latest-continuation.md',
+      'summary.json',
+      'sub folder/日本語.md',
+    ]);
+    expect(editor.view.state.doc.toString()).toBe(text);
+    expect(editor.canUndo).toBe(false);
+  } finally {
+    editor.view.destroy();
+  }
 });
 
 it('recognizes URLs without absorbing Markdown delimiters or sentence punctuation', () => {

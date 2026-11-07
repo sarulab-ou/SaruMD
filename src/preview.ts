@@ -1,5 +1,10 @@
 import DOMPurify from 'dompurify';
-import { isLinkClick, linkifyHttpText, safeHttpUrl } from './links';
+import {
+  isLinkClick,
+  linkifyHttpText,
+  safeHttpUrl,
+  safeLinkReference,
+} from './links';
 import { hydrateMath, mathStyles } from './math-preview';
 import { boundedDebounce } from './scheduler';
 import { waitForPrintImage } from './printing';
@@ -53,10 +58,21 @@ export function sanitizePreview(html: string): DocumentFragment {
       'data-winmd-math',
       'data-winmd-from',
       'data-winmd-display',
+      'data-winmd-link',
     ],
     ALLOW_DATA_ATTR: false,
+    // Inert link metadata, never a DOM navigation target. Validate separately below.
+    ADD_URI_SAFE_ATTR: ['data-winmd-link'],
     FORBID_ATTR: ['style', 'src', 'srcset', 'id', 'name'],
   }) as DocumentFragment;
+  fragment.querySelectorAll('[data-winmd-link]').forEach((anchor) => {
+    const reference = safeLinkReference(
+      anchor.getAttribute('data-winmd-link')!,
+    );
+    if (anchor.tagName !== 'A' || !reference)
+      anchor.removeAttribute('data-winmd-link');
+    else anchor.setAttribute('data-winmd-link', reference);
+  });
   hydrateMath(fragment);
   return fragment;
 }
@@ -124,7 +140,11 @@ export class Preview {
             const anchor = target.closest('a');
             if (anchor) {
               event.preventDefault();
-              const url = safeHttpUrl(anchor.getAttribute('href') ?? '');
+              const url = safeLinkReference(
+                anchor.getAttribute('data-winmd-link') ??
+                  anchor.getAttribute('href') ??
+                  '',
+              );
               if (
                 url &&
                 isLinkClick(event, doc.getSelection()?.isCollapsed === false)
@@ -268,6 +288,10 @@ export class Preview {
     target.replaceChildren(
       ...[...this.body.childNodes].map((node) => node.cloneNode(true)),
     );
+    target.querySelectorAll('[data-winmd-link]').forEach((anchor) => {
+      anchor.removeAttribute('data-winmd-link');
+      anchor.removeAttribute('href');
+    });
     await Promise.all(
       [...target.querySelectorAll('img')].map(waitForPrintImage),
     );
@@ -289,6 +313,15 @@ export class Preview {
     this.lines = locations.lineCount;
     const blocks = locations.blocks;
     fragment.querySelectorAll('a').forEach((a) => {
+      const reference = safeLinkReference(
+        a.getAttribute('data-winmd-link') ?? a.getAttribute('href') ?? '',
+      );
+      if (reference && !safeHttpUrl(reference)) {
+        a.setAttribute('data-winmd-link', reference);
+        a.setAttribute('href', '#');
+        return;
+      }
+      a.removeAttribute('data-winmd-link');
       const url = safeHttpUrl(a.getAttribute('href') ?? '');
       if (url) {
         a.setAttribute('href', url);

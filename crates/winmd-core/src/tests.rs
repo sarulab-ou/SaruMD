@@ -1,11 +1,147 @@
 use crate::{
     document::Documents,
     file_io::{self, LineEnding, NoFault, SaveHooks},
-    images, Result,
+    images,
+    links::{self, LinkTarget},
+    Result,
 };
 use std::{fs, path::Path};
 
 struct FailAt(&'static str);
+
+#[test]
+fn local_links_resolve_from_the_document_and_route_by_canonical_file_type() {
+    let dir = tempfile::tempdir().unwrap();
+    let folder = dir.path().join("reports");
+    fs::create_dir(&folder).unwrap();
+    let document = folder.join("summary.md");
+    fs::write(
+        &document,
+        "[記録](latest-continuation.md) / [JSON](summary.json)",
+    )
+    .unwrap();
+    for name in [
+        "latest-continuation.md",
+        "summary.json",
+        "空白 (1).MARKDOWN",
+        "data.PDF",
+    ] {
+        fs::write(folder.join(name), "content").unwrap();
+    }
+    let md = folder
+        .join("latest-continuation.md")
+        .canonicalize()
+        .unwrap();
+    assert_eq!(
+        links::resolve(Some(&document), "latest-continuation.md").unwrap(),
+        LinkTarget::Markdown(md.clone())
+    );
+    assert_eq!(
+        links::resolve(Some(&document), "./latest-continuation.md#heading").unwrap(),
+        LinkTarget::Markdown(md.clone())
+    );
+    assert_eq!(
+        links::resolve(
+            None,
+            md.to_str()
+                .unwrap()
+                .strip_prefix(r"\\?\")
+                .unwrap_or(md.to_str().unwrap())
+        )
+        .unwrap(),
+        LinkTarget::Markdown(md.clone())
+    );
+    let uri = url::Url::from_file_path(&md).unwrap();
+    assert_eq!(
+        links::resolve(None, uri.as_str()).unwrap(),
+        LinkTarget::Markdown(md)
+    );
+    assert_eq!(
+        links::resolve(Some(&document), "summary.json").unwrap(),
+        LinkTarget::File(folder.join("summary.json").canonicalize().unwrap())
+    );
+    assert!(matches!(
+        links::resolve(Some(&document), "%E7%A9%BA%E7%99%BD%20(1).MARKDOWN").unwrap(),
+        LinkTarget::Markdown(_)
+    ));
+    assert!(matches!(
+        links::resolve(Some(&document), "data.PDF").unwrap(),
+        LinkTarget::File(_)
+    ));
+    fs::write(dir.path().join("parent.md"), "parent").unwrap();
+    assert_eq!(
+        links::resolve(Some(&document), "../parent.md").unwrap(),
+        LinkTarget::Markdown(dir.path().join("parent.md").canonicalize().unwrap())
+    );
+    let mut docs = Documents::default();
+    let target = folder.join("latest-continuation.md");
+    let (id, _) = docs.open(&target).unwrap();
+    docs.edit(&id, "unsaved".into(), 1).unwrap();
+    let LinkTarget::Markdown(resolved) =
+        links::resolve(Some(&document), "latest-continuation.md").unwrap()
+    else {
+        panic!("wrong route")
+    };
+    assert_eq!(docs.open(&resolved).unwrap(), (id.clone(), false));
+    assert_eq!(docs.get(&id).unwrap().snapshot.text, "unsaved");
+}
+
+#[test]
+fn local_links_reject_missing_unsaved_remote_device_and_executable_targets() {
+    let dir = tempfile::tempdir().unwrap();
+    let document = dir.path().join("summary.md");
+    for name in [
+        "run.exe",
+        "run.cmd",
+        "run.ps1",
+        "run.py",
+        "shortcut.lnk",
+        "page.url",
+        "script.js",
+    ] {
+        fs::write(dir.path().join(name), "do not execute").unwrap();
+        assert!(links::resolve(Some(&document), name).is_err(), "{name}");
+    }
+    for reference in [
+        "",
+        "#heading",
+        "javascript:alert(1)",
+        "javascript%3Aalert(1)",
+        "data:text/html,x",
+        "mailto:a@b.test",
+        "missing.md",
+        "//server/share/x.md",
+        r"\\server\share\x.md",
+        r"\\?\C:\x.md",
+        "file://server/share/x.md",
+        "C:relative.md",
+        "file:///C:/x.md?query",
+        "x.md%00.exe",
+        "x.md:stream",
+        "bad%FF.md",
+    ] {
+        assert!(
+            links::resolve(Some(&document), reference).is_err(),
+            "{reference}"
+        );
+    }
+    assert!(links::resolve(None, "relative.md")
+        .unwrap_err()
+        .contains("保存"));
+    assert!(links::resolve(Some(&document), ".")
+        .unwrap_err()
+        .contains("ファイルでは"));
+    assert!(matches!(
+        links::resolve(None, "https://example.com/").unwrap(),
+        LinkTarget::Web(_)
+    ));
+    #[cfg(unix)]
+    {
+        std::os::unix::fs::symlink(dir.path().join("run.exe"), dir.path().join("safe.json"))
+            .unwrap();
+        assert!(links::resolve(Some(&document), "safe.json").is_err());
+    }
+}
 impl SaveHooks for FailAt {
     fn stage(&self, stage: &str) -> Result<()> {
         if stage == self.0 {
