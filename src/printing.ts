@@ -1,3 +1,10 @@
+/** Match the native PDF picker's file_stem + .pdf rule, without any directory or dirty marker. */
+export function pdfFileName(path: string | null): string {
+  const name = path?.split(/[\\/]/).pop() || '無題';
+  const extension = name.lastIndexOf('.');
+  return `${extension > 0 ? name.slice(0, extension) : name}.pdf`;
+}
+
 /** A missing/slow image must be reported instead of silently omitted from a PDF. */
 export async function waitForPrintImage(
   image: HTMLImageElement,

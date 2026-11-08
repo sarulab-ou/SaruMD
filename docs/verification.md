@@ -1,5 +1,21 @@
 # 検証記録（最終更新：2026-11-08）
 
+## v0.1.20公開準備
+
+ユーザーの「release add commit push」の指示を受け、印刷・PDF用の名前を揃えた0.1.20を公開対象とした。READMEの直接ダウンロードリンク、開発ガイド、告知案を0.1.20へ更新し、`docs/releases/v0.1.20.md`に変更点・導入手順・確認範囲・SHA-256を記載した。実装時の自動検査と検証済みインストーラーを引き継ぐ。以下の「未コミット・未公開」はビルド作成時点の履歴として保持する。
+
+## 更新版0.1.20：印刷・PDF用の名前
+
+PDFエクスポートの保存ダイアログは既存のRust処理で`file_stem + .pdf`を既定名としていた。一方、印刷に渡すHTML文書のtitleは固定の「無題」だったため、refresh時に元文書のbasenameから拡張子を除いて.pdfを付けた名前へ同期するよう変更した。例は`sample.md`→`sample.pdf`、`議事録.v2.MD`→`議事録.v2.pdf`、未保存の新規文書は`無題.pdf`。保存先の変更後も更新する。非同期の印刷画面が参照できるよう即座にタイトルを戻さず、ネイティブウィンドウのタイトルは従来どおりRustが`ファイル名 (フルパス)`で管理する。原本の保存・PDFの安全な保存処理と権限は変更しない。
+
+型検査、Vitest 13ファイル64件、ESLint、Prettier全体チェック、Vite buildが成功。追加の命名試験は日本語・空白・複数のドット・大文字拡張子・markdown拡張子・UNC/拡張長パス・未保存・拡張子なし・ドットファイルを確認する。RustはLinux16件・Windows17件、Windows desktop/Linux coreのall-targets clippy（-D warnings）、fmt checkが成功（`.tools/validate-0.1.20.log`）。Rustの実装変更はなく、バージョンを0.1.20へ更新した。
+
+jsdomで実際のmain.tsのrefresh関数とpdfFileNameを読み込み、通常パス・日本語/空白/複数ドット・保存先変更・未保存への切り替えでHTML titleが期待するPDF名となり、アドレス欄とネイティブタイトルへのdirty引数が保たれることを確認した（`.tools/print-name-probe-result.json`）。ネイティブタイトルのIPCは代替関数である。Windows/WebView2の印刷/PDF保存ダイアログ、Microsoft Print to PDFを含むドライバー別の既定ファイル名、実プリンターへの印刷は今回未検証。
+
+Windows x64 GNUリリースとNSIS生成が成功（`.tools/final-build-0.1.20.log`）。7-Zipの`t`・隔離展開、NSIS識別マーカーだけを正規化したexe、WebView2Loader.dll、LICENSE、第三者通知の原本一致を確認した。現行3アセット（`index-CXqSFmnh.js`、`index-8pPc7Cnx.css`、`preview-worker-C5lvkIXX.js`）の同梱とProductName=SaruMD、ProductVersion=0.1.20を確認した。既存の大きなJSチャンク・署名なし・クロスビルド警告は継続する。
+
+成果物：`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/SaruMD_0.1.20_x64-setup.exe`、6,311,609バイト、SHA-256 `ec4453e6221fc4246dba1dff7187cf9944f75e8ea1466c86cfe807f9d64b3ef0`。実インストール、commit/push、GitHub Releases公開は行っていない。READMEの公開ダウンロードリンクは0.1.19を維持した。
+
 ## v0.1.19公開結果
 
 リンク先のポップアップと公開資料をコミット`3182747bbb67d5c140119d86b9b1b2e67bd14635`としてmasterへpushし、2026-11-08 07:44:25 JSTに[SaruMD v0.1.19](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.19)を公開した。APIで`isDraft=false`、`isPrerelease=true`を確認し、公開タグの対象も同コミットと一致した。Assetsは`SaruMD_0.1.19_x64-setup.exe`（6,310,679バイト）と`SHA256SUMS.txt`で、GitHub側digestは検証済み成果物のSHA-256 `799729398c446269d25e5f12879808e6d406e1aef2d335e6334692d165f8a423`と一致した。

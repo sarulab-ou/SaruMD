@@ -13,6 +13,7 @@ import { setupMenus } from './menu';
 import { editorScrollPane, ScrollSync } from './scroll-sync';
 import { mathStyles } from './math-preview';
 import { setupLinkStatus } from './links';
+import { pdfFileName } from './printing';
 
 const state = new DocumentState();
 const mathStyle = document.createElement('style');
@@ -121,6 +122,10 @@ const externalSync = new ExternalSync(
 );
 
 function refresh(): void {
+  // WebView2 uses the page title for print/PDF naming. Keep it stable after ShowPrintUI,
+  // whose dialog may consume it asynchronously; the native window title is managed separately.
+  const printName = pdfFileName(state.path);
+  if (document.title !== printName) document.title = printName;
   const path = (state.path ?? '')
     .replace(/^\\\\\?\\UNC\\/i, '\\\\')
     .replace(/^\\\\\?\\/, '');

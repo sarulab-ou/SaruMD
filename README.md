@@ -2,7 +2,7 @@
 
 Windows向けのMarkdownエディタです。WinMDからSaruMDへ名前を変更しました。左でソースを編集し、右でプレビューを確認できます。1文書につき1つのウィンドウが開きます。同じファイルをもう一度開くと、既存のウィンドウへ移動します。
 
-**[ダウンロード（Windows x64・インストーラー.exe）](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.19/SaruMD_0.1.19_x64-setup.exe)** · [使い方](#使い方) · [MITライセンス](LICENSE)
+**[ダウンロード（Windows x64・インストーラー.exe）](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.20/SaruMD_0.1.20_x64-setup.exe)** · [使い方](#使い方) · [MITライセンス](LICENSE)
 
 ![Windows上のSaruMD。左に日本語のMarkdownソース、右に見出し・チェックリスト・表・コードを整形したプレビューを表示しています。](docs/screenshots/editor-ja.png)
 
@@ -26,11 +26,11 @@ _旧称WinMD v0.1.8の実画面。[サンプル文書](docs/examples/notes.ja.md
 
 ## ダウンロード・インストール
 
-**[SaruMD v0.1.19 Windows x64インストーラーをダウンロード](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.19/SaruMD_0.1.19_x64-setup.exe)**
+**[SaruMD v0.1.20 Windows x64インストーラーをダウンロード](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.20/SaruMD_0.1.20_x64-setup.exe)**
 
-SaruMD v0.1.19をプレリリース（試用版）として公開しています。[リリースノート](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.19) · [SHA-256チェックサム](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.19/SHA256SUMS.txt) · [ソースからのビルド](docs/development.md)
+SaruMD v0.1.20をプレリリース（試用版）として公開しています。[リリースノート](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.20) · [SHA-256チェックサム](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.20/SHA256SUMS.txt) · [ソースからのビルド](docs/development.md)
 
-1. `SaruMD_0.1.19_x64-setup.exe`をダウンロードし、**Windows 11 x64**で実行します。
+1. `SaruMD_0.1.20_x64-setup.exe`をダウンロードし、**Windows 11 x64**で実行します。
 2. WebView2 Runtimeがない場合は、インストーラーがダウンロードします。この場合はインターネット接続が必要です。
 3. `.md`をダブルクリックで開きたい場合は、Windowsの既定アプリ設定でSaruMDを選択します。インストーラーから設定画面を開けます。
 
@@ -46,7 +46,7 @@ SaruMD v0.1.19をプレリリース（試用版）として公開しています
 4. 画像をコピーして、エディタで**Ctrl+V**。文書の隣に`20261026_231824.png`のようなPNGを保存し、Markdownの画像リンクを挿入します。新規文書は先に保存します。
 5. **Alt+F**で「ファイル (F)」を開き、**PDFにエクスポート**または**印刷（Ctrl+P）**を選びます。
 
-PDFはA4縦で、本文だけを出力します。PDF出力・印刷によってMarkdownの原本を保存することはありません。外部画像はプレビュー・出力ともにブロックします。
+PDFはA4縦で、本文だけを出力します。PDF出力の既定名と印刷用の文書名は、`sample.md`なら`sample.pdf`です。未保存の新規文書は`無題.pdf`になります。PDF出力・印刷によってMarkdownの原本を保存することはありません。外部画像はプレビュー・出力ともにブロックします。
 
 ## 数式の書き方
 

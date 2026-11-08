@@ -1,5 +1,19 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { waitForPrintImage } from '../src/printing';
+import { pdfFileName, waitForPrintImage } from '../src/printing';
+
+it('uses the source basename with a single PDF extension for print naming', () => {
+  for (const [path, expected] of [
+    ['C:\\notes\\sample.md', 'sample.pdf'],
+    ['C:\\日本語 メモ\\議事録.v2.MD', '議事録.v2.pdf'],
+    ['\\\\?\\C:\\notes\\sample.markdown', 'sample.pdf'],
+    ['\\\\server\\share\\sample.md', 'sample.pdf'],
+    ['/notes/my notes.md', 'my notes.pdf'],
+    ['untitled', 'untitled.pdf'],
+    ['.md', '.md.pdf'],
+    [null, '無題.pdf'],
+  ] as const)
+    expect(pdfFileName(path)).toBe(expected);
+});
 
 describe('print image readiness', () => {
   afterEach(() => vi.useRealTimers());
