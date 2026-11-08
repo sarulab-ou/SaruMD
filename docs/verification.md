@@ -1,5 +1,11 @@
 # 検証記録（最終更新：2026-11-08）
 
+## v0.1.20公開結果
+
+印刷・PDF用の名前と公開資料をコミット`c83a27879174affe12031d70ba7fc14581e7d4dc`としてmasterへpushし、2026-11-08 09:22:13 JSTに[SaruMD v0.1.20](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.20)を公開した。APIで`isDraft=false`、`isPrerelease=true`を確認し、公開タグの対象も同コミットと一致した。Assetsは`SaruMD_0.1.20_x64-setup.exe`（6,311,609バイト）と`SHA256SUMS.txt`で、GitHub側digestは検証済み成果物のSHA-256 `ec4453e6221fc4246dba1dff7187cf9944f75e8ea1466c86cfe807f9d64b3ef0`と一致した。
+
+認証ヘッダー・Cookie・curl設定ファイルを使わず公開URLから両Assetsを取得し、`sha256sum -c SHA256SUMS.txt`でOKを確認した。公開READMEは原本とバイト一致し、リリースHTMLにもexeへの直接リンクを確認した（`.tools/public-release-0.1.20/`）。公開前のPrettier全体・Git差分チェック、7-Zip検査、同梱exe/アセット/DLL/ライセンス照合も成功した。ビルド後に実装・依存・配布物は変更していないため、以下の64件のフロントエンドテスト・Rust検査・命名とrefreshのDOM確認を引き継ぐ。印刷/PDF保存ダイアログとドライバー別既定名、実プリンターへの印刷、インストーラー全体のGUI受入は未検証のままである。過去のリリースは保持した。
+
 ## v0.1.20公開準備
 
 ユーザーの「release add commit push」の指示を受け、印刷・PDF用の名前を揃えた0.1.20を公開対象とした。READMEの直接ダウンロードリンク、開発ガイド、告知案を0.1.20へ更新し、`docs/releases/v0.1.20.md`に変更点・導入手順・確認範囲・SHA-256を記載した。実装時の自動検査と検証済みインストーラーを引き継ぐ。以下の「未コミット・未公開」はビルド作成時点の履歴として保持する。
