@@ -1,5 +1,35 @@
 # 検証記録（最終更新：2026-11-13）
 
+## v0.1.22公開準備
+
+ユーザーの「release add commit push」の指示を受け、ZIP更新へ変更した0.1.22を公開対象とした。READMEのタイトル・直接ダウンロード・ZIPリンク、開発ガイド、告知案を0.1.22へ更新し、`docs/releases/v0.1.22.md`へ移行手順・確認範囲・両ファイルのSHA-256を記載した。以下の自動検査と検証済みの配布物を引き継ぎ、初回導入用exe・更新用ZIP・SHA256SUMS.txtの3点を公開する。以下の未公開・未適用の記述はビルド作成時点の履歴として保持する。
+
+## 更新版0.1.22：インストーラーを起動しないZIP更新
+
+アプリ内更新を、固定GitHubリポジトリの`SaruMD_<version>_x64-update.zip`を取得して4つのアプリファイルを置き換える方式に変更した。ZIPとmanifestの版・パス・サイズ・SHA-256、exeのProductVersionを検証する。保存確認と複数文書の順次終了は既存の保護を維持し、ZIPの検証と書き込み可能性の確認が終わるまで終了要求を送らない。終了後はバックアップ付きFile.Replaceでexeを最後に置き換え、新版を直接再起動する。関連付け・アンインストーラー・文書・ユーザーデータには触れない。ZIPがない場合のNSISへのフォールバックもない。
+
+`scripts/package-update.ps1`で実行ファイル・DLL・ライセンス2件と`update.json`をまとめる。同じ入力の再パッケージ化はバイト一致し、NSISがある場合はZIPとexeの両方のチェックサムを生成する。今後の公開時はexe・ZIP・SHA256SUMS.txtの3点を添付する。公開済み0.1.21の更新処理は旧仕様のままなので、初回移行はインストーラーまたは終了後の手動ZIP展開が必要である。READMEの公開版タイトルとリンクは0.1.21を維持した。
+
+Windows PowerShell 5.1の隔離テストが成功した（`.tools/update-zip-tests.json`）。実際の共通処理とローカル生成の模擬exeを使い、親プロセスの終了待ち、ファイル置き換えと新版再起動、日本語・空白入りの更新先、文書/アンインストーラーの保持を確認した。DLLの排他ロックで途中失敗した場合と、新版が起動直後に非0で終了した場合は、旧ファイルのハッシュ復元と旧版再起動を確認した。パストラバーサル・重複・リンク属性・版/サイズ違い・改変されたpayloadの拒否も成功した。補助プロセスの実際のEncodedCommand経路で更新・再起動・ZIP/payloadキャッシュ掃除まで成功した。エラー時のMessageBoxだけコンソールへ差し替え、ユーザーの実アプリや文書は変更していない。
+
+統合確認で、起動元から継承されたPSModulePathによってWindows PowerShell 5.1のGet-FileHashを読み込めないケースを検出し、子プロセスのモジュール検索先をWindows標準へ固定した。日本語スクリプトはBOM付きUTF-8で保存し、ネイティブ呼び出しをEncodedCommandに統一した。修正後、実際のRust→PowerShell経路でローカルZIPのハッシュ・展開・再検証が成功した（`.tools/update-native-local-0.1.22.log`）。GitHubへの実接続で現在版0.1.22に新しい公開版がない判定も成功した（`.tools/update-current-probe-0.1.22.log`）。ローカル検査ではGitHub形式の模擬メタデータを使い、公開ZIPを取得したとの主張はしない。
+
+`pnpm run check`、Vitest 14ファイル69件、`pnpm run lint`、`pnpm run build`、Rust Linux core20件・Windows core22件、Windows desktop/Linux coreのall-targets clippy（-D warnings）、fmt checkが成功した（`.tools/validate-0.1.22.log`）。Windows固有の試験は更新ロック中の起動待ちと解除後の復帰も確認する。`pnpm run package:update`と`pnpm run test:update`も成功した。パッケージ化スクリプト側にもWindows標準モジュールの検索先を指定し、pnpm経由でもGet-FileHashを使用できることを確認した。依存通知は502パッケージ分を再生成した。
+
+最終Windows GNU releaseとNSISが成功した（`.tools/final-build-0.1.22.log`）。exeのProductVersion=0.1.22、現行3アセット（`index-l0lks9X4.js`、`index-8pPc7Cnx.css`、`preview-worker-C5lvkIXX.js`）、更新用PowerShell3件、DLL・ライセンス通知の同梱一致を確認した。NSIS識別マーカーだけを正規化したexeはビルド原本と一致した（`.tools/installer-audit-0.1.22.json`）。ZIP/NSISの7-Zip検査・隔離展開とZIPのmanifest内4ファイルの原本一致も成功し、最終製品ZIPを実際のRust→PowerShell経路で再検証した（`.tools/update-artifact-audit-0.1.22.json`、`.tools/update-native-build-0.1.22.log`）。配布スナップショットの両ファイルは`sha256sum -c SHA256SUMS.txt`でもOKだった。
+
+成果物は`target/verified/x86_64-pc-windows-gnu/release/bundle/update/SaruMD_0.1.22_x64-update.zip`、9,113,238バイト、SHA-256 `bd06b98f802f89d8fcfb2ebd43e3c03a7c2728adcf0b20ead4a44a0b1b244ebd`。初回導入用は`bundle/nsis/SaruMD_0.1.22_x64-setup.exe`、6,391,970バイト、SHA-256 `7c6442ca9c2afbd414faca4687c1dcaaf8258ed7e8a1b342295ab42ff1538286`。既存の大きなJSチャンク・GNUクロスビルド・署名なしの警告は継続する。
+
+実アプリでの保存確認→ZIP更新→再起動全体のGUI受入、実公開ZIPのダウンロード、MSVCビルドは未実施。複数ファイル全体の原子性や電源断からの自動回復は保証しない。失敗結果が不確定な場合はバックアップを保持する。既存の0.1.21実機確認記録は以下へ残す。今回の変更についてcommit/push・Releases公開は行っていない。インストール済みの実アプリには今回の変更を適用していない。
+
+## v0.1.21の導入・ヘルプメニューの実機確認
+
+「ヘルプ (H)」内の「バージョン情報」「更新」の依頼を受け、公開版0.1.21に両項目が実装済みであることを確認した。このPCの導入済みexeは0.1.20で、SaruMDの起動プロセスはなかった。公開時に検証したインストーラーのSHA-256を再照合し、`/P /UPDATE`で更新した。終了コード0、インストール先`%LOCALAPPDATA%\SaruMD\SaruMD.exe`のProductVersion=0.1.21を確認した。文書の強制終了は行っていない。
+
+導入済みアプリを新規の空文書で起動し、Windows/WebView2実画面で「ヘルプ (H)」→「バージョン情報」にSaruMD 0.1.21とMITライセンスが表示されること、Escで戻れることを確認した。Alt+Hで同メニューを開き、「更新…」をクリックしてGitHubへ接続し、「新しい更新はありません。現在：SaruMD 0.1.21」と表示されることを確認した。OKで戻り、フッターが「最新版を使用しています」へ変わった。確認後は空文書のヘルプメニューを開いた状態で残した。
+
+実装変更はない。既存のjsdomメニュー検査も成功した。ここで確認したのはインストーラー単体による導入と、導入後のヘルプ・更新なしの導線である。アプリ内更新による複数文書の保存/終了確認から補助プロセス・インストール・自動再起動までの一連のGUI受入は引き続き未実施。以下の公開時点の検証記録は履歴として保持する。
+
 ## v0.1.21公開結果
 
 GitHub更新機能と公開資料をコミット`8ab65fb8d3c9be3d8ea5fcff7f1674072f9fecb1`としてmasterへpushし、2026-11-13 13:33:41 JSTに[SaruMD v0.1.21](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.21)を公開した。APIで`draft=false`、`prerelease=true`を確認し、公開タグの対象も同コミットと一致した。Assetsは`SaruMD_0.1.21_x64-setup.exe`（6,387,866バイト）と`SHA256SUMS.txt`で、GitHub側digestは検証済み成果物のSHA-256 `09978db73c3a31339a44635c5627478d4bd96f718387f23776ee376683ad3600`と一致した。

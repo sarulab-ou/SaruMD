@@ -1,6 +1,6 @@
 {
   "name": "sarumd",
-  "version": "0.1.21",
+  "version": "0.1.22",
   "private": true,
   "type": "module",
   "license": "MIT",
@@ -17,7 +17,9 @@
     "desktop:dev": "tauri dev",
     "desktop:build": "tauri build --target x86_64-pc-windows-msvc --bundles nsis",
     "licenses": "node scripts/licenses.mjs",
-    "test:links": "node scripts/test-links.mjs"
+    "test:links": "node scripts/test-links.mjs",
+    "package:update": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/package-update.ps1",
+    "test:update": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/test-update-package.ps1"
   },
   "dependencies": {
     "@codemirror/commands": "^6.10.0",

@@ -1,6 +1,6 @@
 use crate::{
     state::AppState,
-    update_download::{download, find_update, powershell, Staged},
+    update_download::{download, find_update, powershell, verify_payload, Staged, FILE_OPERATIONS},
 };
 use std::{fs::File, process::Child};
 use tauri::{AppHandle, Emitter, Manager};
@@ -114,10 +114,18 @@ pub fn begin(app: &AppHandle, owner: &str) -> Result<()> {
         .staged
         .as_ref()
         .ok_or("更新ファイルを先にダウンロードしてください。")?;
-    updates::verify_installer(
+    updates::verify_package(
         &staged.candidate,
         File::open(&staged.path).map_err(|e| e.to_string())?,
     )?;
+    verify_payload(staged)?;
+    // Fail before closing documents if the installation directory is not writable.
+    let executable = std::env::current_exe().map_err(|e| e.to_string())?;
+    let directory = executable.parent().ok_or("インストール先がありません。")?;
+    let _probe = tempfile::Builder::new()
+        .prefix(".sarumd-write-")
+        .tempdir_in(directory)
+        .map_err(|_| "アプリのフォルダーに書き込めません。更新は開始しませんでした。")?;
     let ids = state.lock()?.docs.keys().cloned().collect();
     update.session += 1;
     update.closing = Some(CloseSequence::new(update.session, ids));
@@ -153,7 +161,7 @@ pub fn cancel(app: &AppHandle, owner: &str, session: Option<u64>) -> Result<()> 
     let state = app.state::<AppState>();
     let mut update = state.update()?;
     if update.installing {
-        return Err("インストーラーへの引き渡しを開始しています。".into());
+        return Err("更新ファイルへの置き換えを開始しています。".into());
     }
     let matches = match session {
         Some(session) => update
@@ -181,20 +189,25 @@ pub fn cancel(app: &AppHandle, owner: &str, session: Option<u64>) -> Result<()> 
 /// Called only AFTER the last document passed its ordinary save/discard guard.
 pub fn launch_helper(update: &mut State) -> Result<Child> {
     let staged = update.staged.as_mut().ok_or("更新ファイルがありません。")?;
-    updates::verify_installer(
+    updates::verify_package(
         &staged.candidate,
         File::open(&staged.path).map_err(|e| e.to_string())?,
     )?;
     let executable = std::env::current_exe().map_err(|e| e.to_string())?;
-    let directory = executable
+    let raw = executable
         .parent()
         .ok_or("インストール先がありません。")?
-        .to_string_lossy()
-        .trim_start_matches(r"\\?\")
-        .to_string();
-    let child = powershell(include_str!("update-helper.ps1"))?
+        .to_string_lossy();
+    let directory = if let Some(unc) = raw.strip_prefix(r"\\?\UNC\") {
+        format!(r"\\{unc}")
+    } else {
+        raw.strip_prefix(r"\\?\").unwrap_or(&raw).to_string()
+    };
+    let script = format!("{FILE_OPERATIONS}\n{}", include_str!("update-helper.ps1"));
+    let child = powershell(&script)?
         .env("SARUMD_UPDATE_PARENT", std::process::id().to_string())
-        .env("SARUMD_UPDATE_INSTALLER", &staged.path)
+        .env("SARUMD_UPDATE_ARCHIVE", &staged.path)
+        .env("SARUMD_UPDATE_VERSION", &staged.candidate.version)
         .env("SARUMD_UPDATE_HASH", &staged.candidate.sha256)
         .env("SARUMD_UPDATE_DIRECTORY", directory)
         .spawn()

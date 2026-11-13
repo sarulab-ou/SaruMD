@@ -61,15 +61,15 @@ pnpm desktop:build
 設定されたbeforeBuildCommandが型チェックとフロントエンドビルドを実行し、NSISを作成します。ワークスペースルートの標準出力先：
 
 - `target/x86_64-pc-windows-msvc/release/SaruMD.exe`
-- `target/x86_64-pc-windows-msvc/release/bundle/nsis/SaruMD_0.1.21_x64-setup.exe`
+- `target/x86_64-pc-windows-msvc/release/bundle/nsis/SaruMD_0.1.22_x64-setup.exe`
 
-`CARGO_TARGET_DIR`で出力先を変更できます。今回生成したGNU試用版は`target/verified/x86_64-pc-windows-gnu/release/`にあります。公開用の[v0.1.21リリース](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.21)からインストーラーとSHA-256チェックサムを取得できます。
+`CARGO_TARGET_DIR`で出力先を変更できます。今回生成したGNU試用版は`target/verified/x86_64-pc-windows-gnu/release/`にあります。公開用の[v0.1.22リリース](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.22)から初回導入用インストーラー・更新用ZIP・SHA-256チェックサムを取得できます。
 
 MSVC版は今回未生成です。Tauriが公式にサポートするWindowsターゲットはMSVCです。[公式Windowsビルド資料](https://v2.tauri.app/distribute/windows-installer/)
 
 ## 配布と関連付け
 
-NSISはユーザー単位でインストールします。0.1.21から「ヘルプ → 更新…」で手動更新できます。コード署名と定期的な自動チェックは設定していません。WebView2が不足する場合はMicrosoftのbootstrapperをダウンロードします。WebView2導入済みなら、アプリのライブラリ・フォント・スタイルはローカルに揃います。[公式WebView2取扱い](https://v2.tauri.app/distribute/windows-installer/#webview2-installation-options)
+NSISは初回導入用で、ユーザー単位でインストールします。0.1.22以降の「ヘルプ → 更新…」はZIPを取得してファイルを置き換える方式です。0.1.21の更新は従来のNSIS方式です。コード署名と定期的な自動チェックは設定していません。WebView2が不足する場合は初回インストーラーがMicrosoftのbootstrapperをダウンロードします。ZIP自体はWebView2 Runtimeを導入しません。[公式WebView2取扱い](https://v2.tauri.app/distribute/windows-installer/#webview2-installation-options)
 
 `.md`と`.markdown`のOpenWith候補、ProgID、RegisteredApplications/CapabilitiesをHKCUへ登録します。既定値やUserChoiceは変更しません。通常の対話インストールでは、ユーザーが「はい」を選んだ場合だけWindows設定を開きます。サイレント・パッシブ・更新モードでは開きません。アンインストールはWindows設定から行います。
 
@@ -77,12 +77,22 @@ NSISはユーザー単位でインストールします。0.1.21から「ヘル�
 
 ## 更新のダウンロードだけを検査する
 
-`src-tauri/examples/update_probe.rs`は製品と同じ取得・検証関数を使い、GitHubの公開配布物を一時フォルダーへダウンロードします。インストーラーの実行、文書の終了、インストール先の変更は行いません。ネットワーク接続が必要です。
+配布ビルド後に更新用ZIPを作成します。実行ファイルとDLLに加え、リポジトリのライセンス通知を含めます。Windows PowerShell 5.1で実行できるよう、共有の更新処理・パッケージ化・テストのPS1はUTF-8 BOM付きで保存します。ネイティブコマンドは同じ共有処理をUTF-8で埋め込み、先頭BOMを除きUTF-16LE/Base64のEncodedCommandで実行します。子プロセスのPSModulePathはWindows標準モジュールに固定し、PowerShell 7などから継承する設定差を避けます。
+
+```powershell
+$env:CI='true'
+pnpm package:update -BuildDirectory target/x86_64-pc-windows-msvc/release
+pnpm test:update
+```
+
+GNU検証環境は`-BuildDirectory target/verified/x86_64-pc-windows-gnu/release`を指定します。出力先はビルド先の`bundle/update/`です。ZIPは`SaruMD_<version>_x64-update.zip`、内容は4ファイルと`update.json`です。同じビルドを再度パッケージ化した場合は同じZIPになります。パッケージ化後、製品と同じ展開・検証関数で内容を確認します。NSISが同じビルド先にある場合、`SHA256SUMS.txt`にはZIPとNSISの両方を含めます。リリース時は**初回導入用exe・更新用ZIP・SHA256SUMS.txtの3点**をGitHub Releasesへ添付してください。ZIPがないリリースは0.1.22以降の更新に使えません。
+
+`src-tauri/examples/update_probe.rs`は製品と同じ取得・検証関数を使い、GitHubの公開ZIPを一時フォルダーへダウンロード・検証します。プログラムの実行、文書の終了、インストール先の変更は行いません。通常はネットワーク接続が必要です。`--local <ZIP> <リリース情報JSON>`ではローカルZIPを使って同じRust/PowerShell経路を検査できます。JSONはGitHub releases一覧と同じ配列形式で、パスや取得先の制約も同じです。ローカルモードでは通信しません。
 
 ```powershell
 $env:CI='true'
 cargo build -p winmd --example update_probe --release --features custom-protocol --target x86_64-pc-windows-msvc
-./target/x86_64-pc-windows-msvc/release/examples/update_probe.exe 0.1.19
+./target/x86_64-pc-windows-msvc/release/examples/update_probe.exe
 ```
 
 引数は比較用の現在バージョンです。省略時はビルドしたアプリのバージョンを使います。今回のGNU環境ではWSLから同じrelease/exampleを`x86_64-pc-windows-gnu`でビルドし、Windowsから実行しました。MinGWのdebug exampleはexport ordinal上限でリンクに失敗したため、releaseで検証しています。アプリの更新導線・未保存確認・実インストールのGUI受入は別途必要です。

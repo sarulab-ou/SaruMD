@@ -30,6 +30,7 @@ winmd-core = { path = "../crates/winmd-core" }
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 tempfile = "3"
 serde_json = "1"
+base64 = "0.22"
 
 [target.'cfg(windows)'.dependencies]
 webview2-com = "=0.39.1"

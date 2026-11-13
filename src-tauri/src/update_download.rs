@@ -14,17 +14,59 @@ pub struct Staged {
     pub temp: Option<tempfile::TempDir>,
 }
 
+pub const FILE_OPERATIONS: &str = include_str!("update-files.ps1");
+
+pub fn verify_payload(staged: &Staged) -> Result<()> {
+    let script = format!(
+        "{FILE_OPERATIONS}\n[void](Assert-SaruMDPayload $env:SARUMD_PAYLOAD $env:SARUMD_VERSION)"
+    );
+    let result = powershell(&script)?
+        .env(
+            "SARUMD_PAYLOAD",
+            staged
+                .path
+                .parent()
+                .ok_or("一時フォルダーがありません。")?
+                .join("payload"),
+        )
+        .env("SARUMD_VERSION", &staged.candidate.version)
+        .output()
+        .map_err(|e| e.to_string())?;
+    if !result.status.success() {
+        return Err("展開済みの更新ファイルを検証できません。文書は閉じませんでした。".into());
+    }
+    Ok(())
+}
+
 pub fn powershell(script: &str) -> Result<Command> {
     #[cfg(windows)]
     {
+        use base64::Engine;
         use std::os::windows::process::CommandExt;
         let path = PathBuf::from(
             std::env::var_os("SystemRoot").ok_or("Windowsのフォルダーを確認できません。")?,
         )
         .join("System32/WindowsPowerShell/v1.0/powershell.exe");
-        let mut command = Command::new(path);
+        // PowerShell's -Command quoting differs from ordinary Windows argv parsing.
+        let bytes: Vec<u8> = script
+            .trim_start_matches('\u{feff}')
+            .encode_utf16()
+            .flat_map(u16::to_le_bytes)
+            .collect();
+        let encoded = base64::engine::general_purpose::STANDARD.encode(bytes);
+        if encoded.len() > 30_000 {
+            return Err("更新の補助処理が長すぎます。".into());
+        }
+        let mut command = Command::new(&path);
         command
-            .args(["-NoProfile", "-NonInteractive", "-Command", script])
+            // A launcher may inherit PowerShell 7's module path, which breaks WinPS 5.1 autoload.
+            .env(
+                "PSModulePath",
+                path.parent()
+                    .ok_or("PowerShellのフォルダーがありません。")?
+                    .join("Modules"),
+            )
+            .args(["-NoProfile", "-NonInteractive", "-EncodedCommand", &encoded])
             .creation_flags(0x08000000);
         Ok(command)
     }
@@ -78,7 +120,24 @@ pub fn download(candidate: Candidate) -> Result<Staged> {
     std::fs::remove_file(sums).map_err(|e| e.to_string())?;
     let path = temp.path().join(&candidate.filename);
     fetch(&candidate.url, &path, candidate.bytes)?;
-    updates::verify_installer(&candidate, File::open(&path).map_err(|e| e.to_string())?)?;
+    prepare(candidate, path, temp)
+}
+
+/// Also used by the download-only example for isolated, offline package validation.
+pub fn prepare(candidate: Candidate, path: PathBuf, temp: tempfile::TempDir) -> Result<Staged> {
+    updates::verify_package(&candidate, File::open(&path).map_err(|e| e.to_string())?)?;
+    let script = format!("{FILE_OPERATIONS}\nExpand-SaruMDPackage $env:SARUMD_ARCHIVE $env:SARUMD_PAYLOAD $env:SARUMD_VERSION");
+    let expanded = powershell(&script)?
+        .env("SARUMD_ARCHIVE", &path)
+        .env("SARUMD_PAYLOAD", temp.path().join("payload"))
+        .env("SARUMD_VERSION", &candidate.version)
+        .output()
+        .map_err(|e| e.to_string())?;
+    if !expanded.status.success() {
+        return Err(
+            "更新用ZIPの展開・内容の検証に失敗しました。ファイルは変更していません。".into(),
+        );
+    }
     Ok(Staged {
         candidate,
         path,

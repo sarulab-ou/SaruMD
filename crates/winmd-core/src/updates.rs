@@ -6,7 +6,38 @@ use std::io::Read;
 
 pub const RELEASES_URL: &str =
     "https://api.github.com/repos/sarulab-ou/SaruMD/releases?per_page=100";
-pub const MAX_INSTALLER: u64 = 100 * 1024 * 1024;
+pub const MAX_PACKAGE: u64 = 100 * 1024 * 1024;
+
+/// A launch during file replacement waits for the updater's exclusive lock.
+pub fn wait_for_update(directory: &std::path::Path, timeout: std::time::Duration) -> bool {
+    #[cfg(windows)]
+    {
+        use std::{fs::OpenOptions, os::windows::fs::OpenOptionsExt, time::Instant};
+        let started = Instant::now();
+        loop {
+            match OpenOptions::new()
+                .read(true)
+                .write(true)
+                .share_mode(0)
+                .open(directory.join(".sarumd-update.lock"))
+            {
+                Ok(_) => return true,
+                Err(error) if matches!(error.raw_os_error(), Some(32 | 33)) => {
+                    if started.elapsed() >= timeout {
+                        return false;
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(50));
+                }
+                Err(_) => return true,
+            }
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = (directory, timeout);
+        true
+    }
+}
 
 #[derive(Deserialize)]
 pub struct Release {
@@ -64,24 +95,24 @@ pub fn select(releases: &[Release], current: &str) -> Result<Option<Candidate>> 
     let Some((version, release)) = newest else {
         return Ok(None);
     };
-    let filename = format!("SaruMD_{version}_x64-setup.exe");
+    let filename = format!("SaruMD_{version}_x64-update.zip");
     let base = format!("https://github.com/sarulab-ou/SaruMD/releases/download/v{version}/");
     let unique = |name: &str| -> Result<&Asset> {
         let mut matches = release.assets.iter().filter(|asset| asset.name == name);
         let asset = matches
             .next()
-            .ok_or("最新版の配布ファイルが揃っていません。")?;
+            .ok_or("最新版の更新用ZIPが揃っていません。時間を置いて再試行してください。")?;
         if matches.next().is_some() || asset.browser_download_url != format!("{base}{name}") {
             return Err("更新ファイルの取得先が不正です。".into());
         }
         Ok(asset)
     };
-    let installer = unique(&filename)?;
+    let package = unique(&filename)?;
     let checksum = unique("SHA256SUMS.txt")?;
-    if installer.size == 0 || installer.size > MAX_INSTALLER || checksum.size > 64 * 1024 {
+    if package.size == 0 || package.size > MAX_PACKAGE || checksum.size > 64 * 1024 {
         return Err("更新ファイルのサイズが不正です。".into());
     }
-    let sha256 = installer
+    let sha256 = package
         .digest
         .as_deref()
         .and_then(|digest| digest.strip_prefix("sha256:"))
@@ -91,9 +122,9 @@ pub fn select(releases: &[Release], current: &str) -> Result<Option<Candidate>> 
     Ok(Some(Candidate {
         version: version.to_string(),
         filename,
-        url: installer.browser_download_url.clone(),
+        url: package.browser_download_url.clone(),
         checksum_url: checksum.browser_download_url.clone(),
-        bytes: installer.size,
+        bytes: package.size,
         sha256,
     }))
 }
@@ -114,7 +145,7 @@ pub fn verify_checksums(candidate: &Candidate, text: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn verify_installer(candidate: &Candidate, mut reader: impl Read) -> Result<()> {
+pub fn verify_package(candidate: &Candidate, mut reader: impl Read) -> Result<()> {
     let mut hash = Sha256::new();
     let mut size = 0u64;
     let mut prefix: Vec<u8> = Vec::new();
@@ -125,21 +156,21 @@ pub fn verify_installer(candidate: &Candidate, mut reader: impl Read) -> Result<
             break;
         }
         size += count as u64;
-        if size > candidate.bytes || size > MAX_INSTALLER {
+        if size > candidate.bytes || size > MAX_PACKAGE {
             return Err("更新ファイルのサイズが一致しません。".into());
         }
         prefix.extend(
             buffer[..count]
                 .iter()
-                .take(2usize.saturating_sub(prefix.len())),
+                .take(4usize.saturating_sub(prefix.len())),
         );
         hash.update(&buffer[..count]);
     }
     if size != candidate.bytes
-        || prefix != b"MZ"
+        || prefix != b"PK\x03\x04"
         || format!("{:x}", hash.finalize()) != candidate.sha256
     {
-        return Err("更新ファイルの検証に失敗しました。実行しません。".into());
+        return Err("更新用ZIPの検証に失敗しました。ファイルを変更しません。".into());
     }
     Ok(())
 }
@@ -167,8 +198,27 @@ impl CloseSequence {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(windows)]
+    #[test]
+    fn waits_for_an_update_instead_of_starting_during_file_replacement() {
+        use std::{fs::OpenOptions, os::windows::fs::OpenOptionsExt, time::Duration};
+        let dir = tempfile::tempdir().unwrap();
+        let lock = OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .share_mode(0)
+            .open(dir.path().join(".sarumd-update.lock"))
+            .unwrap();
+        assert!(!wait_for_update(dir.path(), Duration::from_millis(10)));
+        let thread = std::thread::spawn(move || {
+            std::thread::sleep(Duration::from_millis(100));
+            drop(lock);
+        });
+        assert!(wait_for_update(dir.path(), Duration::from_secs(2)));
+        thread.join().unwrap();
+    }
     fn release(version: &str) -> Release {
-        let filename = format!("SaruMD_{version}_x64-setup.exe");
+        let filename = format!("SaruMD_{version}_x64-update.zip");
         let base = format!("https://github.com/sarulab-ou/SaruMD/releases/download/v{version}/");
         Release {
             tag_name: format!("v{version}"),
@@ -179,7 +229,7 @@ mod tests {
                     name: filename.clone(),
                     browser_download_url: format!("{base}{filename}"),
                     size: 4,
-                    digest: Some(format!("sha256:{:x}", Sha256::digest(b"MZok"))),
+                    digest: Some(format!("sha256:{:x}", Sha256::digest(b"PK\x03\x04"))),
                 },
                 Asset {
                     name: "SHA256SUMS.txt".into(),
@@ -208,26 +258,32 @@ mod tests {
     }
     #[test]
     fn rejects_missing_assets_foreign_urls_oversized_and_missing_digests() {
-        for mode in 0..6 {
+        for mode in 0..7 {
             let mut r = release("0.1.21");
             match mode {
                 0 => {
                     r.assets.pop();
                 }
                 1 => r.assets[0].browser_download_url = "https://evil.invalid/update.exe".into(),
-                2 => r.assets[0].size = MAX_INSTALLER + 1,
+                2 => r.assets[0].size = MAX_PACKAGE + 1,
                 3 => r.assets[0].digest = None,
                 4 => r.assets.push(r.assets[0].clone()),
-                _ => {
+                5 => {
                     r.assets[0].browser_download_url =
                         r.assets[0].browser_download_url.replace("https:", "http:")
+                }
+                _ => {
+                    r.assets[0].name = "SaruMD_0.1.21_x64-setup.exe".into();
+                    r.assets[0].browser_download_url = r.assets[0]
+                        .browser_download_url
+                        .replace("x64-update.zip", "x64-setup.exe");
                 }
             }
             assert!(select(&[r], "0.1.20").is_err(), "mode {mode}");
         }
     }
     #[test]
-    fn checks_both_manifest_hashes_and_exact_installer_bytes() {
+    fn checks_both_manifest_hashes_and_exact_zip_bytes() {
         let candidate = select(&[release("0.1.21")], "0.1.20").unwrap().unwrap();
         let line = format!("{}  {}\n", candidate.sha256, candidate.filename);
         verify_checksums(&candidate, &line).unwrap();
@@ -237,9 +293,14 @@ mod tests {
             &line.replace(&candidate.sha256, &"0".repeat(64))
         )
         .is_err());
-        verify_installer(&candidate, &b"MZok"[..]).unwrap();
-        for bytes in [&b"MZ"[..], &b"MZbad"[..], &b"nope"[..], &b"MZxx"[..]] {
-            assert!(verify_installer(&candidate, bytes).is_err());
+        verify_package(&candidate, &b"PK\x03\x04"[..]).unwrap();
+        for bytes in [
+            &b"PK"[..],
+            &b"PK\x03\x04bad"[..],
+            &b"nope"[..],
+            &b"MZxx"[..],
+        ] {
+            assert!(verify_package(&candidate, bytes).is_err());
         }
     }
     #[test]

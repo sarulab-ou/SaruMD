@@ -1,8 +1,8 @@
-# SaruMD v0.1.21
+# SaruMD v0.1.22
 
 Windows向けのMarkdownエディタです。WinMDからSaruMDへ名前を変更しました。左でソースを編集し、右でプレビューを確認できます。1文書につき1つのウィンドウが開きます。同じファイルをもう一度開くと、既存のウィンドウへ移動します。
 
-**[ダウンロード（Windows x64・インストーラー.exe）](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.21/SaruMD_0.1.21_x64-setup.exe)** · [使い方](#使い方) · [MITライセンス](LICENSE)
+**[ダウンロード（Windows x64・インストーラー.exe）](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.22/SaruMD_0.1.22_x64-setup.exe)** · [使い方](#使い方) · [MITライセンス](LICENSE)
 
 ![Windows上のSaruMD。左に日本語のMarkdownソース、右に見出し・チェックリスト・表・コードを整形したプレビューを表示しています。](docs/screenshots/editor-ja.png)
 
@@ -26,13 +26,15 @@ _旧称WinMD v0.1.8の実画面。[サンプル文書](docs/examples/notes.ja.md
 
 ## ダウンロード・インストール
 
-**[SaruMD v0.1.21 Windows x64インストーラーをダウンロード](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.21/SaruMD_0.1.21_x64-setup.exe)**
+**[SaruMD v0.1.22 Windows x64インストーラーをダウンロード](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.22/SaruMD_0.1.22_x64-setup.exe)**
 
-SaruMD v0.1.21をプレリリース（試用版）として公開しています。[リリースノート](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.21) · [SHA-256チェックサム](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.21/SHA256SUMS.txt) · [ソースからのビルド](docs/development.md)
+SaruMD v0.1.22をプレリリース（試用版）として公開しています。[リリースノート](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.22) · [SHA-256チェックサム](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.22/SHA256SUMS.txt) · [ソースからのビルド](docs/development.md)
 
-1. `SaruMD_0.1.21_x64-setup.exe`をダウンロードし、**Windows 11 x64**で実行します。
+1. `SaruMD_0.1.22_x64-setup.exe`をダウンロードし、**Windows 11 x64**で実行します。
 2. WebView2 Runtimeがない場合は、インストーラーがダウンロードします。この場合はインターネット接続が必要です。
 3. `.md`をダブルクリックで開きたい場合は、Windowsの既定アプリ設定でSaruMDを選択します。インストーラーから設定画面を開けます。
+
+初回導入には上のインストーラーを使ってください。既存アプリを手動で置き換える場合は、[更新用ZIP](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.22/SaruMD_0.1.22_x64-update.zip)も利用できます。すべての文書を保存してSaruMDを終了し、ZIP内のファイルを同じ配置でアプリのフォルダーへコピーします。ZIP自体はWebView2 Runtimeや関連付けを導入しません。
 
 配布用ビルドはGNUツールでクロスビルドした署名なしの試用版です。インストール・実GUI全体の受入確認は未完了です。[検証記録](docs/verification.md)を参照してください。
 
@@ -40,13 +42,13 @@ SaruMD v0.1.21をプレリリース（試用版）として公開しています
 
 ## 使い方
 
-### アプリ内からの更新（0.1.21以降）
+### アプリ内からの更新（0.1.22以降）
 
 **ヘルプ (H) → 更新…**でGitHubの新しいバージョンを確認できます。更新がある場合は、バージョンを確認して「ダウンロードして更新」を選びます。試用版のリリースも対象です。
 
-ダウンロードしたファイルを検証してから、各ウィンドウで未保存の変更を確認します。保存または破棄してすべての文書を閉じると、インストーラーが起動し、更新後にSaruMDを再起動します。保存確認をキャンセルすると更新も止まります。通信・検証に失敗した場合はインストールしません。
+更新用ZIPを検証してから、各ウィンドウで未保存の変更を確認します。保存または破棄してすべての文書を閉じると、実行ファイル・DLL・ライセンスを置き換えて再起動します。更新のたびにインストーラーを起動しません。保存確認をキャンセルすると更新も止まります。通信・検証に失敗した場合は置き換えず、置き換え途中で失敗した場合は旧ファイルへ戻します。
 
-0.1.20以前にはこのメニューがないため、最初の更新は上記の0.1.21インストーラーから行ってください。
+0.1.21の更新機能はインストーラー方式です。この版へ切り替える最初の1回は上記のインストーラー、または終了後の手動ZIP置き換えで導入してください。0.1.22以降を導入した後の更新はZIP方式になります。0.1.20以前には更新メニューがありません。
 
 ### 編集と出力
 

@@ -12,6 +12,14 @@ use std::{path::PathBuf, sync::atomic::Ordering};
 use tauri::Manager;
 
 pub fn run() {
+    if let Ok(executable) = std::env::current_exe() {
+        if let Some(directory) = executable.parent() {
+            if !winmd_core::updates::wait_for_update(directory, std::time::Duration::from_secs(120))
+            {
+                return;
+            }
+        }
+    }
     tauri::Builder::default()
         .manage(AppState::default())
         // Register first: all additional launches feed the backend queue, not a frontend event.
