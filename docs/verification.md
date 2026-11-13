@@ -1,5 +1,13 @@
 # 検証記録（最終更新：2026-11-13）
 
+## v0.1.21公開結果
+
+GitHub更新機能と公開資料をコミット`8ab65fb8d3c9be3d8ea5fcff7f1674072f9fecb1`としてmasterへpushし、2026-11-13 13:33:41 JSTに[SaruMD v0.1.21](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.21)を公開した。APIで`draft=false`、`prerelease=true`を確認し、公開タグの対象も同コミットと一致した。Assetsは`SaruMD_0.1.21_x64-setup.exe`（6,387,866バイト）と`SHA256SUMS.txt`で、GitHub側digestは検証済み成果物のSHA-256 `09978db73c3a31339a44635c5627478d4bd96f718387f23776ee376683ad3600`と一致した。
+
+認証ヘッダー・Cookie・curl設定ファイルを使わず公開URLから両Assetsを取得し、`sha256sum -c SHA256SUMS.txt`でOKを確認した。公開READMEは原本とバイト一致し、リリースHTMLにもexeへの直接リンクを確認した（`.tools/public-release-0.1.21/`）。さらに製品と同じRust取得・検証関数を使うdownload-only exampleで、比較元0.1.20から公開版0.1.21の検出・実ダウンロード・6,387,866バイトとSHA-256の照合が成功した（`.tools/update-published-0.1.21-probe.log`）。インストーラーは実行していない。
+
+公開前のPrettier全体・Git差分チェック、7-Zip検査、同梱exe/現行アセット/更新用PowerShell/DLL/ライセンス照合も成功した。実装・依存・配布物はビルド後に変更していないため、以下のフロントエンド69件、Linux core20件・Windows core21件、clippy・fmtと代替関数による更新導線検査を引き継ぐ。実際の上書き更新・再起動のWindows/WebView2 GUI受入、MSVCビルドは未実施のままである。過去のリリースは保持した。
+
 ## v0.1.21公開準備
 
 ユーザーの「release add commit push」の指示を受け、GitHubからの更新機能を追加した0.1.21を公開対象とした。READMEのタイトル・直接ダウンロードリンク、開発ガイド、告知案を0.1.21へ更新し、`docs/releases/v0.1.21.md`に変更点・初回導入手順・確認範囲・SHA-256を記載した。以下の自動検査と検証済みインストーラーを引き継ぐ。以下の「未コミット・未公開」はビルド作成時点の履歴として保持する。
