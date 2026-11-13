@@ -1,5 +1,13 @@
 # 検証記録（最終更新：2026-11-13）
 
+## v0.1.22公開結果
+
+ZIP更新の実装と公開資料をコミット`09891b72799883a9ea420b0c25e9d4b914d9eb8b`としてmasterへpushし、2026-11-13 14:08:34 JSTに[SaruMD v0.1.22](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.22)を公開した。APIで`draft=false`、`prerelease=true`を確認し、タグの対象も同コミットと一致した。Assetsは初回導入用exe（6,391,970バイト、SHA-256 `7c6442ca9c2afbd414faca4687c1dcaaf8258ed7e8a1b342295ab42ff1538286`）、更新用ZIP（9,113,238バイト、SHA-256 `bd06b98f802f89d8fcfb2ebd43e3c03a7c2728adcf0b20ead4a44a0b1b244ebd`）、両方を含む`SHA256SUMS.txt`の3点。GitHub側digestもローカルの配布物と一致した。
+
+認証ヘッダー・Cookie・curl設定ファイルを使わず公開URLから3点を取得し、`sha256sum -c SHA256SUMS.txt`でexe/ZIPの両方がOKだった。公開READMEは原本とバイト一致し、リリースHTMLの直接リンクも確認した（`.tools/public-release-0.1.22/`）。さらに0.1.22のdownload-onlyプログラムへ比較元0.1.21を指定し、製品と同じRust/PowerShell処理で公開版0.1.22の検出・ZIP/チェックサムの実ダウンロード・ハッシュ照合・展開内容の検証まで成功した（`.tools/update-published-0.1.22-probe.log`）。これは旧0.1.21プログラムをZIP方式へ変更したという意味ではない。インストール先の置き換えや実アプリの終了は行っていない。
+
+公開前のPrettier全体・Git差分チェック、NSIS/ZIPの同梱照合と両チェックサムの検査も成功した。実装・依存・配布物は検証済みビルドから変更していないため、以下のフロントエンド69件・Linux core20件・Windows core22件・clippy・fmt・隔離した置き換え/復元/再起動試験を引き継ぐ。実公開ZIPの取得・検証は今回確認済みとなったが、実アプリでの保存確認からZIP更新・再起動までのGUI受入とMSVCビルドは引き続き未実施。過去のリリースは保持した。
+
 ## v0.1.22公開準備
 
 ユーザーの「release add commit push」の指示を受け、ZIP更新へ変更した0.1.22を公開対象とした。READMEのタイトル・直接ダウンロード・ZIPリンク、開発ガイド、告知案を0.1.22へ更新し、`docs/releases/v0.1.22.md`へ移行手順・確認範囲・両ファイルのSHA-256を記載した。以下の自動検査と検証済みの配布物を引き継ぎ、初回導入用exe・更新用ZIP・SHA256SUMS.txtの3点を公開する。以下の未公開・未適用の記述はビルド作成時点の履歴として保持する。
