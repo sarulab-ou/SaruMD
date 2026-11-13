@@ -61,19 +61,31 @@ pnpm desktop:build
 設定されたbeforeBuildCommandが型チェックとフロントエンドビルドを実行し、NSISを作成します。ワークスペースルートの標準出力先：
 
 - `target/x86_64-pc-windows-msvc/release/SaruMD.exe`
-- `target/x86_64-pc-windows-msvc/release/bundle/nsis/SaruMD_0.1.20_x64-setup.exe`
+- `target/x86_64-pc-windows-msvc/release/bundle/nsis/SaruMD_0.1.21_x64-setup.exe`
 
-`CARGO_TARGET_DIR`で出力先を変更できます。今回生成したGNU試用版は`target/verified/x86_64-pc-windows-gnu/release/`にあります。公開用の[v0.1.20リリース](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.20)からインストーラーとSHA-256チェックサムを取得できます。
+`CARGO_TARGET_DIR`で出力先を変更できます。今回生成したGNU試用版は`target/verified/x86_64-pc-windows-gnu/release/`にあります。公開用の[v0.1.21リリース](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.21)からインストーラーとSHA-256チェックサムを取得できます。
 
 MSVC版は今回未生成です。Tauriが公式にサポートするWindowsターゲットはMSVCです。[公式Windowsビルド資料](https://v2.tauri.app/distribute/windows-installer/)
 
 ## 配布と関連付け
 
-NSISはユーザー単位でインストールし、コード署名・自動更新は設定していません。WebView2が不足する場合はMicrosoftのbootstrapperをダウンロードします。WebView2導入済みなら、アプリのライブラリ・フォント・スタイルはローカルに揃います。[公式WebView2取扱い](https://v2.tauri.app/distribute/windows-installer/#webview2-installation-options)
+NSISはユーザー単位でインストールします。0.1.21から「ヘルプ → 更新…」で手動更新できます。コード署名と定期的な自動チェックは設定していません。WebView2が不足する場合はMicrosoftのbootstrapperをダウンロードします。WebView2導入済みなら、アプリのライブラリ・フォント・スタイルはローカルに揃います。[公式WebView2取扱い](https://v2.tauri.app/distribute/windows-installer/#webview2-installation-options)
 
 `.md`と`.markdown`のOpenWith候補、ProgID、RegisteredApplications/CapabilitiesをHKCUへ登録します。既定値やUserChoiceは変更しません。通常の対話インストールでは、ユーザーが「はい」を選んだ場合だけWindows設定を開きます。サイレント・パッシブ・更新モードでは開きません。アンインストールはWindows設定から行います。
 
 実行ファイルを別フォルダーへ移動する場合は、同じフォルダーの`WebView2Loader.dll`も必要です。NSISにはこのDLL、MITのLICENSE、依存ライブラリの通知全文を含めています。
+
+## 更新のダウンロードだけを検査する
+
+`src-tauri/examples/update_probe.rs`は製品と同じ取得・検証関数を使い、GitHubの公開配布物を一時フォルダーへダウンロードします。インストーラーの実行、文書の終了、インストール先の変更は行いません。ネットワーク接続が必要です。
+
+```powershell
+$env:CI='true'
+cargo build -p winmd --example update_probe --release --features custom-protocol --target x86_64-pc-windows-msvc
+./target/x86_64-pc-windows-msvc/release/examples/update_probe.exe 0.1.19
+```
+
+引数は比較用の現在バージョンです。省略時はビルドしたアプリのバージョンを使います。今回のGNU環境ではWSLから同じrelease/exampleを`x86_64-pc-windows-gnu`でビルドし、Windowsから実行しました。MinGWのdebug exampleはexport ordinal上限でリンクに失敗したため、releaseで検証しています。アプリの更新導線・未保存確認・実インストールのGUI受入は別途必要です。
 
 ## ライセンス通知の再生成
 

@@ -18,6 +18,10 @@ fn main() {
             "request_exit",
             "read_clipboard",
             "write_clipboard_text",
+            "check_update",
+            "download_update",
+            "begin_update",
+            "cancel_update",
         ]),
     ))
     .expect("Tauri 2 build configuration failed");

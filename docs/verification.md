@@ -1,4 +1,26 @@
-# 検証記録（最終更新：2026-11-08）
+# 検証記録（最終更新：2026-11-13）
+
+## v0.1.21公開準備
+
+ユーザーの「release add commit push」の指示を受け、GitHubからの更新機能を追加した0.1.21を公開対象とした。READMEのタイトル・直接ダウンロードリンク、開発ガイド、告知案を0.1.21へ更新し、`docs/releases/v0.1.21.md`に変更点・初回導入手順・確認範囲・SHA-256を記載した。以下の自動検査と検証済みインストーラーを引き継ぐ。以下の「未コミット・未公開」はビルド作成時点の履歴として保持する。
+
+## 更新版0.1.21：ヘルプからGitHub更新
+
+「ヘルプ (H) → 更新…」を追加した。固定リポジトリの公開済みリリース（試用版を含む）を比較し、新しい版のNSISだけを取得する。GitHub APIのdigest、SHA256SUMS.txt、実バイト数とSHA-256を照合してから通常の保存/終了確認を1ウィンドウずつ行う。キャンセル・保存失敗・通信/検証失敗では更新を止める。更新元ウィンドウの予約と終了セッションを使い、競合する更新や終了中の新規オープンを抑止する。最後の文書の確認後に補助プロセスを起動し、旧プロセスの終了を待って同じ場所へインストール・再起動する。コード署名や独立した更新署名の検証ではない。
+
+型検査、Vitest 14ファイル69件、ESLint、Vite buildが成功。RustはLinux core20件・Windows core21件、Windows desktop/Linux coreのall-targets clippy（-D warnings）、fmt checkが成功した（`.tools/validate-0.1.21.log`）。依存通知を再生成し502パッケージ分を確認した。Windows PowerShellの両スクリプトは構文解析を通過した。
+
+実際のメニュー定義・更新ハンドラー・更新ダイアログをjsdomへ読み込み、Alt+Hと矢印キー、更新なしの表示、実行中のボタン無効化、更新候補とキャンセル後の予約解除を確認した（`.tools/update-menu-probe-result.json`）。ネイティブブリッジとshowModalは代替関数であり、Windows/WebView2のGUI受入とは区別する。
+
+製品と同じRustダウンロード関数を使うrelease exampleで、比較用バージョン0.1.19からGitHub公開版0.1.20を実際に取得した。6,311,609バイト、SHA-256 `ec4453e6221fc4246dba1dff7187cf9944f75e8ea1466c86cfe807f9d64b3ef0`の照合に成功した（`.tools/update-download-probe-result.log`）。0.1.21を比較元にした「新しい更新なし」も成功した（`.tools/update-current-probe-result.log`）。このexampleは取得だけを行い、インストーラーを実行しない。MinGWのdebug exampleはexport ordinal上限でリンクに失敗したため、releaseで生成・実行した。
+
+実際のmain.tsのclose関数と更新終了イベント処理を読み込んだ代替関数の検査で、終了キャンセル、保存先選択キャンセル、終了コマンド失敗、既存モーダルでは更新キャンセルだけを行い、保存成功時は最新revisionを終了ガードへ渡すことを確認した（`.tools/update-close-probe-result.json`）。ダイアログ・保存・ネイティブ終了は代替関数で、ユーザーの実文書は閉じていない。
+
+補助PowerShellはインストーラーを模したローカル生成exeで試験し、親プロセス終了待ち（2,613ms）、SHA-256、`/P /UPDATE /R /D=C:\SaruMD test (日本語)`の引き渡し、終了コード確認、自分の一時ディレクトリの非再帰削除が成功した（`.tools/update-helper-probe/result.json`）。実製品のNSISテンプレートにも、パッシブ/更新モードと/Rによる再起動処理を確認した。この試験は実インストールではない。
+
+Windows x64 GNU releaseとNSIS生成が成功した（`.tools/final-build-0.1.21.log`）。7-Zipの`t`・隔離展開、NSIS識別マーカーだけを正規化したexeの一致、DLL・LICENSE・第三者通知の一致、両PowerShellスクリプトのバイト一致を確認した。現行3アセット（`index-DTQ_8La0.js`、`index-8pPc7Cnx.css`、`preview-worker-C5lvkIXX.js`）とProductName=SaruMD、ProductVersion=0.1.21の同梱を確認した（`.tools/installer-audit-0.1.21.json`）。成果物は`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/SaruMD_0.1.21_x64-setup.exe`、6,387,866バイト、SHA-256 `09978db73c3a31339a44635c5627478d4bd96f718387f23776ee376683ad3600`。既存の大きなJSチャンク・署名なし・クロスビルド警告は継続する。Prettier全体とGit差分チェックも成功した。
+
+Windows/WebView2実アプリの更新ボタン操作から実NSIS更新・再起動までのGUI受入、MSVCビルドは未実施。既存アプリの文書やインストール先を検証目的で変更していない。READMEの公開版タイトル・ダウンロードは0.1.20を維持し、0.1.21以降の操作を追記した。commit/push・GitHub Releases公開は行っていない。
 
 ## v0.1.20公開結果
 

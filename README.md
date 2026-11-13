@@ -1,8 +1,8 @@
-# SaruMD v0.1.20
+# SaruMD v0.1.21
 
 Windows向けのMarkdownエディタです。WinMDからSaruMDへ名前を変更しました。左でソースを編集し、右でプレビューを確認できます。1文書につき1つのウィンドウが開きます。同じファイルをもう一度開くと、既存のウィンドウへ移動します。
 
-**[ダウンロード（Windows x64・インストーラー.exe）](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.20/SaruMD_0.1.20_x64-setup.exe)** · [使い方](#使い方) · [MITライセンス](LICENSE)
+**[ダウンロード（Windows x64・インストーラー.exe）](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.21/SaruMD_0.1.21_x64-setup.exe)** · [使い方](#使い方) · [MITライセンス](LICENSE)
 
 ![Windows上のSaruMD。左に日本語のMarkdownソース、右に見出し・チェックリスト・表・コードを整形したプレビューを表示しています。](docs/screenshots/editor-ja.png)
 
@@ -26,11 +26,11 @@ _旧称WinMD v0.1.8の実画面。[サンプル文書](docs/examples/notes.ja.md
 
 ## ダウンロード・インストール
 
-**[SaruMD v0.1.20 Windows x64インストーラーをダウンロード](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.20/SaruMD_0.1.20_x64-setup.exe)**
+**[SaruMD v0.1.21 Windows x64インストーラーをダウンロード](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.21/SaruMD_0.1.21_x64-setup.exe)**
 
-SaruMD v0.1.20をプレリリース（試用版）として公開しています。[リリースノート](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.20) · [SHA-256チェックサム](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.20/SHA256SUMS.txt) · [ソースからのビルド](docs/development.md)
+SaruMD v0.1.21をプレリリース（試用版）として公開しています。[リリースノート](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.21) · [SHA-256チェックサム](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.21/SHA256SUMS.txt) · [ソースからのビルド](docs/development.md)
 
-1. `SaruMD_0.1.20_x64-setup.exe`をダウンロードし、**Windows 11 x64**で実行します。
+1. `SaruMD_0.1.21_x64-setup.exe`をダウンロードし、**Windows 11 x64**で実行します。
 2. WebView2 Runtimeがない場合は、インストーラーがダウンロードします。この場合はインターネット接続が必要です。
 3. `.md`をダブルクリックで開きたい場合は、Windowsの既定アプリ設定でSaruMDを選択します。インストーラーから設定画面を開けます。
 
@@ -39,6 +39,16 @@ SaruMD v0.1.20をプレリリース（試用版）として公開しています
 旧版WinMDから切り替える場合は、編集中の文書を保存してWinMDを終了してください。SaruMDをインストールした後、必要に応じて`.md`の既定アプリをSaruMDへ選び直します。旧版はWindowsの設定から別途アンインストールできます。
 
 ## 使い方
+
+### アプリ内からの更新（0.1.21以降）
+
+**ヘルプ (H) → 更新…**でGitHubの新しいバージョンを確認できます。更新がある場合は、バージョンを確認して「ダウンロードして更新」を選びます。試用版のリリースも対象です。
+
+ダウンロードしたファイルを検証してから、各ウィンドウで未保存の変更を確認します。保存または破棄してすべての文書を閉じると、インストーラーが起動し、更新後にSaruMDを再起動します。保存確認をキャンセルすると更新も止まります。通信・検証に失敗した場合はインストールしません。
+
+0.1.20以前にはこのメニューがないため、最初の更新は上記の0.1.21インストーラーから行ってください。
+
+### 編集と出力
 
 1. **Ctrl+N**で新しいウィンドウ、**Ctrl+O**で既存のMarkdownファイルを開きます。[サンプル文書](docs/examples/notes.ja.md)でも試せます。
 2. 左側で編集し、右側で仕上がりを確認します。

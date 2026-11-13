@@ -54,7 +54,13 @@ pub fn show_error(app: &AppHandle, error: &str) {
 }
 
 pub fn new_document(app: &AppHandle) -> Result<()> {
-    let id = app.state::<AppState>().lock()?.create();
+    let id = {
+        let state = app.state::<AppState>();
+        let update = state.update()?;
+        update.allow_open()?;
+        let id = state.lock()?.create();
+        id
+    };
     if let Err(error) = create_window(app, &id) {
         app.state::<AppState>().lock()?.docs.remove(&id);
         return Err(error);
@@ -63,7 +69,13 @@ pub fn new_document(app: &AppHandle) -> Result<()> {
 }
 
 pub fn open_path(app: &AppHandle, path: &Path) -> Result<()> {
-    let (id, created) = app.state::<AppState>().lock()?.open(path)?;
+    let (id, created) = {
+        let state = app.state::<AppState>();
+        let update = state.update()?;
+        update.allow_open()?;
+        let opened = state.lock()?.open(path)?;
+        opened
+    };
     if created {
         if let Err(error) = create_window(app, &id) {
             app.state::<AppState>().lock()?.docs.remove(&id);

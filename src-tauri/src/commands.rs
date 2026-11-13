@@ -1,4 +1,4 @@
-use crate::{printing, state::AppState, windows};
+use crate::{printing, state::AppState, updating, windows};
 use tauri::{AppHandle, Emitter, Manager, WebviewWindow};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
@@ -23,6 +23,33 @@ fn owned(app: &AppHandle, window: &WebviewWindow) -> Result<String> {
     let id = window.label().to_string();
     app.state::<AppState>().lock()?.get(&id)?;
     Ok(id)
+}
+
+#[tauri::command]
+pub async fn check_update(
+    app: AppHandle,
+    window: WebviewWindow,
+) -> Result<winmd_core::updates::Offer> {
+    let owner = owned(&app, &window)?;
+    blocking(move || updating::check(&app, &owner)).await
+}
+
+#[tauri::command]
+pub async fn download_update(app: AppHandle, window: WebviewWindow) -> Result<()> {
+    let owner = owned(&app, &window)?;
+    blocking(move || updating::stage(&app, &owner)).await
+}
+
+#[tauri::command]
+pub async fn begin_update(app: AppHandle, window: WebviewWindow) -> Result<()> {
+    let owner = owned(&app, &window)?;
+    blocking(move || updating::begin(&app, &owner)).await
+}
+
+#[tauri::command]
+pub fn cancel_update(app: AppHandle, window: WebviewWindow, session: Option<u64>) -> Result<()> {
+    let owner = owned(&app, &window)?;
+    updating::cancel(&app, &owner, session)
 }
 
 #[tauri::command]
@@ -343,10 +370,22 @@ pub async fn close_document(
     text: String,
     revision: u64,
     discard: bool,
+    update_session: Option<u64>,
 ) -> Result<()> {
     let id = owned(&app, &window)?;
+    let state = app.state::<AppState>();
+    let mut update = state.update()?;
+    if let Some(session) = update_session {
+        if !update
+            .closing
+            .as_ref()
+            .is_some_and(|sequence| sequence.session == session)
+        {
+            return Err("更新はキャンセルされました。文書を閉じませんでした。".into());
+        }
+    }
+    let mut helper = None;
     {
-        let state = app.state::<AppState>();
         let mut docs = state.lock()?;
         if !docs.get(&id)?.snapshot.read_only {
             docs.edit(&id, text, revision)?;
@@ -356,10 +395,26 @@ pub async fn close_document(
         {
             return Err("未保存の変更があります。ウィンドウを閉じませんでした。".into());
         }
+        if update.closing.is_some() && docs.docs.len() == 1 {
+            helper = Some(updating::launch_helper(&mut update)?);
+        }
     }
     // destroy bypasses CloseRequested only AFTER the owned document has passed the guard.
-    window.destroy().map_err(|e| e.to_string())?;
-    app.state::<AppState>().lock()?.docs.remove(&id);
+    if let Err(error) = window.destroy() {
+        if let Some(mut child) = helper {
+            let _ = child.kill();
+        }
+        update.installing = false;
+        update.closing = None;
+        return Err(error.to_string());
+    }
+    state.lock()?.docs.remove(&id);
+    if update.closing.is_none() && update.owner.as_deref() == Some(&id) {
+        update.owner = None;
+        update.candidate = None;
+        update.staged = None;
+    }
+    updating::closed(&app, &mut update, &id)?;
     Ok(())
 }
 

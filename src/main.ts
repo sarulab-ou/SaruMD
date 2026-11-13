@@ -14,6 +14,7 @@ import { editorScrollPane, ScrollSync } from './scroll-sync';
 import { mathStyles } from './math-preview';
 import { setupLinkStatus } from './links';
 import { pdfFileName } from './printing';
+import { runUpdate } from './updating';
 
 const state = new DocumentState();
 const mathStyle = document.createElement('style');
@@ -35,6 +36,7 @@ let saving = false;
 let exclusive = false;
 let printing = false;
 let clipboardBusy = false;
+let updateBusy = false;
 const modalOpen = () =>
   document.querySelector<HTMLDialogElement>('#confirm')!.open;
 const menus = setupMenus(
@@ -215,8 +217,14 @@ async function checkExternal(): Promise<void> {
   if (changed) externalSync.changed();
 }
 
-async function close(): Promise<void> {
-  if (!ready) return;
+async function close(updateSession?: number): Promise<void> {
+  const cancelUpdate = async () => {
+    if (updateSession !== undefined) await bridge.cancelUpdate(updateSession);
+  };
+  if (!ready || (updateSession !== undefined && modalOpen())) {
+    await cancelUpdate();
+    return;
+  }
   // Wait for a toolbar/shortcut save, including its native picker, before asking to close.
   await saves.run(async () => undefined);
   let discard = false;
@@ -230,15 +238,21 @@ async function close(): Promise<void> {
         { value: 'cancel', label: 'キャンセル' },
       ],
     );
-    if (choice === 'cancel') return;
-    if (choice === 'save' && !(await save())) return;
+    if (choice === 'cancel') {
+      await cancelUpdate();
+      return;
+    }
+    if (choice === 'save' && !(await save())) {
+      await cancelUpdate();
+      return;
+    }
     // After any async save, use the CURRENT revision. Added edits keep the window open.
     discard = choice === 'discard';
   }
   exclusive = true;
   editor.setReadOnly(true);
   try {
-    await bridge.close(state.text, state.revision, discard);
+    await bridge.close(state.text, state.revision, discard, updateSession);
   } finally {
     exclusive = false;
     editor.setReadOnly(state.readOnly);
@@ -327,6 +341,33 @@ async function clipboardAction(cut: boolean): Promise<void> {
 }
 
 const handlers: Record<string, () => Promise<unknown> | void> = {
+  update: async () => {
+    if (updateBusy) return;
+    updateBusy = true;
+    const button = document.querySelector<HTMLButtonElement>('#update')!;
+    button.disabled = true;
+    showLinkTarget(null);
+    try {
+      await runUpdate(
+        bridge,
+        async (...args) => {
+          if (exclusive || modalOpen()) {
+            throw new Error(
+              '別の操作が進行中です。操作を終えてから更新を再試行してください。',
+            );
+          }
+          return confirmDialog(...args);
+        },
+        (message) => {
+          status.classList.remove('error');
+          status.textContent = message;
+        },
+      );
+    } finally {
+      updateBusy = false;
+      button.disabled = false;
+    }
+  },
   about: async () => {
     const version = await getVersion();
     if (exclusive || modalOpen()) return;
@@ -448,6 +489,24 @@ async function start(): Promise<void> {
   // Register targeted events BEFORE loading state; backend owns startup documents already.
   await getCurrentWebviewWindow().listen('document-close-requested', () => {
     if (ready) guard(() => operations.run(close));
+  });
+  await getCurrentWebviewWindow().listen<number>(
+    'update-close-requested',
+    (event) => {
+      guard(() =>
+        operations.run(async () => {
+          try {
+            await close(event.payload);
+          } catch (error) {
+            await bridge.cancelUpdate(event.payload);
+            throw error;
+          }
+        }),
+      );
+    },
+  );
+  await getCurrentWebviewWindow().listen('update-cancelled', () => {
+    status.textContent = '文書を保持して更新をキャンセルしました';
   });
   await getCurrentWebviewWindow().listen('document-external', () =>
     guard(checkExternal),

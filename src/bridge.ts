@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import type { Snapshot } from './document';
 import type { ClipboardContents } from './editing';
+import type { UpdateOffer } from './updating';
 
 // No command accepts a caller-provided document/window ID or unrestricted file path.
 export const bridge = {
@@ -12,8 +13,23 @@ export const bridge = {
   reload: (text: string, revision: number, onlyIfClean = false) =>
     invoke<Snapshot>('reload_document', { text, revision, onlyIfClean }),
   checkExternal: () => invoke<boolean>('check_external'),
-  close: (text: string, revision: number, discard: boolean) =>
-    invoke<void>('close_document', { text, revision, discard }),
+  close: (
+    text: string,
+    revision: number,
+    discard: boolean,
+    updateSession?: number,
+  ) =>
+    invoke<void>('close_document', {
+      text,
+      revision,
+      discard,
+      updateSession: updateSession ?? null,
+    }),
+  checkUpdate: () => invoke<UpdateOffer>('check_update'),
+  downloadUpdate: () => invoke<void>('download_update'),
+  beginUpdate: () => invoke<void>('begin_update'),
+  cancelUpdate: (session?: number) =>
+    invoke<void>('cancel_update', { session: session ?? null }),
   requestClose: () => invoke<void>('request_close'),
   requestExit: () => invoke<void>('request_exit'),
   print: () => invoke<void>('print_document'),

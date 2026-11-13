@@ -2,6 +2,8 @@ mod clipboard;
 mod commands;
 mod printing;
 mod state;
+mod update_download;
+mod updating;
 mod watch;
 mod windows;
 
@@ -48,6 +50,10 @@ pub fn run() {
             commands::request_exit,
             commands::read_clipboard,
             commands::write_clipboard_text,
+            commands::check_update,
+            commands::download_update,
+            commands::begin_update,
+            commands::cancel_update,
         ])
         .setup(|app| {
             let handle = app.handle();
