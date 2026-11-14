@@ -137,6 +137,18 @@ impl Documents {
             .get(id)
             .ok_or_else(|| "文書の所有権がありません。".into())
     }
+    pub fn folder(&self, id: &str) -> Result<PathBuf> {
+        let path = self
+            .get(id)?
+            .path
+            .as_ref()
+            .ok_or("文書を保存してから利用してください。")?;
+        let folder = path.parent().ok_or("文書のフォルダーがありません。")?;
+        if !folder.is_dir() {
+            return Err("文書のフォルダーが見つかりません。".into());
+        }
+        Ok(folder.to_path_buf())
+    }
     pub fn get_mut(&mut self, id: &str) -> Result<&mut Document> {
         self.docs
             .get_mut(id)

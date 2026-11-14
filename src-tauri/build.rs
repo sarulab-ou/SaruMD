@@ -2,8 +2,10 @@ fn main() {
     tauri_build::try_build(tauri_build::Attributes::new().app_manifest(
         tauri_build::AppManifest::new().commands(&[
             "document_snapshot",
+            "take_resume_state",
             "new_document",
             "open_documents",
+            "open_document_folder",
             "save_document",
             "reload_document",
             "check_external",

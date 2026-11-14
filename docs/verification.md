@@ -1,4 +1,42 @@
-# 検証記録（最終更新：2026-11-13）
+# 検証記録（最終更新：2026-11-14）
+
+## v0.1.23公開準備
+
+表示モード・ツールメニュー・更新後の復元を同じ0.1.23へまとめ、READMEのタイトル・直接ダウンロード・開発手順の配布先を0.1.23へ更新した。下記の検証済みNSIS/ZIPとSHA256SUMS.txtを公開対象とする。公開後のタグ・ダウンロード・チェックサム照合は別途記録する。
+
+## 開発版0.1.23への追加：更新後の文書・位置・モード復元
+
+アプリ内更新の保存/破棄確認後、所有文書のパス、カーソル・選択、論理スクロール行/末尾、表示モード、左右比率、ウィンドウの位置・サイズ・最大化を専用一時JSONへ引き継ぐようにした。原本への自動保存や未保存本文の保存は追加していない。再起動時は1文書1ウィンドウで開き、UIへ一度だけ状態を渡す。消失したファイルは通知して残りを続ける。通常起動・インストーラー・手動ZIP更新は対象外。この機能のある版から開始する更新で利用できる。
+
+Vitestは16ファイル82件成功。Rust coreはLinux24件/Windows26件、Windows desktop/Linux coreのall-targets clippy（-D warnings）とfmt checkが成功した（`.tools/validate-session-0.1.23.log`）。複数文書のJSON往復、本文を含まないこと、日本語/空白/&入りのパス、不正schema・相対パス・不正位置・非有限値・巨大JSONを検査した。選択の逆向きとファイル短縮時の丸め、初期描画前/非表示ペイン/末尾の復元も確認した。
+
+隔離ヘッドレスEdgeでページを4回再生成する`pnpm run test:session`が成功した。3表示モード、選択と32%比率、120.4行付近の閲覧位置を再現し、実viewportの差は最大0.0034行だった。末尾は新しいレイアウトの末尾へ移動した（`.tools/session-smoke-result.json`）。`pnpm run test:update`の隔離ダミーexe試験では、新版再起動・置き換え失敗時の旧版再起動・新版起動失敗からの旧版再起動・実EncodedCommand補助プロセスで同じ復元JSONの受け取りと消費を確認した。元の文書/アンインストーラーの保持、ZIP検証とロールバックも成功した。
+
+`pnpm run check`、`pnpm run lint`、`pnpm run build`も成功した。既存の`pnpm run test:scroll`は左右連動・3モード往復・位置クリック・数式印刷4件を維持した。Windows x64 GNU release/NSISと更新用ZIPを再生成し、7-Zip検査/隔離展開、exe（NSISマーカー正規化のみ）・DLL・ライセンス・更新スクリプト3件・現行アセットの一致を確認した。現行アセットは`index-C8rx09jF.js`、`index-CqUN7e0d.css`、`preview-worker-C5lvkIXX.js`。ZIPのmanifest内4ファイルはビルド原本と一致し、ProductVersion=0.1.23、`sha256sum -c SHA256SUMS.txt`は両方OK。
+
+今回のインストーラーは`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/SaruMD_0.1.23_x64-setup.exe`、6,414,841バイト、SHA-256 `f5970fc9c3d2b3d793a30bba7ec9d626ca5b8f70bd567d7c204fa7891689c12c`。更新用ZIPは`bundle/update/SaruMD_0.1.23_x64-update.zip`、9,158,788バイト、SHA-256 `5cd9dded74f59e633bcdcf5520468347efe956bd9d10154db1a8eccd5d92ba81`。今回の結果が下記の表示モード単独ビルドの配布物を置き換える（`.tools/final-build-0.1.23.log`、`.tools/installer-audit-0.1.23.json`、`.tools/update-artifact-audit-0.1.23.json`）。大きなJSチャンク・GNUクロスビルド・署名なしの警告は継続する。
+
+実WebView2での更新から複数ウィンドウの再起動・画面配置までを通すGUI試験、Explorerの実画面操作、MSVCビルド、インストール、commit/push、公開は未実施。
+
+## 開発版0.1.23への追加：ツールから保存先フォルダーを開く
+
+未公開0.1.23の表示モード変更を保持し、「ツール (T) → エクスプローラーでフォルダーを開く」を追加した。未保存の新規文書では項目を無効にし、保存成功・保存先変更に応じて更新する。引数なしの限定IPCで所有文書の親フォルダーをRust側から取得し、通常のWindowsパスへ整形して既存のopenerへ渡す。汎用のfs/shell権限や呼び出し元による任意パスの指定は許可していない。本文を保存・変更する処理は追加していない。
+
+Rustの文書テストで未保存文書・未知の所有者の拒否、日本語/空白/&/括弧入りのフォルダー、未保存の編集と原本の保持、名前を付けて保存後の切り替え、ファイル削除後も既存フォルダーを取得できること、フォルダー消失時のエラーを確認した。フロントエンドではAlt+Tと無効項目、プレビュー内からのAlt+T転送、表示→ツール→ヘルプ間のキー移動を検査した。全項目が無効な場合にエディターへフォーカスを残さないよう、メニューのトリガーをフォーカスする。
+
+## 表示モード単独実装時点の記録（0.1.23・後続変更前）
+
+「表示 (V)」と左右分割・エディターのみ・ビューアーのみを追加した。単独表示は横幅いっぱいにし、非表示のペインと分割境界をTabの対象から外す。本文・選択・Undo・分割比率を維持し、ウィンドウごとに独立した初期値「左右分割」を使う。ビューアーのみの本文クリックはソースへ移動せず、明示的な編集コマンドはエディターを表示してから処理する。印刷/PDFの本文スナップショットは表示モードと独立して使う。ネイティブ権限・文書I/O・sandbox/CSPは変更していない。
+
+`pnpm run check`、Vitest 15ファイル76件、`pnpm run lint`、`pnpm run build`が成功した。3モードのDOM保持・選択状態、Alt+Vとradio menuitemのキーボード操作、iframeからのAlt+V転送、単独表示中に非表示ペインへ同期を書き込まないこと、明示的な編集操作で位置復元を中断できることを検査した。RustはLinux core20件・Windows core22件、Windows desktop/Linux coreのall-targets clippy（-D warnings）、fmt checkが成功した（`.tools/validate-0.1.23.log`）。依存通知を502パッケージ分再生成した。
+
+隔離したヘッドレスEdgeの実描画試験が成功した（`.tools/scroll-smoke-result.json`）。単独ペインが全幅1,239px、非表示側が0pxとなり、元の32%分割へ復帰した。未保存の追記・カーソル・Undoを保持し、往復後の本文位置のずれは0.125pxだった。ビューアーのみの本文クリックでソースを動かさず、プレビューを非表示にした状態でも印刷DOMに4件の数式を保持した。非表示から戻したCodeMirrorの再計測で発生した位置ずれは、一時的なスクロール変化を復元の基準へ取り込まないよう修正して解消した。リンクのOS起動と実WebView2のGUI受入を検証したものではない。
+
+Windows x64 GNU release・NSIS生成・更新用ZIP生成が成功した（`.tools/final-build-0.1.23.log`）。7-Zip検査と隔離展開、NSISマーカーのみを正規化したexe、DLL・ライセンス・更新用PowerShell3件、現行アセット`index-BFw5RsjQ.js`・`index-CqUN7e0d.css`・`preview-worker-C5lvkIXX.js`の同梱を確認した。ZIPのmanifest内4ファイルはビルド原本と一致し、ProductName=SaruMD、ProductVersion=0.1.23、両配布物の`sha256sum -c SHA256SUMS.txt`もOKだった（`.tools/installer-audit-0.1.23.json`、`.tools/update-artifact-audit-0.1.23.json`）。
+
+インストーラーは`target/verified/x86_64-pc-windows-gnu/release/bundle/nsis/SaruMD_0.1.23_x64-setup.exe`、6,392,227バイト、SHA-256 `c419bb97128e5f224932c6f28d326c81246b49719d7cff7ccb74f942cdbe7d0f`。更新用ZIPは`bundle/update/SaruMD_0.1.23_x64-update.zip`、9,113,173バイト、SHA-256 `c43c12c8ce64a70fc1744f4fe604acbd9d1c8aad71da7ba4739fc53b7b74b927`。既存の大きなJSチャンク・クロスビルド・署名なし警告は継続する。
+
+実WebView2での3モードのGUI受入、MSVCビルド、今回の版のインストール・commit/push・GitHub Releases公開は行っていない。READMEの公開版タイトルとダウンロードは0.1.22を維持し、開発版0.1.23の操作を追記した。
 
 ## v0.1.22公開結果
 

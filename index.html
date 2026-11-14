@@ -99,6 +99,47 @@
         </div>
         <div class="menu-container">
           <button
+            id="view-menu-button"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            aria-controls="view-menu"
+            aria-keyshortcuts="Alt+v"
+            title="Alt+V"
+          >
+            表示 (<u>V</u>)
+          </button>
+          <div id="view-menu" role="menu" aria-label="表示" hidden>
+            <button id="view-split" role="menuitemradio" aria-checked="true">
+              <span>エディターとビューアー（左右分割）</span
+              ><span aria-hidden="true">✓</span>
+            </button>
+            <button id="view-editor" role="menuitemradio" aria-checked="false">
+              <span>エディターのみ</span><span aria-hidden="true"></span>
+            </button>
+            <button id="view-viewer" role="menuitemradio" aria-checked="false">
+              <span>ビューアーのみ</span><span aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+        <div class="menu-container">
+          <button
+            id="tools-menu-button"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            aria-controls="tools-menu"
+            aria-keyshortcuts="Alt+t"
+            title="Alt+T"
+          >
+            ツール (<u>T</u>)
+          </button>
+          <div id="tools-menu" role="menu" aria-label="ツール" hidden>
+            <button id="open-folder" role="menuitem" disabled>
+              <span>エクスプローラーでフォルダーを開く</span>
+            </button>
+          </div>
+        </div>
+        <div class="menu-container">
+          <button
             id="help-menu-button"
             aria-haspopup="menu"
             aria-expanded="false"

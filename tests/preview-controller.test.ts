@@ -42,6 +42,40 @@ async function setup() {
   return { frame, image, preview, worker: WorkerStub.current };
 }
 
+it('forwards Alt+V from the sandboxed preview to the View menu', async () => {
+  const { frame } = await setup();
+  const received = vi.fn();
+  document.addEventListener('keydown', received, { once: true });
+  frame.contentDocument!.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key: 'v',
+      altKey: true,
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+  expect(received).toHaveBeenCalledOnce();
+  expect(received.mock.calls[0][0].altKey).toBe(true);
+  expect(received.mock.calls[0][0].key).toBe('v');
+});
+
+it('forwards Alt+T from the preview to the Tools menu', async () => {
+  const { frame } = await setup();
+  const received = vi.fn();
+  document.addEventListener('keydown', received, { once: true });
+  frame.contentDocument!.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key: 't',
+      altKey: true,
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+  expect(received).toHaveBeenCalledOnce();
+  expect(received.mock.calls[0][0].altKey).toBe(true);
+  expect(received.mock.calls[0][0].key).toBe('t');
+});
+
 it('accepts a bounded snapshot during continuous input, then refuses older results', async () => {
   const { frame, preview, worker } = await setup();
   preview.update('first');

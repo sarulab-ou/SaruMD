@@ -10,6 +10,35 @@ use std::{fs, path::Path};
 struct FailAt(&'static str);
 
 #[test]
+fn owned_document_folder_tracks_save_as_without_changing_the_document() {
+    let dir = tempfile::tempdir().unwrap();
+    let first = dir.path().join("日本語 空白 & (1)");
+    let second = dir.path().join("別の保存先");
+    fs::create_dir(&first).unwrap();
+    fs::create_dir(&second).unwrap();
+    let file = first.join("メモ.md");
+    fs::write(&file, "original").unwrap();
+    let mut docs = Documents::default();
+    let unsaved = docs.create();
+    assert!(docs.folder(&unsaved).is_err());
+    assert!(docs.folder("unknown-window").is_err());
+    let (id, _) = docs.open(&file).unwrap();
+    docs.edit(&id, "unsaved edits".into(), 1).unwrap();
+    assert_eq!(docs.folder(&id).unwrap(), first.canonicalize().unwrap());
+    assert_eq!(docs.get(&id).unwrap().snapshot.text, "unsaved edits");
+    assert_eq!(docs.get(&id).unwrap().snapshot.saved_text, "original");
+    assert_eq!(fs::read_to_string(&file).unwrap(), "original");
+    let target = second.join("名前を付けて保存.md");
+    docs.save(&id, &target, None, "unsaved edits", 1, &NoFault)
+        .unwrap();
+    assert_eq!(docs.folder(&id).unwrap(), second.canonicalize().unwrap());
+    fs::remove_file(&target).unwrap();
+    assert_eq!(docs.folder(&id).unwrap(), second.canonicalize().unwrap());
+    fs::remove_dir(&second).unwrap();
+    assert!(docs.folder(&id).is_err());
+}
+
+#[test]
 fn local_links_resolve_from_the_document_and_route_by_canonical_file_type() {
     let dir = tempfile::tempdir().unwrap();
     let folder = dir.path().join("reports");

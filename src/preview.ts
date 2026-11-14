@@ -227,7 +227,7 @@ export class Preview {
               (event.altKey &&
                 !event.ctrlKey &&
                 !event.metaKey &&
-                ['f', 'e', 'h', 'd'].includes(key)) ||
+                ['f', 'e', 'v', 't', 'h', 'd'].includes(key)) ||
               (!event.ctrlKey &&
                 !event.altKey &&
                 ['F3', 'F5'].includes(event.key))

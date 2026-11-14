@@ -4,6 +4,8 @@ import { EditorView } from '@codemirror/view';
 import { Preview } from '../../src/preview';
 import { ScrollSync, editorScrollPane } from '../../src/scroll-sync';
 import { mathStyles } from '../../src/math-preview';
+import { ViewModes, type ViewMode } from '../../src/view-mode';
+import { setupMenus } from '../../src/menu';
 
 const mathStyle = document.createElement('style');
 mathStyle.textContent = mathStyles;
@@ -16,6 +18,13 @@ const results: {
   previewTop: number;
 }[] = [];
 const clicks: { name: string; expected: number; actual: number }[] = [];
+const layouts: {
+  mode: ViewMode;
+  sourceWidth: number;
+  viewerWidth: number;
+  sourceLine: number;
+  viewerLine: number;
+}[] = [];
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const wait = async (predicate: () => boolean) => {
   for (let i = 0; i < 100; i++) {
@@ -79,9 +88,49 @@ $$
     ],
     () => preview.renderedText === text,
   );
+  const template = new DOMParser().parseFromString(
+    await (await fetch('/index.html')).text(),
+    'text/html',
+  );
+  document
+    .querySelector('.toolbar')!
+    .replaceChildren(
+      document.importNode(
+        template.querySelector('#view-menu-button')!.parentElement!,
+        true,
+      ),
+    );
+  const modes = new ViewModes(
+    document.querySelector('#split')!,
+    document.querySelector('#view-menu')!,
+    {
+      beforeChange: (visible) => sync.setVisible(visible),
+      changed: (mode, previous) => {
+        if (mode !== 'viewer') editor.view.requestMeasure();
+        if (mode === 'viewer' || (mode === 'split' && previous === 'viewer'))
+          frame.focus();
+        else editor.focus();
+      },
+    },
+  );
+  setupMenus(
+    [
+      {
+        trigger: document.querySelector('#view-menu-button')!,
+        menu: document.querySelector('#view-menu')!,
+        key: 'v',
+      },
+    ],
+    () => editor.view.composing,
+  );
+  for (const mode of ['split', 'editor', 'viewer'] as const)
+    document
+      .querySelector(`#view-${mode}`)!
+      .addEventListener('click', () => modes.set(mode));
   preview.layoutChanged = () => sync.refresh(true);
   preview.navigateToSource = (offset) => {
-    if (preview.renderedText === text) editor.revealSource(offset);
+    if (modes.mode !== 'viewer' && preview.renderedText === text)
+      editor.revealSource(offset);
   };
   editor.layoutChanged = () => sync.refresh();
   const resize = new ResizeObserver((entries) =>
@@ -265,6 +314,102 @@ $$
     throw new Error(
       `Math source offset ${actualMath}, expected ${expectedMath}`,
     );
+  const originalText = text;
+  editor.view.dispatch({
+    changes: { from: text.length, insert: '\n未保存の追記です。\n' },
+  });
+  await wait(() => preview.renderedText === text);
+  const draft = text;
+  const selection = editor.view.state.selection;
+  const editorNode = editor.view.dom;
+  const articleNode = doc.querySelector('article');
+  doc.dispatchEvent(new WheelEvent('wheel', { bubbles: true }));
+  frame.contentWindow!.scrollTo(
+    0,
+    heading(20).getBoundingClientRect().top + frame.contentWindow!.scrollY,
+  );
+  await frames();
+  check('before view changes', 20);
+  for (const mode of [
+    'viewer',
+    'editor',
+    'split',
+    'viewer',
+    'split',
+  ] as const) {
+    const input = modes.mode === 'viewer' ? doc : document;
+    input.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'v',
+        altKey: true,
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    if (document.querySelector<HTMLElement>('#view-menu')!.hidden)
+      throw new Error('Alt+V did not open View');
+    document.querySelector<HTMLButtonElement>(`#view-${mode}`)!.click();
+    await frames();
+    const root = document.querySelector<HTMLElement>('#split')!;
+    const sourceWidth = root
+      .querySelector('.source-pane')!
+      .getBoundingClientRect().width;
+    const viewerWidth = root
+      .querySelector('.preview-pane')!
+      .getBoundingClientRect().width;
+    const fullWidth = root.getBoundingClientRect().width;
+    layouts.push({
+      mode,
+      sourceWidth,
+      viewerWidth,
+      sourceLine: editorScrollPane(
+        editor.view,
+        () => preview.sourceLines,
+      ).position().line,
+      viewerLine: preview.scrollPane().position().line,
+    });
+    if (
+      (mode === 'viewer' ? sourceWidth !== 0 : sourceWidth <= 0) ||
+      (mode === 'editor' ? viewerWidth !== 0 : viewerWidth <= 0)
+    )
+      throw new Error(`Wrong visible panes for ${mode}`);
+    if (
+      mode !== 'split' &&
+      Math.abs(Math.max(sourceWidth, viewerWidth) - fullWidth) > 1
+    )
+      throw new Error(`Single pane is not full width: ${mode}`);
+    if (
+      editor.view.dom !== editorNode ||
+      doc.querySelector('article') !== articleNode ||
+      editor.view.state.doc.toString() !== draft ||
+      !editor.view.state.selection.eq(selection) ||
+      !editor.canUndo
+    )
+      throw new Error(
+        'Mode switch changed the draft, selection, or Undo state',
+      );
+    if (mode === 'viewer') {
+      const node = heading(20),
+        bounds = node.getBoundingClientRect();
+      node.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          button: 0,
+          clientX: bounds.left + 10,
+          clientY: bounds.top + 5,
+        }),
+      );
+      if (!editor.view.state.selection.eq(selection) || editor.view.hasFocus)
+        throw new Error('Viewer-only click moved the hidden editor');
+    }
+    if (mode === 'split') check('split restored after single pane', 20);
+  }
+  editor.undo();
+  await wait(() => preview.renderedText === originalText);
+  if (text !== originalText)
+    throw new Error('Undo did not restore the pre-switch document');
+  modes.set('editor'); // Printing must still use the preview while its pane is hidden.
+  await frames();
   const print = document.createElement('article');
   print.id = 'print-content';
   document.body.append(print);
@@ -277,6 +422,7 @@ $$
     print.querySelector('[data-winmd-math],[data-winmd-line]')
   )
     throw new Error('Math print snapshot lost formulas or leaked metadata');
+  modes.set('split');
   const css = [...document.querySelectorAll('style')]
     .map((style) => style.textContent)
     .join('\n');
@@ -286,6 +432,7 @@ $$
     status: 'PASS',
     results,
     clicks,
+    layouts,
     math: {
       count: math.length,
       fractionGap: denominator.top - numerator.bottom,
@@ -303,6 +450,7 @@ $$
     error: String(error),
     results,
     clicks,
+    layouts,
   });
 }
 await fetch('/__scroll_probe_result', {

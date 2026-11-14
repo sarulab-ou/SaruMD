@@ -41,6 +41,8 @@ cargo fmt --all -- --check
 
 この試験では左右からの追従、幅変更による折り返し、遅れて読み込まれる画像、追従の逆流がないことに加え、見出し・コード・表の実クリック座標からソースの文字位置へ移動することを確認します。Tauriのネイティブウィンドウを操作するGUI受入とは区別します。
 
+`pnpm run test:session`は同じ隔離Edgeで画面を4回読み直し、実CodeMirror/プレビューの再生成後に3表示モード・選択・32%の分割比率・途中/末尾の閲覧位置を復元します。結果は`.tools/session-smoke-result.json`です。OSのウィンドウ配置と実アプリの更新は別途GUI受入が必要です。`pnpm run test:update`ではダミーexeへの置き換え・失敗時のロールバック・EncodedCommand補助プロセスを使い、復元JSONの継承と消費も確認します。
+
 0.1.11以降は数式の実レイアウト、数式クリック、印刷DOMも確認し、数式だけの印刷用fixtureを`.tools/math-print.html`へ出力します。`scripts/build-print-probe-wsl.sh`で非表示WebView2検証用exeを生成し、`print_smoke.exe <出力PDFのパス> <fixtureのパス>`の第2引数にこのHTMLを渡すと、製品と同じPDF生成関数で数式出力を検証できます。第2引数を省略した場合は従来の固定日本語fixtureを使います。
 
 今回の環境ではRustをプロジェクト内の`.tools/`に置き、WSLから`bash scripts/rust-wsl.sh test -p winmd-core`を実行しました。Windows API試験は`--target x86_64-pc-windows-gnu`を追加します。通常環境では直接cargoを使用できます。
@@ -61,9 +63,9 @@ pnpm desktop:build
 設定されたbeforeBuildCommandが型チェックとフロントエンドビルドを実行し、NSISを作成します。ワークスペースルートの標準出力先：
 
 - `target/x86_64-pc-windows-msvc/release/SaruMD.exe`
-- `target/x86_64-pc-windows-msvc/release/bundle/nsis/SaruMD_0.1.22_x64-setup.exe`
+- `target/x86_64-pc-windows-msvc/release/bundle/nsis/SaruMD_0.1.23_x64-setup.exe`
 
-`CARGO_TARGET_DIR`で出力先を変更できます。今回生成したGNU試用版は`target/verified/x86_64-pc-windows-gnu/release/`にあります。公開用の[v0.1.22リリース](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.22)から初回導入用インストーラー・更新用ZIP・SHA-256チェックサムを取得できます。
+`CARGO_TARGET_DIR`で出力先を変更できます。今回生成したGNU試用版は`target/verified/x86_64-pc-windows-gnu/release/`にあります。公開用の[v0.1.23リリース](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.23)から初回導入用インストーラー・更新用ZIP・SHA-256チェックサムを取得できます。
 
 MSVC版は今回未生成です。Tauriが公式にサポートするWindowsターゲットはMSVCです。[公式Windowsビルド資料](https://v2.tauri.app/distribute/windows-installer/)
 

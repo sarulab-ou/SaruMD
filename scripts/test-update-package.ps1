@@ -20,7 +20,12 @@ using System; using System.IO; using System.Reflection; using System.Threading;
 class Fixture { [STAThread] static void Main(string[] args) {
  if(args.Length > 0 && args[0] == "parent") { Thread.Sleep(1200); return; }
  int exitCode = int.Parse("$ExitCode"); if(exitCode != 0) { Environment.Exit(exitCode); }
- File.WriteAllText(Environment.GetEnvironmentVariable("SARUMD_TEST_CAPTURE"), "$Label");
+ string capture = Environment.GetEnvironmentVariable("SARUMD_TEST_CAPTURE");
+ string resume = Environment.GetEnvironmentVariable("SARUMD_RESUME_SESSION");
+ if (!String.IsNullOrEmpty(resume) && File.Exists(resume)) {
+   File.WriteAllText(capture + ".resume", File.ReadAllText(resume)); File.Delete(resume);
+ }
+ File.WriteAllText(capture, "$Label");
 }}
 "@
     $cs = $Path + '.cs'; [IO.File]::WriteAllText($cs, $source, $utf8)
@@ -46,6 +51,15 @@ function Wait-Capture([string]$Expected) {
     throw 'Expected restarted fixture was not observed'
 }
 $oldFixture = Join-Path $root 'old.exe'; Build-Fixture $oldFixture 'old' '0.1.21'
+$resumeJson = '{"schema":1,"documents":[{"path":null,"ui":{"mode":"viewer","sourceWidth":32,"selection":{"anchor":{"line":20,"column":4},"head":{"line":18,"column":1}},"scroll":{"line":15.75,"atEnd":false}},"window":null}]}'
+function Prepare-Resume([string]$Directory) {
+    $env:SARUMD_RESUME_SESSION = Join-Path $Directory 'resume-fixture.json'
+    [IO.File]::WriteAllText($env:SARUMD_RESUME_SESSION, $resumeJson, $utf8)
+}
+function Check-Resume {
+    Check ([IO.File]::ReadAllText($env:SARUMD_TEST_CAPTURE + '.resume') -ceq $resumeJson) 'Restart did not inherit the complete workspace handoff'
+    Check (-not [IO.File]::Exists($env:SARUMD_RESUME_SESSION)) 'Restart did not consume the handoff'
+}
 $build = Join-Path $root 'build'; [void][IO.Directory]::CreateDirectory($build)
 Build-Fixture (Join-Path $build 'SaruMD.exe') 'new' $version
 [IO.File]::WriteAllText((Join-Path $build 'WebView2Loader.dll'), 'MZ-test-loader', $utf8)
@@ -61,10 +75,12 @@ $parentInfo.FileName = Join-Path $install 'SaruMD.exe'; $parentInfo.Arguments = 
 $parent = [Diagnostics.Process]::Start($parentInfo)
 $parentId = $parent.Id; $parent.Dispose()
 $timer = [Diagnostics.Stopwatch]::StartNew()
+Prepare-Resume $root
 Invoke-SaruMDUpdate $install $payload $version $parentId
 $timer.Stop()
 Check ($timer.ElapsedMilliseconds -ge 1000) 'Did not wait for the parent to exit'
 Wait-Capture 'new'
+Check-Resume
 foreach ($file in $manifest.files) { Assert-SaruMDFile (Get-SaruMDFile $install $file.path) $file }
 Check ([IO.File]::ReadAllText((Join-Path $install 'notes.md')) -eq 'user document') 'Document was modified'
 Check ([IO.File]::ReadAllText((Join-Path $install 'uninstall.exe')) -eq 'keep uninstaller') 'Uninstaller was modified'
@@ -74,8 +90,10 @@ $lockedInstall = New-OldInstall 'rollback'
 $before = @{}; foreach ($relative in $script:SaruMDFiles) { $before[$relative] = (Get-FileHash -LiteralPath (Get-SaruMDFile $lockedInstall $relative)).Hash }
 $env:SARUMD_TEST_CAPTURE = Join-Path $root 'rollback.txt'
 $locked = [IO.File]::Open((Join-Path $lockedInstall 'WebView2Loader.dll'), [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::None)
+Prepare-Resume $root
 try { Expect-Failure { Invoke-SaruMDUpdate $lockedInstall $payload $version 2147483647 } 'Locked destination should fail' } finally { $locked.Dispose() }
 Wait-Capture 'old'
+Check-Resume
 foreach ($relative in $script:SaruMDFiles) { Check ((Get-FileHash -LiteralPath (Get-SaruMDFile $lockedInstall $relative)).Hash -eq $before[$relative]) "Rollback mismatch: $relative" }
 
 $crashFixture = Join-Path $root 'crash.exe'; Build-Fixture $crashFixture 'crash' $version 23
@@ -86,8 +104,10 @@ $crashManifest.files[0].bytes = ([IO.FileInfo]$crashFixture).Length
 $crashManifest.files[0].sha256 = (Get-FileHash -LiteralPath $crashFixture).Hash.ToLowerInvariant()
 [IO.File]::WriteAllText((Join-Path $crashPayload 'update.json'), ($crashManifest | ConvertTo-Json -Depth 5), $utf8)
 $crashInstall = New-OldInstall 'restart-failure'; $env:SARUMD_TEST_CAPTURE = Join-Path $root 'restart-failure.txt'
+Prepare-Resume $root
 Expect-Failure { Invoke-SaruMDUpdate $crashInstall $crashPayload $version 2147483647 } 'Crashing new app should roll back'
 Wait-Capture 'old'
+Check-Resume
 foreach ($relative in $script:SaruMDFiles) { Check ((Get-FileHash -LiteralPath (Get-SaruMDFile $crashInstall $relative)).Hash -eq $before[$relative]) "Restart rollback mismatch: $relative" }
 
 # Exercise the actual hidden helper entry point and encoded command transport.
@@ -100,6 +120,7 @@ $helperInstall = New-OldInstall 'encoded-helper'
 $env:SARUMD_TEST_CAPTURE = Join-Path $root 'helper-started.txt'
 $env:SARUMD_UPDATE_ARCHIVE = $helperZip; $env:SARUMD_UPDATE_HASH = $packaged.SHA256
 $env:SARUMD_UPDATE_DIRECTORY = $helperInstall; $env:SARUMD_UPDATE_VERSION = $version; $env:SARUMD_UPDATE_PARENT = '2147483647'
+Prepare-Resume $helperCache
 $commonScript = [IO.File]::ReadAllText((Join-Path $project 'src-tauri/src/update-files.ps1')).TrimStart([char]0xfeff)
 $helperScript = [IO.File]::ReadAllText((Join-Path $project 'src-tauri/src/update-helper.ps1')) -replace '\[Windows\.MessageBox\]::Show\([^\r\n]+', '[Console]::Error.WriteLine($$_.Exception.Message)'
 $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($commonScript + "`n" + $helperScript))
@@ -117,6 +138,7 @@ try {
 } finally { $helper.Dispose() }
 Wait-Capture 'new'
 Check (-not [IO.Directory]::Exists($helperCache)) 'Helper cache was not cleaned'
+Check-Resume
 foreach ($file in $manifest.files) { Assert-SaruMDFile (Get-SaruMDFile $helperInstall $file.path) $file }
 
 function Rewrite-Zip([string]$Name, [string]$Mode) {

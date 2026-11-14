@@ -10,7 +10,9 @@ export function setupMenus(entries: MenuEntry[], blocked: () => boolean) {
   let active: MenuEntry | undefined;
   const items = (entry: MenuEntry) =>
     [
-      ...entry.menu.querySelectorAll<HTMLButtonElement>('[role="menuitem"]'),
+      ...entry.menu.querySelectorAll<HTMLButtonElement>(
+        'button[role^="menuitem"]',
+      ),
     ].filter((item) => !item.disabled);
   const close = (restore = false) => {
     const previous = active;
@@ -29,7 +31,7 @@ export function setupMenus(entries: MenuEntry[], blocked: () => boolean) {
     entry.menu.hidden = false;
     entry.trigger.setAttribute('aria-expanded', 'true');
     const enabled = items(entry);
-    (last ? enabled.at(-1) : enabled[0])?.focus();
+    ((last ? enabled.at(-1) : enabled[0]) ?? entry.trigger).focus();
   };
   for (const entry of entries) {
     entry.trigger.addEventListener('click', () => {
@@ -50,7 +52,8 @@ export function setupMenus(entries: MenuEntry[], blocked: () => boolean) {
     entry.menu.addEventListener(
       'click',
       (event) => {
-        if ((event.target as Element).closest('[role="menuitem"]')) close(true);
+        if ((event.target as Element).closest('button[role^="menuitem"]'))
+          close(true);
       },
       { capture: true },
     );

@@ -30,6 +30,21 @@ describe('file menu', () => {
           menu: document.querySelector('#edit-menu')!,
           key: 'e',
         },
+        {
+          trigger: document.querySelector('#view-menu-button')!,
+          menu: document.querySelector('#view-menu')!,
+          key: 'v',
+        },
+        {
+          trigger: document.querySelector('#tools-menu-button')!,
+          menu: document.querySelector('#tools-menu')!,
+          key: 't',
+        },
+        {
+          trigger: document.querySelector('#help-menu-button')!,
+          menu: document.querySelector('#help-menu')!,
+          key: 'h',
+        },
       ],
       () => blocked,
     );
@@ -38,6 +53,7 @@ describe('file menu', () => {
     blocked = false;
     key('Escape');
     document.querySelector<HTMLButtonElement>('#save')!.disabled = false;
+    document.querySelector<HTMLButtonElement>('#open-folder')!.disabled = false;
   });
   it('shows shortcuts and supports Alt+F, arrows, Home/End and Escape', () => {
     expect(document.querySelector('.brand')).toBeNull();
@@ -99,5 +115,47 @@ describe('file menu', () => {
     expect(document.activeElement?.id).toBe('undo');
     key('Escape');
     expect(document.activeElement?.id).toBe('edit-menu-button');
+  });
+  it('opens View with Alt+V and supports radio items, command closing, and Tools/Help navigation', () => {
+    key('v', { altKey: true });
+    const viewMenu = document.querySelector<HTMLElement>('#view-menu')!;
+    expect(viewMenu.hidden).toBe(false);
+    expect(document.activeElement?.id).toBe('view-split');
+    key('ArrowDown');
+    expect(document.activeElement?.id).toBe('view-editor');
+    key('End');
+    expect(document.activeElement?.id).toBe('view-viewer');
+    document.querySelector<HTMLButtonElement>('#view-viewer')!.click();
+    expect(viewMenu.hidden).toBe(true);
+    key('v', { altKey: true });
+    key('ArrowRight');
+    expect(document.querySelector<HTMLElement>('#tools-menu')!.hidden).toBe(
+      false,
+    );
+    key('ArrowRight');
+    expect(document.querySelector<HTMLElement>('#help-menu')!.hidden).toBe(
+      false,
+    );
+    key('ArrowLeft');
+    expect(document.activeElement?.id).toBe('open-folder');
+    key('ArrowLeft');
+    expect(document.activeElement?.id).toBe('view-split');
+  });
+  it('opens Tools with Alt+T and skips the folder action for an unsaved document', () => {
+    const folder = document.querySelector<HTMLButtonElement>('#open-folder')!;
+    folder.disabled = true;
+    key('t', { altKey: true });
+    expect(document.querySelector<HTMLElement>('#tools-menu')!.hidden).toBe(
+      false,
+    );
+    expect(document.activeElement?.id).toBe('tools-menu-button');
+    key('Escape');
+    folder.disabled = false;
+    key('t', { altKey: true });
+    expect(document.activeElement).toBe(folder);
+    folder.click();
+    expect(document.querySelector<HTMLElement>('#tools-menu')!.hidden).toBe(
+      true,
+    );
   });
 });

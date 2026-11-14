@@ -62,7 +62,7 @@ const child = spawn(
     '--no-default-browser-check',
     `--user-data-dir=${profile}`,
     '--window-size=1280,900',
-    `http://127.0.0.1:${port}/tests/browser/scroll-sync.html`,
+    `http://127.0.0.1:${port}/tests/browser/${process.argv.includes('--session') ? 'session' : 'scroll-sync'}.html`,
   ],
   { windowsHide: true },
 );
@@ -83,7 +83,9 @@ try {
   if (typeof printHtml === 'string')
     fs.writeFileSync('.tools/math-print.html', printHtml);
   fs.writeFileSync(
-    '.tools/scroll-smoke-result.json',
+    process.argv.includes('--session')
+      ? '.tools/session-smoke-result.json'
+      : '.tools/scroll-smoke-result.json',
     JSON.stringify(report, null, 2) + '\n',
   );
   console.log(JSON.stringify(report, null, 2));

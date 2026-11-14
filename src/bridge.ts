@@ -2,12 +2,15 @@ import { invoke } from '@tauri-apps/api/core';
 import type { Snapshot } from './document';
 import type { ClipboardContents } from './editing';
 import type { UpdateOffer } from './updating';
+import type { UiState } from './session';
 
 // No command accepts a caller-provided document/window ID or unrestricted file path.
 export const bridge = {
   snapshot: () => invoke<Snapshot>('document_snapshot'),
+  takeResumeState: () => invoke<UiState | null>('take_resume_state'),
   newDocument: () => invoke<void>('new_document'),
   open: () => invoke<void>('open_documents'),
+  openFolder: () => invoke<void>('open_document_folder'),
   save: (text: string, revision: number, saveAs: boolean) =>
     invoke<Snapshot | null>('save_document', { text, revision, saveAs }),
   reload: (text: string, revision: number, onlyIfClean = false) =>
@@ -18,12 +21,14 @@ export const bridge = {
     revision: number,
     discard: boolean,
     updateSession?: number,
+    resume?: UiState,
   ) =>
     invoke<void>('close_document', {
       text,
       revision,
       discard,
       updateSession: updateSession ?? null,
+      resume: resume ?? null,
     }),
   checkUpdate: () => invoke<UpdateOffer>('check_update'),
   downloadUpdate: () => invoke<void>('download_update'),

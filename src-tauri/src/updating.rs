@@ -2,7 +2,7 @@ use crate::{
     state::AppState,
     update_download::{download, find_update, powershell, verify_payload, Staged, FILE_OPERATIONS},
 };
-use std::{fs::File, process::Child};
+use std::{collections::BTreeMap, fs::File, process::Child};
 use tauri::{AppHandle, Emitter, Manager};
 use winmd_core::{
     updates::{self, Available, Candidate, CloseSequence, Offer},
@@ -18,6 +18,7 @@ pub struct State {
     pub closing: Option<CloseSequence>,
     pub installing: bool,
     pub session: u64,
+    pub resume: BTreeMap<String, winmd_core::session::ResumeDocument>,
 }
 
 impl State {
@@ -128,6 +129,7 @@ pub fn begin(app: &AppHandle, owner: &str) -> Result<()> {
         .map_err(|_| "アプリのフォルダーに書き込めません。更新は開始しませんでした。")?;
     let ids = state.lock()?.docs.keys().cloned().collect();
     update.session += 1;
+    update.resume.clear();
     update.closing = Some(CloseSequence::new(update.session, ids));
     if let Err(error) = request_next(app, &update) {
         update.closing = None;
@@ -175,6 +177,7 @@ pub fn cancel(app: &AppHandle, owner: &str, session: Option<u64>) -> Result<()> 
         update.owner = None;
         update.candidate = None;
         update.staged = None;
+        update.resume.clear();
         for window in app.webview_windows().values() {
             let _ = window.emit_to(
                 tauri::EventTarget::webview_window(window.label()),
@@ -204,14 +207,25 @@ pub fn launch_helper(update: &mut State) -> Result<Child> {
         raw.strip_prefix(r"\\?\").unwrap_or(&raw).to_string()
     };
     let script = format!("{FILE_OPERATIONS}\n{}", include_str!("update-helper.ps1"));
+    let resume = winmd_core::session::write_workspace(
+        staged
+            .path
+            .parent()
+            .ok_or("更新用の一時フォルダーがありません。")?,
+        update.resume.values().cloned().collect(),
+    )?;
     let child = powershell(&script)?
         .env("SARUMD_UPDATE_PARENT", std::process::id().to_string())
         .env("SARUMD_UPDATE_ARCHIVE", &staged.path)
         .env("SARUMD_UPDATE_VERSION", &staged.candidate.version)
         .env("SARUMD_UPDATE_HASH", &staged.candidate.sha256)
         .env("SARUMD_UPDATE_DIRECTORY", directory)
+        .env("SARUMD_RESUME_SESSION", &resume)
         .spawn()
-        .map_err(|e| format!("更新処理を起動できません: {e}"))?;
+        .map_err(|e| {
+            let _ = std::fs::remove_file(resume);
+            format!("更新処理を起動できません: {e}")
+        })?;
     // The helper waits for this process to exit; keep only its verified private directory alive.
     if let Some(temp) = staged.temp.take() {
         let _ = temp.keep();

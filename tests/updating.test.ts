@@ -50,6 +50,8 @@ it('begins closing only after a verified download succeeds', async () => {
   expect(dialog.mock.calls[0][1]).toContain('0.1.20 → 0.1.21');
   expect(dialog.mock.calls[0][1]).toContain('更新用ZIP');
   expect(dialog.mock.calls[0][1]).toContain('インストーラーは起動しません');
+  expect(dialog.mock.calls[0][1]).toContain('編集位置・表示モードを復元');
+  expect(dialog.mock.calls[0][1]).toContain('破棄した編集は復元しません');
 });
 it('does not close documents or install after a download or checksum failure', async () => {
   const { bridge, dialog, progress } = setup();

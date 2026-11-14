@@ -1,6 +1,6 @@
 {
   "name": "sarumd",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "private": true,
   "type": "module",
   "license": "MIT",
@@ -10,6 +10,7 @@
     "check": "tsc --noEmit",
     "test": "vitest run",
     "test:scroll": "node scripts/test-scroll.mjs",
+    "test:session": "node scripts/test-scroll.mjs --session",
     "lint": "eslint src tests scripts && prettier --check .",
     "format": "prettier --write .",
     "build": "tsc --noEmit && vite build",

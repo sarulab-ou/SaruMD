@@ -15,6 +15,8 @@ import { mathStyles } from './math-preview';
 import { setupLinkStatus } from './links';
 import { pdfFileName } from './printing';
 import { runUpdate } from './updating';
+import { ViewModes } from './view-mode';
+import { captureSelection, restoreSelection } from './session';
 
 const state = new DocumentState();
 const mathStyle = document.createElement('style');
@@ -31,6 +33,9 @@ const showLinkTarget = setupLinkStatus(
 const documentPath =
   document.querySelector<HTMLInputElement>('#document-path')!;
 let editor: MarkdownEditor;
+let viewModes: ViewModes;
+let scrollSync: ScrollSync;
+let split: ReturnType<typeof setupSplit>;
 let ready = false;
 let saving = false;
 let exclusive = false;
@@ -53,6 +58,17 @@ const menus = setupMenus(
       onOpen: refreshEditMenu,
     },
     {
+      trigger: document.querySelector('#view-menu-button')!,
+      menu: document.querySelector('#view-menu')!,
+      key: 'v',
+    },
+    {
+      trigger: document.querySelector('#tools-menu-button')!,
+      menu: document.querySelector('#tools-menu')!,
+      key: 't',
+      onOpen: refreshToolsMenu,
+    },
+    {
       trigger: document.querySelector('#help-menu-button')!,
       menu: document.querySelector('#help-menu')!,
       key: 'h',
@@ -60,6 +76,11 @@ const menus = setupMenus(
   ],
   () => !ready || exclusive || modalOpen(),
 );
+
+function refreshToolsMenu(): void {
+  document.querySelector<HTMLButtonElement>('#open-folder')!.disabled =
+    !state.path;
+}
 
 function refreshEditMenu(): void {
   const disabled: Record<string, boolean> = {
@@ -150,6 +171,7 @@ function refresh(): void {
   document.querySelector<HTMLButtonElement>('#save')!.disabled = state.readOnly;
   document.querySelector<HTMLButtonElement>('#save-as')!.disabled =
     state.readOnly;
+  refreshToolsMenu();
   guard(() => bridge.title(state.dirty));
 }
 
@@ -252,7 +274,12 @@ async function close(updateSession?: number): Promise<void> {
   exclusive = true;
   editor.setReadOnly(true);
   try {
-    await bridge.close(state.text, state.revision, discard, updateSession);
+    await bridge.close(state.text, state.revision, discard, updateSession, {
+      mode: viewModes.mode,
+      sourceWidth: split.get(),
+      selection: captureSelection(editor.view),
+      scroll: scrollSync.capture(),
+    });
   } finally {
     exclusive = false;
     editor.setReadOnly(state.readOnly);
@@ -317,7 +344,9 @@ async function printDocument(pdf: boolean): Promise<void> {
         } finally {
           exclusive = false;
           editor.setReadOnly(state.readOnly);
-          editor.focus();
+          if (viewModes.mode === 'viewer')
+            document.querySelector<HTMLIFrameElement>('#preview')!.focus();
+          else editor.focus();
         }
       }),
     );
@@ -340,7 +369,18 @@ async function clipboardAction(cut: boolean): Promise<void> {
   }
 }
 
+const edit = (action: () => Promise<unknown> | void) => () => {
+  viewModes.showEditor();
+  scrollSync.resumeFromCurrent();
+  return action();
+};
+const changeView = (mode: 'split' | 'editor' | 'viewer') => {
+  if (!editor.view.composing) viewModes.set(mode);
+};
 const handlers: Record<string, () => Promise<unknown> | void> = {
+  'view-split': () => changeView('split'),
+  'view-editor': () => changeView('editor'),
+  'view-viewer': () => changeView('viewer'),
   update: async () => {
     if (updateBusy) return;
     updateBusy = true;
@@ -379,21 +419,22 @@ const handlers: Record<string, () => Promise<unknown> | void> = {
   },
   new: bridge.newDocument,
   open: bridge.open,
+  'open-folder': bridge.openFolder,
   save: () => save(),
   'save-as': () => save(true),
   reload: () => operations.run(reload),
   print: () => printDocument(false),
   'export-pdf': () => printDocument(true),
   exit: bridge.requestExit,
-  undo: () => editor.undo(),
-  cut: () => clipboardAction(true),
-  paste: () => clipboardAction(false),
-  delete: () => editor.deleteSelection(),
-  find: () => editor.search(),
-  'find-next': () => editor.findNext(),
-  'find-previous': () => editor.findNext(true),
-  replace: () => editor.replace(),
-  timestamp: () => editor.insertTimestamp(),
+  undo: edit(() => editor.undo()),
+  cut: edit(() => clipboardAction(true)),
+  paste: edit(() => clipboardAction(false)),
+  delete: edit(() => editor.deleteSelection()),
+  find: edit(() => editor.search()),
+  'find-next': edit(() => editor.findNext()),
+  'find-previous': edit(() => editor.findNext(true)),
+  replace: edit(() => editor.replace()),
+  timestamp: edit(() => editor.insertTimestamp()),
 };
 for (const [id, handler] of Object.entries(handlers)) {
   document.getElementById(id)!.addEventListener('click', () => {
@@ -485,7 +526,7 @@ window.addEventListener('focus', () => guard(checkExternal));
 document.addEventListener('compositionend', () => guard(checkExternal));
 
 async function start(): Promise<void> {
-  setupSplit();
+  split = setupSplit();
   // Register targeted events BEFORE loading state; backend owns startup documents already.
   await getCurrentWebviewWindow().listen('document-close-requested', () => {
     if (ready) guard(() => operations.run(close));
@@ -512,6 +553,7 @@ async function start(): Promise<void> {
     guard(checkExternal),
   );
   state.load(await bridge.snapshot());
+  const resume = await bridge.takeResumeState();
   editor = new MarkdownEditor(
     document.querySelector('#editor')!,
     state.text,
@@ -521,12 +563,26 @@ async function start(): Promise<void> {
     { open: bridge.link, report, hover: showLinkTarget },
   );
   await preview.ready;
-  const scrollSync = new ScrollSync(
+  scrollSync = new ScrollSync(
     [
       editorScrollPane(editor.view, () => preview.sourceLines),
       preview.scrollPane(),
     ],
     () => ready && !printing && preview.renderedText === state.text,
+  );
+  viewModes = new ViewModes(
+    document.querySelector('#split')!,
+    document.querySelector('#view-menu')!,
+    {
+      beforeChange: (visible) => scrollSync.setVisible(visible),
+      changed: (mode, previous) => {
+        showLinkTarget(null);
+        if (mode !== 'viewer') editor.view.requestMeasure();
+        if (mode === 'viewer' || (mode === 'split' && previous === 'viewer'))
+          document.querySelector<HTMLIFrameElement>('#preview')!.focus();
+        else editor.focus();
+      },
+    },
   );
   preview.layoutChanged = () => scrollSync.refresh(true);
   preview.navigateToSource = (offset) => {
@@ -536,6 +592,7 @@ async function start(): Promise<void> {
       !exclusive &&
       !clipboardBusy &&
       !modalOpen() &&
+      viewModes.mode !== 'viewer' &&
       preview.renderedText === state.text
     )
       editor.revealSource(offset);
@@ -558,8 +615,16 @@ async function start(): Promise<void> {
   );
   ready = true;
   refresh();
+  if (resume) {
+    split.set(resume.sourceWidth);
+    restoreSelection(editor.view, resume.selection);
+    viewModes.set(resume.mode);
+    scrollSync.restore(resume.scroll);
+  }
   preview.update(state.text);
-  editor.focus();
+  if (viewModes.mode === 'viewer')
+    document.querySelector<HTMLIFrameElement>('#preview')!.focus();
+  else editor.focus();
   await checkExternal();
 }
 guard(start);

@@ -53,6 +53,73 @@ pub fn show_error(app: &AppHandle, error: &str) {
         .show(|_| {});
 }
 
+pub fn restore(app: &AppHandle, workspace: winmd_core::session::Workspace) {
+    // One failed/missing file must not prevent restoring the other windows.
+    for document in workspace.documents {
+        let result = (|| -> Result<()> {
+            let state = app.state::<AppState>();
+            let (id, created) = {
+                let mut docs = state.lock()?;
+                match &document.path {
+                    Some(path) => docs.open(path)?,
+                    None => (docs.create(), true),
+                }
+            };
+            if !created {
+                return Ok(());
+            }
+            state
+                .resume
+                .lock()
+                .map_err(|_| "復元状態を保持できません。")?
+                .insert(id.clone(), document.ui);
+            if let Err(error) = create_window(app, &id) {
+                state.lock()?.docs.remove(&id);
+                state
+                    .resume
+                    .lock()
+                    .map_err(|_| "復元状態を保持できません。")?
+                    .remove(&id);
+                return Err(error);
+            }
+            if let (Some(saved), Some(window)) = (document.window, app.get_webview_window(&id)) {
+                // Leave inaccessible monitor coordinates at the default position.
+                let on_screen = window
+                    .available_monitors()
+                    .unwrap_or_default()
+                    .iter()
+                    .any(|m| {
+                        let p = m.position();
+                        let s = m.size();
+                        i64::from(saved.x) + i64::from(saved.width) > i64::from(p.x) + 100
+                            && i64::from(saved.y) + i64::from(saved.height) > i64::from(p.y) + 100
+                            && i64::from(saved.x) < i64::from(p.x) + i64::from(s.width) - 100
+                            && i64::from(saved.y) < i64::from(p.y) + i64::from(s.height) - 100
+                    });
+                if on_screen {
+                    let _ = window.set_position(tauri::PhysicalPosition::new(saved.x, saved.y));
+                    let _ = window.set_size(tauri::PhysicalSize::new(saved.width, saved.height));
+                }
+                if saved.maximized {
+                    let _ = window.maximize();
+                }
+            }
+            Ok(())
+        })();
+        if let Err(error) = result {
+            let path = document
+                .path
+                .as_ref()
+                .map(|p| p.display().to_string())
+                .unwrap_or_else(|| "無題".into());
+            show_error(
+                app,
+                &format!("{path}\n更新前の文書を開けませんでした: {error}"),
+            );
+        }
+    }
+}
+
 pub fn new_document(app: &AppHandle) -> Result<()> {
     let id = {
         let state = app.state::<AppState>();

@@ -222,3 +222,77 @@ it('aligns the start/end, ignores stale previews, and follows the latest pane on
   expect(left.position().top).toBe(800);
   expect(right.position().top).toBe(1200);
 });
+
+it('preserves the visible reading location across single-pane layouts and resumes split synchronization', () => {
+  const { left, right, sync, flush } = setup();
+  left.userScroll(200);
+  flush();
+  left.setTop.mockClear();
+  sync.setVisible([false, true]);
+  right.resize(50);
+  right.outerInput!.dispatchEvent(new Event('focusin'));
+  flush();
+  expect(right.position().top).toBe(1000);
+  expect(left.setTop).not.toHaveBeenCalled();
+  right.userScroll(2000);
+  flush();
+  expect(left.setTop).not.toHaveBeenCalled();
+  sync.setVisible([true, true]);
+  right.resize(30);
+  right.outerInput!.dispatchEvent(new Event('focusin'));
+  flush();
+  expect(right.position().top).toBe(1200);
+  expect(left.position().top).toBe(400);
+});
+
+it('lets an explicit editing command override temporary layout restoration', () => {
+  const { left, sync, flush } = setup();
+  left.userScroll(200);
+  flush();
+  sync.setVisible([true, false]);
+  left.resize(20);
+  left.setTop(0); // A hidden/shown pane may temporarily clamp its scroll offset.
+  flush();
+  expect(left.position().top).toBe(400);
+  sync.resumeFromCurrent();
+  left.setTop(800); // Explicit search/reveal after returning to editing.
+  flush();
+  expect(left.position().top).toBe(800);
+});
+
+it('restores a saved reading position after initial rendering and hidden-pane remeasurement', () => {
+  const original = setup();
+  original.left.userScroll(200);
+  original.flush();
+  const position = original.sync.capture();
+  expect(position).toEqual({ line: 21, atEnd: false });
+  original.sync.destroy();
+  const reopened = setup();
+  reopened.enable(false);
+  reopened.sync.setVisible([false, true]);
+  reopened.right.resize(50);
+  reopened.sync.restore(position);
+  reopened.flush();
+  reopened.enable(true);
+  reopened.sync.refresh(true);
+  reopened.flush();
+  expect(reopened.right.position().top).toBe(1000);
+  expect(reopened.left.position().top).toBe(0);
+  expect(reopened.sync.capture()).toEqual(position);
+  reopened.sync.setVisible([true, true]);
+  reopened.right.resize(30);
+  reopened.flush();
+  expect(reopened.left.position().top).toBe(200);
+  expect(reopened.right.position().top).toBe(600);
+});
+
+it('restores the document end even when the new layout has a different height', () => {
+  const { left, right, sync, flush } = setup();
+  sync.restore({ line: 101, atEnd: true });
+  left.resize(20);
+  right.resize(50);
+  flush();
+  expect(left.position().top).toBe(2000);
+  expect(right.position().top).toBe(5000);
+  expect(sync.capture().atEnd).toBe(true);
+});

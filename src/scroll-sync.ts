@@ -1,4 +1,5 @@
 import type { EditorView } from '@codemirror/view';
+import type { ReadingPosition } from './session';
 
 export interface ScrollPosition {
   top: number;
@@ -189,6 +190,8 @@ export class ScrollSync {
   private anchor: ScrollPosition | undefined;
   private alignLeader = false;
   private destroyed = false;
+  private visible: readonly [boolean, boolean] = [true, true];
+  private restoreFrames = 0;
   private readonly remove: (() => void)[] = [];
   constructor(
     private readonly panes: readonly [ScrollPane, ScrollPane],
@@ -199,7 +202,7 @@ export class ScrollSync {
       const listen = (
         target: EventTarget,
         name: string,
-        handler: () => void,
+        handler: (event: Event) => void,
       ) => {
         target.addEventListener(name, handler, {
           passive: true,
@@ -207,10 +210,19 @@ export class ScrollSync {
         });
         this.remove.push(() => target.removeEventListener(name, handler, true));
       };
-      const interact = () => {
+      const interact = (event: Event) => {
+        if (!this.visible[index]) return;
+        if (event.type !== 'focusin') this.restoreFrames = 0;
         this.leader = index;
         this.expected[index] = undefined;
-        if (this.enabled()) this.anchor = pane.position();
+        if (
+          this.enabled() &&
+          !(
+            (this.alignLeader || this.restoreFrames > 0) &&
+            event.type === 'focusin'
+          )
+        )
+          this.anchor = pane.position();
       };
       for (const input of [
         pane.input,
@@ -231,13 +243,49 @@ export class ScrollSync {
         this.tops[index] = top;
         // CodeMirror can adjust the follower again after measuring wrapped lines.
         // Only wheel/keyboard/pointer/focus input transfers control to that pane.
-        if (index !== this.leader) return;
+        if (index !== this.leader || !this.visible[index]) return;
+        if (this.restoreFrames > 0) {
+          this.refresh(true);
+          return;
+        }
         const expected = this.expected[index];
         if (expected !== undefined && Math.abs(top - expected) < 1.5) return;
         this.anchor = pane.position();
         this.refresh(false);
       });
     });
+  }
+  capture(): ReadingPosition {
+    const position = this.anchor ?? this.panes[this.leader].position();
+    return {
+      line: Math.max(1, position.line),
+      atEnd: position.max > 0 && position.top >= position.max - 0.5,
+    };
+  }
+  restore(position: ReadingPosition): void {
+    this.anchor = {
+      line: position.line,
+      top: position.atEnd ? 100 : position.line <= 1 ? 0 : 50,
+      max: 100,
+    };
+    this.restoreFrames = 4;
+    this.expected = [];
+    this.refresh(true);
+  }
+  setVisible(visible: readonly [boolean, boolean]): void {
+    this.anchor = this.panes[this.leader].position();
+    this.visible = visible;
+    if (!visible[this.leader]) this.leader = visible[0] ? 0 : 1;
+    this.expected = [];
+    // A newly shown CodeMirror pane needs multiple measure/write passes.
+    this.restoreFrames = 4;
+    this.refresh(true);
+  }
+  resumeFromCurrent(): void {
+    this.restoreFrames = 0;
+    this.alignLeader = false;
+    this.anchor = undefined;
+    this.expected = [];
   }
   refresh(alignLeader = false): void {
     if (this.destroyed) return;
@@ -271,16 +319,23 @@ export class ScrollSync {
         }
       }
       this.alignLeader = false;
-      const top = start
-        ? 0
-        : end
-          ? other.max
-          : clamp(target.topForLine(position.line), other.max);
-      if (!Number.isFinite(top) || Math.abs(top - other.top) < 0.5) return;
-      // Set before the write as well: some embedders dispatch scrolling synchronously.
-      this.expected[targetIndex] = top;
-      target.setTop(top);
-      this.expected[targetIndex] = target.position().top;
+      if (this.visible[targetIndex]) {
+        const top = start
+          ? 0
+          : end
+            ? other.max
+            : clamp(target.topForLine(position.line), other.max);
+        if (Number.isFinite(top) && Math.abs(top - other.top) >= 0.5) {
+          // Set before the write as well: some embedders dispatch scrolling synchronously.
+          this.expected[targetIndex] = top;
+          target.setTop(top);
+          this.expected[targetIndex] = target.position().top;
+        }
+      }
+      if (this.restoreFrames > 0) {
+        this.restoreFrames--;
+        this.refresh(true);
+      }
     });
   }
   destroy(): void {

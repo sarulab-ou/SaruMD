@@ -1,4 +1,7 @@
-export function setupSplit(): void {
+export function setupSplit(): {
+  get: () => number;
+  set: (value: number) => void;
+} {
   const split = document.querySelector<HTMLElement>('#split')!;
   const divider = document.querySelector<HTMLElement>('#divider')!;
   let ratio = 50;
@@ -27,4 +30,5 @@ export function setupSplit(): void {
       set(ratio + (event.key === 'ArrowLeft' ? -2 : 2));
     }
   };
+  return { get: () => ratio, set };
 }

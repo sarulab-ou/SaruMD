@@ -35,7 +35,7 @@ export async function runUpdate(
   try {
     const choice = await dialog(
       'SaruMDの更新',
-      `${offer.currentVersion} → ${offer.available.version}\nダウンロード: ${(offer.available.bytes / 1024 / 1024).toFixed(1)} MiB\n\nGitHubから更新用ZIPをダウンロードして検証後、すべての文書を順に閉じます。未保存の編集は保存確認し、キャンセルすると更新を止めます。終了後にアプリのファイルを置き換えて再起動します。インストーラーは起動しません。`,
+      `${offer.currentVersion} → ${offer.available.version}\nダウンロード: ${(offer.available.bytes / 1024 / 1024).toFixed(1)} MiB\n\nGitHubから更新用ZIPをダウンロードして検証後、すべての文書を順に閉じます。未保存の編集は保存確認し、キャンセルすると更新を止めます。終了後にアプリのファイルを置き換えて再起動し、開いていたファイル・編集位置・表示モードを復元します。「保存せず閉じる」で破棄した編集は復元しません。インストーラーは起動しません。`,
       [
         { value: 'update', label: 'ダウンロードして更新' },
         { value: 'cancel', label: 'キャンセル' },

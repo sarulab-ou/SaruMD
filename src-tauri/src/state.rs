@@ -1,5 +1,5 @@
 use std::{
-    collections::VecDeque,
+    collections::{BTreeMap, VecDeque},
     path::PathBuf,
     sync::{atomic::AtomicBool, Mutex},
 };
@@ -16,6 +16,7 @@ pub struct AppState {
     pub launches: Mutex<VecDeque<Launch>>,
     pub ready: AtomicBool,
     pub updates: Mutex<crate::updating::State>,
+    pub resume: Mutex<BTreeMap<String, winmd_core::session::UiState>>,
 }
 
 impl AppState {

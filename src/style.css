@@ -124,6 +124,14 @@ button:disabled {
   flex: 1;
   min-height: 0;
 }
+#split[data-view-mode='editor'],
+#split[data-view-mode='viewer'] {
+  grid-template-columns: minmax(0, 1fr);
+}
+.pane[hidden],
+#divider[hidden] {
+  display: none;
+}
 .pane {
   min-width: 0;
   display: flex;

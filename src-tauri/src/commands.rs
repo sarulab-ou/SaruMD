@@ -26,6 +26,39 @@ fn owned(app: &AppHandle, window: &WebviewWindow) -> Result<String> {
 }
 
 #[tauri::command]
+pub fn take_resume_state(
+    app: AppHandle,
+    window: WebviewWindow,
+) -> Result<Option<winmd_core::session::UiState>> {
+    let id = owned(&app, &window)?;
+    Ok(app
+        .state::<AppState>()
+        .resume
+        .lock()
+        .map_err(|_| "復元状態を取得できません。")?
+        .remove(&id))
+}
+
+#[tauri::command]
+pub async fn open_document_folder(app: AppHandle, window: WebviewWindow) -> Result<()> {
+    let id = owned(&app, &window)?;
+    blocking(move || {
+        let folder = app.state::<AppState>().lock()?.folder(&id)?;
+        let raw = folder.to_str().ok_or("フォルダーのパスが不正です。")?;
+        // Explorer needs normal drive/UNC paths, without the canonical device prefix.
+        let path = if let Some(unc) = raw.strip_prefix(r"\\?\UNC\") {
+            format!(r"\\{unc}")
+        } else {
+            raw.strip_prefix(r"\\?\").unwrap_or(raw).to_string()
+        };
+        app.opener()
+            .open_path(path, None::<&str>)
+            .map_err(|e| format!("フォルダーを開けませんでした: {e}"))
+    })
+    .await
+}
+
+#[tauri::command]
 pub async fn check_update(
     app: AppHandle,
     window: WebviewWindow,
@@ -371,6 +404,7 @@ pub async fn close_document(
     revision: u64,
     discard: bool,
     update_session: Option<u64>,
+    resume: Option<winmd_core::session::UiState>,
 ) -> Result<()> {
     let id = owned(&app, &window)?;
     let state = app.state::<AppState>();
@@ -395,8 +429,31 @@ pub async fn close_document(
         {
             return Err("未保存の変更があります。ウィンドウを閉じませんでした。".into());
         }
-        if update.closing.is_some() && docs.docs.len() == 1 {
-            helper = Some(updating::launch_helper(&mut update)?);
+        if update.closing.is_some() {
+            let ui = resume.ok_or("文書の復元位置を取得できません。更新を中止しました。")?;
+            ui.validate()?;
+            let bounds = window
+                .outer_position()
+                .ok()
+                .zip(window.inner_size().ok())
+                .map(|(position, size)| winmd_core::session::WindowState {
+                    x: position.x,
+                    y: position.y,
+                    width: size.width,
+                    height: size.height,
+                    maximized: window.is_maximized().unwrap_or(false),
+                });
+            update.resume.insert(
+                id.clone(),
+                winmd_core::session::ResumeDocument {
+                    path: d.path.clone(),
+                    ui,
+                    window: bounds,
+                },
+            );
+            if docs.docs.len() == 1 {
+                helper = Some(updating::launch_helper(&mut update)?);
+            }
         }
     }
     // destroy bypasses CloseRequested only AFTER the owned document has passed the guard.
@@ -406,6 +463,7 @@ pub async fn close_document(
         }
         update.installing = false;
         update.closing = None;
+        update.resume.remove(&id);
         return Err(error.to_string());
     }
     state.lock()?.docs.remove(&id);
