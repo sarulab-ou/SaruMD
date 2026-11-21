@@ -1,4 +1,16 @@
-# 検証記録（最終更新：2026-11-14）
+# 検証記録（最終更新：2026-11-21）
+
+## v0.1.24：Editor/Viewerの同時拡大・縮小
+
+Ctrl+; / Ctrl++で拡大、Ctrl+-で縮小、Ctrl+0で100%へ戻す処理を追加した。50〜300%の10%刻みで、プレビューからもキーを転送し、CodeMirrorとiframeの本文・見出し・コードへ同じ倍率を反映する。表示メニューの項目・ショートカット、フッターの現在倍率、更新用状態への倍率保存も追加した。IME・AltGr・Metaの保護、文書・選択・Undoと閲覧位置、印刷/PDFの内容と文字サイズを維持する設計。
+
+Vitest17ファイル93件が成功した。Rust coreはLinux25件・Windows27件、Windows desktop/Linux coreのall-targets clippy（-D warnings）とfmtが成功した（`.tools/validate-0.1.24.log`）。倍率フィールドのない0.1.23形式を100%として読み、不正倍率を拒否するテストを含む。
+
+隔離ヘッドレスEdgeの`pnpm run test:zoom`が成功した。110%時にEditor15.4px/Viewer16.5px、120%時に16.8px/18px、上下限300%/50%の実フォントサイズを確認した。本文・選択・Undo・メニューの文字サイズ・印刷DOMが不変で、各モードや連打後の実閲覧位置の差は最大0.014行だった（`.tools/zoom-smoke-result.json`）。`pnpm run test:session`も成功し、3モード・選択・左右比率32%・倍率180%・閲覧位置/末尾を再生成後に復元した（`.tools/session-smoke-result.json`）。実WebView2でのJIS/US物理キーボード操作・アプリ更新のGUI受入、MSVCビルド、今回版のインストールは未実施。
+
+`pnpm run check`・`pnpm run lint`・`pnpm run build`、既存の`pnpm run test:scroll`、`pnpm run test:update`も成功した。Windows x64 GNU releaseとNSIS/更新用ZIPを生成し、7-Zip検査/隔離展開、exe（NSISマーカーのみ正規化）・DLL・ライセンス・更新スクリプト3件・現行アセットの同梱を照合した。アセットは`index-3NFNJtBD.js`、`index-Cm-HE6Pg.css`、`preview-worker-C5lvkIXX.js`。更新manifestの4ファイルも原本と一致した（`.tools/final-build-0.1.24.log`、`.tools/installer-audit-0.1.24.json`、`.tools/update-artifact-audit-0.1.24.json`）。大きなJSチャンク・GNUクロスビルド・署名なしの警告は継続する。
+
+インストーラー`SaruMD_0.1.24_x64-setup.exe`は6,416,966バイト、SHA-256 `e5524ddc1dd358656cfdffd71905514c3ad6e571c3bdab822cb71811b0f1f719`。更新用ZIP`SaruMD_0.1.24_x64-update.zip`は9,163,531バイト、SHA-256 `957742af78faa8cb1bb11236c118f792385f89cd2885c3c9a55facecfe2ea100`。出力先は`target/verified/x86_64-pc-windows-gnu/release/bundle/`のnsis/update配下。
 
 ## v0.1.23公開確認（2026-11-14 10:32:44 JST）
 

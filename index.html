@@ -119,6 +119,20 @@
             <button id="view-viewer" role="menuitemradio" aria-checked="false">
               <span>ビューアーのみ</span><span aria-hidden="true"></span>
             </button>
+            <div role="separator"></div>
+            <button id="zoom-in" role="menuitem" aria-keyshortcuts="Control+;">
+              <span>拡大</span><span class="shortcut">Ctrl+; / Ctrl++</span>
+            </button>
+            <button id="zoom-out" role="menuitem" aria-keyshortcuts="Control+-">
+              <span>縮小</span><span class="shortcut">Ctrl+-</span>
+            </button>
+            <button
+              id="zoom-reset"
+              role="menuitem"
+              aria-keyshortcuts="Control+0"
+            >
+              <span>100%に戻す</span><span class="shortcut">Ctrl+0</span>
+            </button>
           </div>
         </div>
         <div class="menu-container">
@@ -198,6 +212,12 @@
       <footer>
         <span id="status" role="status">準備中…</span>
         <span id="link-target" hidden></span>
+        <span
+          id="zoom-level"
+          aria-label="表示倍率"
+          title="EditorとViewer共通の表示倍率"
+          >100%</span
+        >
         <span id="format">UTF-8 · LF</span>
       </footer>
       <div id="link-popup" role="tooltip" hidden></div>

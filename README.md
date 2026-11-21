@@ -1,8 +1,8 @@
-# SaruMD v0.1.23
+# SaruMD v0.1.24
 
 Windows向けのMarkdownエディタです。WinMDからSaruMDへ名前を変更しました。左でソースを編集し、右でプレビューを確認できます。1文書につき1つのウィンドウが開きます。同じファイルをもう一度開くと、既存のウィンドウへ移動します。
 
-**[ダウンロード（Windows x64・インストーラー.exe）](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.23/SaruMD_0.1.23_x64-setup.exe)** · [使い方](#使い方) · [MITライセンス](LICENSE)
+**[ダウンロード（Windows x64・インストーラー.exe）](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.24/SaruMD_0.1.24_x64-setup.exe)** · [使い方](#使い方) · [MITライセンス](LICENSE)
 
 ![Windows上のSaruMD。左に日本語のMarkdownソース、右に見出し・チェックリスト・表・コードを整形したプレビューを表示しています。](docs/screenshots/editor-ja.png)
 
@@ -13,6 +13,7 @@ _旧称WinMD v0.1.8の実画面。[サンプル文書](docs/examples/notes.ja.md
 - **書きながらプレビュー。** 見出し、箇条書き、表、コードブロックの仕上がりを確認できます。中央の境界をドラッグして幅も調整できます。
 - **アドレスバー。** メニューの下に編集中のファイルのフルパスを表示します。Alt+Dでアドレスバーへ移動してパスを全選択し、Ctrl+Cでコピーできます。「名前を付けて保存」後も更新されます。
 - **スクロール連動。** 左右どちらをスクロールしても、見出し・段落・リスト・表などの対応箇所へもう一方が追従します。
+- **同時に拡大・縮小。** Ctrl+; または Ctrl++でEditorとViewerを同時に拡大、Ctrl+-で縮小します。50〜300%を10%ずつ調整でき、Ctrl+0で100%に戻します。「表示 (V)」メニューからも操作でき、現在の倍率はフッターに表示します。本文・カーソル・Undo・閲覧位置を保ちます。印刷/PDFの文字サイズは変わりません。
 - **表示切り替え（0.1.23以降）。** 「表示 (V)」から、左右分割・エディターのみ・ビューアーのみを選べます。Alt+Vでメニューを開けます。
 - **保存先フォルダーを開く（0.1.23以降）。** 「ツール (T) → エクスプローラーでフォルダーを開く」で、編集中のファイルがある場所を開けます。Alt+Tでメニューを開きます。新規文書は先に保存してください。
 - **プレビューから移動。** 右側の本文をクリックすると、左側の対応する位置へカーソルが移動します。文字位置を確定できない書式では、対応するブロックの先頭へ移動します。リンクを開く操作と文字の範囲選択は維持します。
@@ -28,15 +29,15 @@ _旧称WinMD v0.1.8の実画面。[サンプル文書](docs/examples/notes.ja.md
 
 ## ダウンロード・インストール
 
-**[SaruMD v0.1.23 Windows x64インストーラーをダウンロード](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.23/SaruMD_0.1.23_x64-setup.exe)**
+**[SaruMD v0.1.24 Windows x64インストーラーをダウンロード](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.24/SaruMD_0.1.24_x64-setup.exe)**
 
-SaruMD v0.1.23をプレリリース（試用版）として公開しています。[リリースノート](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.23) · [SHA-256チェックサム](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.23/SHA256SUMS.txt) · [ソースからのビルド](docs/development.md)
+SaruMD v0.1.24をプレリリース（試用版）として公開しています。[リリースノート](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.24) · [SHA-256チェックサム](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.24/SHA256SUMS.txt) · [ソースからのビルド](docs/development.md)
 
-1. `SaruMD_0.1.23_x64-setup.exe`をダウンロードし、**Windows 11 x64**で実行します。
+1. `SaruMD_0.1.24_x64-setup.exe`をダウンロードし、**Windows 11 x64**で実行します。
 2. WebView2 Runtimeがない場合は、インストーラーがダウンロードします。この場合はインターネット接続が必要です。
 3. `.md`をダブルクリックで開きたい場合は、Windowsの既定アプリ設定でSaruMDを選択します。インストーラーから設定画面を開けます。
 
-初回導入には上のインストーラーを使ってください。既存アプリを手動で置き換える場合は、[更新用ZIP](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.23/SaruMD_0.1.23_x64-update.zip)も利用できます。すべての文書を保存してSaruMDを終了し、ZIP内のファイルを同じ配置でアプリのフォルダーへコピーします。ZIP自体はWebView2 Runtimeや関連付けを導入しません。
+初回導入には上のインストーラーを使ってください。既存アプリを手動で置き換える場合は、[更新用ZIP](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.24/SaruMD_0.1.24_x64-update.zip)も利用できます。すべての文書を保存してSaruMDを終了し、ZIP内のファイルを同じ配置でアプリのフォルダーへコピーします。ZIP自体はWebView2 Runtimeや関連付けを導入しません。
 
 配布用ビルドはGNUツールでクロスビルドした署名なしの試用版です。インストール・実GUI全体の受入確認は未完了です。[検証記録](docs/verification.md)を参照してください。
 
@@ -92,22 +93,24 @@ $$
 
 ## 主なショートカット
 
-| 操作                             | キー                                |
-| -------------------------------- | ----------------------------------- |
-| ファイル / 編集 / ヘルプメニュー | Alt+F / Alt+E / Alt+H               |
-| 表示 / ツールメニュー            | Alt+V / Alt+T                       |
-| アドレスバーへ移動・パスを全選択 | Alt+D                               |
-| 新しい文書を別ウィンドウで開く   | Ctrl+N                              |
-| 開く                             | Ctrl+O                              |
-| 保存 / 名前を付けて保存          | Ctrl+S / Ctrl+Shift+S               |
-| 元に戻す / やり直す              | Ctrl+Z / Ctrl+Y または Ctrl+Shift+Z |
-| 切り取り / コピー / 貼り付け     | Ctrl+X / Ctrl+C / Ctrl+V            |
-| 選択範囲の削除                   | Del                                 |
-| 検索 / 置換                      | Ctrl+F / Ctrl+H                     |
-| 次を検索 / 前を検索              | F3 / Shift+F3                       |
-| タイムスタンプを挿入             | F5                                  |
-| 印刷                             | Ctrl+P                              |
-| 現在のウィンドウを閉じる         | Ctrl+W / Alt+F4                     |
+| 操作                              | キー                                |
+| --------------------------------- | ----------------------------------- |
+| ファイル / 編集 / ヘルプメニュー  | Alt+F / Alt+E / Alt+H               |
+| 表示 / ツールメニュー             | Alt+V / Alt+T                       |
+| Editor・Viewerを同時に拡大 / 縮小 | Ctrl+; または Ctrl++ / Ctrl+-       |
+| 表示倍率を100%に戻す              | Ctrl+0                              |
+| アドレスバーへ移動・パスを全選択  | Alt+D                               |
+| 新しい文書を別ウィンドウで開く    | Ctrl+N                              |
+| 開く                              | Ctrl+O                              |
+| 保存 / 名前を付けて保存           | Ctrl+S / Ctrl+Shift+S               |
+| 元に戻す / やり直す               | Ctrl+Z / Ctrl+Y または Ctrl+Shift+Z |
+| 切り取り / コピー / 貼り付け      | Ctrl+X / Ctrl+C / Ctrl+V            |
+| 選択範囲の削除                    | Del                                 |
+| 検索 / 置換                       | Ctrl+F / Ctrl+H                     |
+| 次を検索 / 前を検索               | F3 / Shift+F3                       |
+| タイムスタンプを挿入              | F5                                  |
+| 印刷                              | Ctrl+P                              |
+| 現在のウィンドウを閉じる          | Ctrl+W / Alt+F4                     |
 
 F5はPCのローカル時刻を使い、`2026/01/27 08:38:02`のように`yyyy/mm/dd hh:mm:ss`（24時間制）で挿入します。画像の保存名は`YYYYMMDD_HHMMSS.png`です。
 

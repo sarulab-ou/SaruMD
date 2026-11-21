@@ -124,6 +124,10 @@ describe('file menu', () => {
     key('ArrowDown');
     expect(document.activeElement?.id).toBe('view-editor');
     key('End');
+    expect(document.activeElement?.id).toBe('zoom-reset');
+    key('Home');
+    key('ArrowDown');
+    key('ArrowDown');
     expect(document.activeElement?.id).toBe('view-viewer');
     document.querySelector<HTMLButtonElement>('#view-viewer')!.click();
     expect(viewMenu.hidden).toBe(true);

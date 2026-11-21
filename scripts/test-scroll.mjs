@@ -62,7 +62,7 @@ const child = spawn(
     '--no-default-browser-check',
     `--user-data-dir=${profile}`,
     '--window-size=1280,900',
-    `http://127.0.0.1:${port}/tests/browser/${process.argv.includes('--session') ? 'session' : 'scroll-sync'}.html`,
+    `http://127.0.0.1:${port}/tests/browser/${process.argv.includes('--session') ? 'session' : process.argv.includes('--zoom') ? 'zoom' : 'scroll-sync'}.html`,
   ],
   { windowsHide: true },
 );
@@ -85,7 +85,9 @@ try {
   fs.writeFileSync(
     process.argv.includes('--session')
       ? '.tools/session-smoke-result.json'
-      : '.tools/scroll-smoke-result.json',
+      : process.argv.includes('--zoom')
+        ? '.tools/zoom-smoke-result.json'
+        : '.tools/scroll-smoke-result.json',
     JSON.stringify(report, null, 2) + '\n',
   );
   console.log(JSON.stringify(report, null, 2));

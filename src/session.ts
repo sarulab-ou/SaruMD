@@ -8,6 +8,7 @@ export interface ReadingPosition {
 
 export interface UiState {
   mode: ViewMode;
+  zoom?: number;
   sourceWidth: number;
   selection: {
     anchor: { line: number; column: number };

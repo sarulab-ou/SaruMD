@@ -100,7 +100,10 @@ export class MarkdownEditor {
           spellcheck: 'false',
         }),
         EditorView.theme({
-          '&': { height: '100%', fontSize: '14px' },
+          '&': {
+            height: '100%',
+            fontSize: 'calc(14px * var(--document-scale, 1))',
+          },
           '.cm-scroller': {
             overflow: 'auto',
             overflowAnchor: 'none',

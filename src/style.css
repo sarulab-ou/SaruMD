@@ -189,8 +189,12 @@ footer {
 #link-target {
   color: #265fd6;
 }
+#zoom-level,
 #format {
   flex-shrink: 0;
+}
+#zoom-level {
+  margin-left: auto;
 }
 #link-popup {
   position: fixed;

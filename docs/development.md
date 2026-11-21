@@ -24,6 +24,8 @@ Corepackがない場合はpnpmを別途導入してください。`pnpm dev`は�
 
 ## テストと整形
 
+`pnpm run test:zoom`は隔離したヘッドレスEdgeで実CodeMirror/プレビューを描画し、ソース/iframeからのCtrl+;・Ctrl++・Ctrl+-・Ctrl+0・テンキー、3表示モードと50〜300%の範囲、本文・選択・Undo・論理閲覧位置・印刷DOMの保持を確認します。結果は`.tools/zoom-smoke-result.json`です。`test:session`は180%を含む更新後の復元も確認します。実WebView2でのGUI受入とは区別します。
+
 リンクの描画・通常クリック・ドラッグ選択・読み取り専用の検証は`pnpm test:links`でも実行できます。既存Edgeを隔離したヘッドレス環境で起動し、CDPからtrustedマウスイベントを送り、両ペインのリンクコールバックを照合します。外部ブラウザの起動関数はモックに置き換え、外部サイトへは接続しません。結果は`.tools/links-smoke-result.json`に保存します。
 
 ```powershell
@@ -63,9 +65,9 @@ pnpm desktop:build
 設定されたbeforeBuildCommandが型チェックとフロントエンドビルドを実行し、NSISを作成します。ワークスペースルートの標準出力先：
 
 - `target/x86_64-pc-windows-msvc/release/SaruMD.exe`
-- `target/x86_64-pc-windows-msvc/release/bundle/nsis/SaruMD_0.1.23_x64-setup.exe`
+- `target/x86_64-pc-windows-msvc/release/bundle/nsis/SaruMD_0.1.24_x64-setup.exe`
 
-`CARGO_TARGET_DIR`で出力先を変更できます。今回生成したGNU試用版は`target/verified/x86_64-pc-windows-gnu/release/`にあります。公開用の[v0.1.23リリース](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.23)から初回導入用インストーラー・更新用ZIP・SHA-256チェックサムを取得できます。
+`CARGO_TARGET_DIR`で出力先を変更できます。今回生成したGNU試用版は`target/verified/x86_64-pc-windows-gnu/release/`にあります。公開用の[v0.1.24リリース](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.24)から初回導入用インストーラー・更新用ZIP・SHA-256チェックサムを取得できます。
 
 MSVC版は今回未生成です。Tauriが公式にサポートするWindowsターゲットはMSVCです。[公式Windowsビルド資料](https://v2.tauri.app/distribute/windows-installer/)
 

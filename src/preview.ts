@@ -11,6 +11,7 @@ import { boundedDebounce } from './scheduler';
 import { waitForPrintImage } from './printing';
 import { previewScrollPane, type PreviewBlock } from './scroll-sync';
 import { PreviewLocations } from './preview-location';
+import { boundedZoom, zoomShortcut } from './zoom';
 
 export function sanitizePreview(html: string): DocumentFragment {
   const fragment = DOMPurify.sanitize(html, {
@@ -82,6 +83,7 @@ const shell = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta 
 html{overflow-anchor:none;scroll-behavior:auto}
 ${mathStyles}
 *{box-sizing:border-box}html{color-scheme:light}body{margin:0;padding:28px 34px 80px;color:#283344;font:15px/1.85 'Yu Gothic UI','Meiryo',sans-serif;overflow-wrap:anywhere}h1,h2,h3{line-height:1.5;color:#17253b}h1{font-size:28px;border-bottom:1px solid #e4e8ee;padding-bottom:12px;margin-top:0}h2{font-size:22px;border-bottom:1px solid #e4e8ee;padding-bottom:7px}h3{font-size:18px}a{color:#265fd6}pre{background:#f4f6fa;border:1px solid #e6eaf0;border-radius:6px;padding:16px;overflow:auto;line-height:1.6}code{font:13px/1.7 'Cascadia Code','BIZ UDGothic',Consolas,monospace;background:#f1f4f8;border-radius:3px;padding:2px 4px}pre code{padding:0;background:none}blockquote{margin-left:0;border-left:3px solid #bdcbe1;padding-left:18px;color:#627086}table{border-collapse:collapse;display:block;overflow:auto}td,th{border:1px solid #dce2eb;padding:7px 12px}th{background:#f4f6fa}img{max-width:100%;height:auto}hr{border:0;border-top:1px solid #dce2eb}input{pointer-events:none}.image-note{display:inline-block;font-size:12px;background:#f6f3e8;color:#786335;border:1px solid #e9dfc4;padding:6px 10px;border-radius:4px}
+body{font-size:calc(15px * var(--document-scale,1))}h1{font-size:calc(28px * var(--document-scale,1))}h2{font-size:calc(22px * var(--document-scale,1))}h3{font-size:calc(18px * var(--document-scale,1))}code{font-size:calc(13px * var(--document-scale,1))}.image-note{font-size:calc(12px * var(--document-scale,1))}
 </style></head><body><article></article></body></html>`;
 
 export class Preview {
@@ -101,6 +103,7 @@ export class Preview {
   navigateToSource?: (offset: number) => void;
   private locations?: PreviewLocations;
   private remote = false;
+  private zoom = 100;
   private body!: HTMLElement;
   private printRequest?: {
     revision: number;
@@ -131,6 +134,10 @@ export class Preview {
         () => {
           const doc = frame.contentDocument!;
           this.body = doc.querySelector('article')!;
+          doc.documentElement.style.setProperty(
+            '--document-scale',
+            String(this.zoom / 100),
+          );
           doc.addEventListener('mousemove', (event) => {
             const frameRect = frame.getBoundingClientRect();
             const node = event.target as Node | null;
@@ -219,6 +226,7 @@ export class Preview {
             if (event.isComposing || event.keyCode === 229) return;
             const key = event.key.toLowerCase();
             if (
+              zoomShortcut(event) !== null ||
               (event.ctrlKey &&
                 !event.altKey &&
                 ['n', 'o', 's', 'w', 'p', 'f', 'h', 'z', 'x', 'v'].includes(
@@ -236,9 +244,11 @@ export class Preview {
               document.dispatchEvent(
                 new KeyboardEvent('keydown', {
                   key: event.key,
+                  code: event.code,
                   ctrlKey: event.ctrlKey,
                   altKey: event.altKey,
                   shiftKey: event.shiftKey,
+                  metaKey: event.metaKey,
                   bubbles: true,
                   cancelable: true,
                 }),
@@ -330,6 +340,15 @@ export class Preview {
       requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
     );
   }
+  setZoom(percent: number): void {
+    this.zoom = boundedZoom(percent);
+    this.body?.ownerDocument.documentElement.style.setProperty(
+      '--document-scale',
+      String(this.zoom / 100),
+    );
+    this.layoutChanged?.();
+  }
+
   private async paint(
     html: string,
     generation: number,

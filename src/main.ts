@@ -17,6 +17,7 @@ import { pdfFileName } from './printing';
 import { runUpdate } from './updating';
 import { ViewModes } from './view-mode';
 import { captureSelection, restoreSelection } from './session';
+import { type DocumentZoom, setupDocumentZoom, zoomShortcut } from './zoom';
 
 const state = new DocumentState();
 const mathStyle = document.createElement('style');
@@ -35,6 +36,7 @@ const documentPath =
 let editor: MarkdownEditor;
 let viewModes: ViewModes;
 let scrollSync: ScrollSync;
+let zoom: DocumentZoom;
 let split: ReturnType<typeof setupSplit>;
 let ready = false;
 let saving = false;
@@ -276,6 +278,7 @@ async function close(updateSession?: number): Promise<void> {
   try {
     await bridge.close(state.text, state.revision, discard, updateSession, {
       mode: viewModes.mode,
+      zoom: zoom.percent,
       sourceWidth: split.get(),
       selection: captureSelection(editor.view),
       scroll: scrollSync.capture(),
@@ -378,6 +381,9 @@ const changeView = (mode: 'split' | 'editor' | 'viewer') => {
   if (!editor.view.composing) viewModes.set(mode);
 };
 const handlers: Record<string, () => Promise<unknown> | void> = {
+  'zoom-in': () => zoom.apply('in'),
+  'zoom-out': () => zoom.apply('out'),
+  'zoom-reset': () => zoom.apply('reset'),
   'view-split': () => changeView('split'),
   'view-editor': () => changeView('editor'),
   'view-viewer': () => changeView('viewer'),
@@ -444,6 +450,8 @@ for (const [id, handler] of Object.entries(handlers)) {
 document.addEventListener(
   'keydown',
   (event) => {
+    const zoomCommand = zoomShortcut(event);
+    if (zoomCommand !== null) event.preventDefault(); // Never invoke WebView's independent browser zoom.
     if (event.ctrlKey && !event.altKey && event.key.toLowerCase() === 'p')
       event.preventDefault();
     if (event.key === 'F5') event.preventDefault(); // Never let the browser reload the editor.
@@ -456,6 +464,12 @@ document.addEventListener(
     )
       return;
     const key = event.key.toLowerCase();
+    if (zoomCommand !== null) {
+      menus.close();
+      event.stopPropagation();
+      zoom.apply(zoomCommand);
+      return;
+    }
     if (
       event.altKey &&
       !event.ctrlKey &&
@@ -585,6 +599,13 @@ async function start(): Promise<void> {
     },
   );
   preview.layoutChanged = () => scrollSync.refresh(true);
+  zoom = setupDocumentZoom(
+    document.querySelector('#split')!,
+    editor.view,
+    preview,
+    scrollSync,
+    () => showLinkTarget(null),
+  );
   preview.navigateToSource = (offset) => {
     if (
       ready &&
@@ -617,6 +638,7 @@ async function start(): Promise<void> {
   refresh();
   if (resume) {
     split.set(resume.sourceWidth);
+    zoom.set(resume.zoom ?? 100);
     restoreSelection(editor.view, resume.selection);
     viewModes.set(resume.mode);
     scrollSync.restore(resume.scroll);

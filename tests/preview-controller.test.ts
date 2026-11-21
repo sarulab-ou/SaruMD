@@ -76,6 +76,39 @@ it('forwards Alt+T from the preview to the Tools menu', async () => {
   expect(received.mock.calls[0][0].key).toBe('t');
 });
 
+it('forwards zoom keys including numpad identity and suppresses the iframe default zoom', async () => {
+  const { frame, preview } = await setup();
+  preview.setZoom(180);
+  expect(
+    frame.contentDocument!.documentElement.style.getPropertyValue(
+      '--document-scale',
+    ),
+  ).toBe('1.8');
+  for (const [key, code] of [
+    [';', 'Semicolon'],
+    ['+', 'Equal'],
+    ['Add', 'NumpadAdd'],
+    ['-', 'Minus'],
+    ['0', 'Digit0'],
+  ]) {
+    const received = vi.fn();
+    document.addEventListener('keydown', received, { once: true });
+    const event = new KeyboardEvent('keydown', {
+      key,
+      code,
+      ctrlKey: true,
+      shiftKey: key === '+',
+      bubbles: true,
+      cancelable: true,
+    });
+    frame.contentDocument!.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+    expect(received).toHaveBeenCalledOnce();
+    expect(received.mock.calls[0][0].code).toBe(code);
+    expect(received.mock.calls[0][0].shiftKey).toBe(key === '+');
+  }
+});
+
 it('accepts a bounded snapshot during continuous input, then refuses older results', async () => {
   const { frame, preview, worker } = await setup();
   preview.update('first');

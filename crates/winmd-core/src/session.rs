@@ -37,14 +37,21 @@ pub struct ReadingPosition {
 #[serde(rename_all = "camelCase")]
 pub struct UiState {
     pub mode: ViewMode,
+    #[serde(default = "default_zoom")]
+    pub zoom: u16,
     pub source_width: f64,
     pub selection: Selection,
     pub scroll: ReadingPosition,
 }
 
+fn default_zoom() -> u16 {
+    100
+}
+
 impl UiState {
     pub fn validate(&self) -> Result<()> {
         if !self.source_width.is_finite()
+            || !(50..=300).contains(&self.zoom)
             || !(20.0..=80.0).contains(&self.source_width)
             || !self.scroll.line.is_finite()
             || !(1.0..=33_554_434.0).contains(&self.scroll.line)
@@ -143,6 +150,7 @@ mod tests {
     fn ui() -> UiState {
         UiState {
             mode: ViewMode::Viewer,
+            zoom: 180,
             source_width: 32.0,
             selection: Selection {
                 anchor: TextPoint {
@@ -236,5 +244,19 @@ mod tests {
         assert!(read_workspace(&path).is_err());
         std::fs::write(&path, vec![b' '; 4 * 1024 * 1024 + 1]).unwrap();
         assert!(read_workspace(&path).is_err());
+    }
+
+    #[test]
+    fn old_update_sessions_default_to_100_percent_and_invalid_zoom_is_rejected() {
+        let mut value = serde_json::to_value(ui()).unwrap();
+        value.as_object_mut().unwrap().remove("zoom");
+        let legacy: UiState = serde_json::from_value(value.clone()).unwrap();
+        assert_eq!(legacy.zoom, 100);
+        assert!(legacy.validate().is_ok());
+        for zoom in [0, 49, 301] {
+            value["zoom"] = serde_json::json!(zoom);
+            let state: UiState = serde_json::from_value(value.clone()).unwrap();
+            assert!(state.validate().is_err());
+        }
     }
 }

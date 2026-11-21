@@ -4,6 +4,7 @@ import { Preview } from '../../src/preview';
 import { editorScrollPane, ScrollSync } from '../../src/scroll-sync';
 import { ViewModes, type ViewMode } from '../../src/view-mode';
 import { setupSplit } from '../../src/split';
+import { setupDocumentZoom } from '../../src/zoom';
 import {
   captureSelection,
   restoreSelection,
@@ -74,6 +75,12 @@ try {
     },
   );
   preview.layoutChanged = () => sync.refresh(true);
+  const zoom = setupDocumentZoom(
+    document.querySelector('#split')!,
+    editor.view,
+    preview,
+    sync,
+  );
   editor.layoutChanged = () => sync.refresh();
   const resize = new ResizeObserver(() => sync.refresh(true));
   resize.observe(editor.view.scrollDOM);
@@ -81,6 +88,7 @@ try {
   ready = true;
   if (saved) {
     split.set(saved.ui.sourceWidth);
+    zoom.set(saved.ui.zoom ?? 100);
     restoreSelection(editor.view, saved.ui.selection);
     view.set(saved.ui.mode);
     sync.restore(saved.ui.scroll);
@@ -102,6 +110,7 @@ try {
       current.atEnd !== saved.ui.scroll.atEnd ||
       view.mode !== saved.ui.mode ||
       split.get() !== saved.ui.sourceWidth ||
+      zoom.percent !== saved.ui.zoom ||
       JSON.stringify(captureSelection(editor.view)) !==
         JSON.stringify(saved.ui.selection)
     )
@@ -127,11 +136,13 @@ try {
       delta,
       atEnd: current.atEnd,
       sourceWidth: split.get(),
+      zoom: zoom.percent,
     });
   }
   const next = saved?.next ?? 0;
   if (next < modes.length + 1) {
     split.set(32);
+    zoom.set(180);
     restoreSelection(editor.view, {
       anchor: { line: 18, column: 8 },
       head: { line: 17, column: 2 },
@@ -141,6 +152,7 @@ try {
     await settle();
     const ui: UiState = {
       mode: view.mode,
+      zoom: zoom.percent,
       sourceWidth: split.get(),
       selection: captureSelection(editor.view),
       scroll: sync.capture(),
