@@ -1,8 +1,8 @@
-# SaruMD v0.1.24
+# SaruMD v0.1.25
 
 Windows向けのMarkdownエディタです。WinMDからSaruMDへ名前を変更しました。左でソースを編集し、右でプレビューを確認できます。1文書につき1つのウィンドウが開きます。同じファイルをもう一度開くと、既存のウィンドウへ移動します。
 
-**[ダウンロード（Windows x64・インストーラー.exe）](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.24/SaruMD_0.1.24_x64-setup.exe)** · [使い方](#使い方) · [MITライセンス](LICENSE)
+**[ダウンロード（Windows x64・インストーラー.exe）](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.25/SaruMD_0.1.25_x64-setup.exe)** · [使い方](#使い方) · [MITライセンス](LICENSE)
 
 ![Windows上のSaruMD。左に日本語のMarkdownソース、右に見出し・チェックリスト・表・コードを整形したプレビューを表示しています。](docs/screenshots/editor-ja.png)
 
@@ -25,19 +25,20 @@ _旧称WinMD v0.1.8の実画面。[サンプル文書](docs/examples/notes.ja.md
 - **ほかのエディタと一緒に使える。** Codexなどが外部で更新すると、未保存の編集がない場合は自動反映します。SaruMDでも編集中なら、編集を保持して競合を通知します。
 - **PDFにエクスポート・印刷。** 未保存の編集も含め、プレビューの本文を出力できます。
 - **1文書、1ウィンドウ。** 文書を好きな位置に並べて使えます。タブはありません。
+- **開いているファイルへ戻る。** 同じファイルを再び開いたときの前面化を補強しました。最小化中なら復元し、通常/最大化状態は維持します。未保存の本文を再読み込みせず、保存ダイアログがある場合はそちらを優先します。Windowsが前面化を拒否した場合は通知します。
 - **慣れたショートカットで操作。** 検索・置換・保存に加え、F5で現在の日時を挿入できます。
 
 ## ダウンロード・インストール
 
-**[SaruMD v0.1.24 Windows x64インストーラーをダウンロード](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.24/SaruMD_0.1.24_x64-setup.exe)**
+**[SaruMD v0.1.25 Windows x64インストーラーをダウンロード](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.25/SaruMD_0.1.25_x64-setup.exe)**
 
-SaruMD v0.1.24をプレリリース（試用版）として公開しています。[リリースノート](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.24) · [SHA-256チェックサム](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.24/SHA256SUMS.txt) · [ソースからのビルド](docs/development.md)
+SaruMD v0.1.25をプレリリース（試用版）として公開しています。[リリースノート](https://github.com/sarulab-ou/SaruMD/releases/tag/v0.1.25) · [SHA-256チェックサム](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.25/SHA256SUMS.txt) · [ソースからのビルド](docs/development.md)
 
-1. `SaruMD_0.1.24_x64-setup.exe`をダウンロードし、**Windows 11 x64**で実行します。
+1. `SaruMD_0.1.25_x64-setup.exe`をダウンロードし、**Windows 11 x64**で実行します。
 2. WebView2 Runtimeがない場合は、インストーラーがダウンロードします。この場合はインターネット接続が必要です。
 3. `.md`をダブルクリックで開きたい場合は、Windowsの既定アプリ設定でSaruMDを選択します。インストーラーから設定画面を開けます。
 
-初回導入には上のインストーラーを使ってください。既存アプリを手動で置き換える場合は、[更新用ZIP](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.24/SaruMD_0.1.24_x64-update.zip)も利用できます。すべての文書を保存してSaruMDを終了し、ZIP内のファイルを同じ配置でアプリのフォルダーへコピーします。ZIP自体はWebView2 Runtimeや関連付けを導入しません。
+初回導入には上のインストーラーを使ってください。既存アプリを手動で置き換える場合は、[更新用ZIP](https://github.com/sarulab-ou/SaruMD/releases/download/v0.1.25/SaruMD_0.1.25_x64-update.zip)も利用できます。すべての文書を保存してSaruMDを終了し、ZIP内のファイルを同じ配置でアプリのフォルダーへコピーします。ZIP自体はWebView2 Runtimeや関連付けを導入しません。
 
 配布用ビルドはGNUツールでクロスビルドした署名なしの試用版です。インストール・実GUI全体の受入確認は未完了です。[検証記録](docs/verification.md)を参照してください。
 

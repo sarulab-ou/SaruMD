@@ -1,4 +1,18 @@
-# 検証記録（最終更新：2026-11-21）
+# 検証記録（最終更新：2026-11-23）
+
+## v0.1.25：同一ファイル再オープン時の前面化
+
+既存の所有文書判定は維持し、再オープン時のshow/unminimize/set_focusの個別呼び出しを、所有UIスレッドで実行するWindowsネイティブ処理へ変更した。最小化は同期的に復元し、通常/最大化を維持する。可視の所有ポップアップがあればそちらを前面にし、保存ダイアログを隠さない。SetForegroundWindowの拒否は通知し、常時最前面や疑似入力、汎用IPCの権限は追加しない。ユーザーの未保存本文を再読み込みする処理も追加していない。
+
+型検査、Vitest17ファイル93件、lint、フロントエンドビルドが成功した。Rust coreのLinux25件/Windows27件、Windows desktop/Linux coreのall-targets clippy（-D warnings）、fmtが成功した（`.tools/validate-focus.log`）。既存の所有権テストは再オープン/ハードリンクでもウィンドウを増やさず未保存本文を保持することを検査する。
+
+通常・最小化・最大化・非表示・所有ポップアップの前面化をGetForegroundWindow/IsIconic/IsZoomedで確認する専用Windowsテストを追加した。対話デスクトップを必要とするため既定ではignoreし、明示的に実行する。初回のdesktop libテストはランタイムDLL依存、debug integrationビルドはGNU DLLのexport ordinal上限で失敗したため、検証をrelease integrationビルドへ分離した。実SaruMDの関連付けダブルクリックからのGUI受入、インストール、commit/push、公開は行っていない。
+
+release integrationのコンパイルは成功したが、テスト準備用ウィンドウに対するSetForegroundWindowが拒否され、対象処理を検査する前提で失敗した（`.tools/test-focus-native-release.log`）。この実行環境では前面化のGUI検証は未完了であり、成功とは扱わない。既に対象が前面の場合は成功として扱うガードも追加した。ユーザーの対話起動でsingle-instanceの許可受け渡しを通す実アプリの確認が必要。
+
+公開準備として0.1.25へ更新し、READMEのタイトル・直接ダウンロード先を変更した。型検査・Vitest93件・lint・フロントエンドビルド、Rust core Linux25件/Windows27件・all-targets clippy・fmtを再確認した（`.tools/validate-0.1.25.log`）。Windows x64 GNU release、NSIS、更新用ZIPを生成し、7-Zip検査/隔離展開、exe（NSISマーカーのみ正規化）・DLL・ライセンス・現行アセット3件・更新スクリプト3件をビルド原本と照合した。ZIPのmanifest内4ファイルも原本と一致する。既存の大きなJSチャンク・GNUクロスビルド・署名なしの警告は継続。
+
+インストーラー`SaruMD_0.1.25_x64-setup.exe`は6,420,927バイト、SHA-256 `78b9e56e017e85c0ae20bab6bf81c58bf8ed39bde998db0f86c3e55955a3f473`。更新用ZIP`SaruMD_0.1.25_x64-update.zip`は9,163,598バイト、SHA-256 `e9b1f700388c62d39f892d97575668164a55c4e3eb9f12e585d1382a793bfa44`。出力先は`target/verified/x86_64-pc-windows-gnu/release/bundle/`のnsis/update配下（`.tools/final-build-0.1.25.log`、`.tools/installer-audit-0.1.25.json`、`.tools/update-artifact-audit-0.1.25.json`）。
 
 ## v0.1.24公開確認（2026-11-21 17:39:23 JST）
 

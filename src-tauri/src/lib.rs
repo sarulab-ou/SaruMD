@@ -1,5 +1,6 @@
 mod clipboard;
 mod commands;
+mod focus;
 mod printing;
 mod state;
 mod update_download;

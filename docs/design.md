@@ -54,7 +54,7 @@ ZIPは`update.json`（schema=1、version、各ファイルのpath/bytes/sha256�
 
 アプリ識別子`jp.winmd.editor`は継続し、single-instanceの同じキューとWebView2データを利用する。内部のRustパッケージ名・`crates/winmd-core/`・プレビューのDOM属性名も互換性のため維持する。旧版を起動したまま新exeを開くと旧プロセスへ要求が転送されるため、切り替え前に旧版を保存・終了する。関連付けはSaruMD専用のProgID/Capabilitiesで登録し、旧WinMDの登録・WindowsのUserChoiceを自動変更しない。
 
-同一ファイルはファイルIDで既存文書へ解決し、既存ウィンドウをshow→unminimize→set_focusする。元の未保存テキストを再読込せず、別ウィンドウも作らない。
+同一ファイルはファイルIDで既存文書へ解決し、元の未保存テキストを再読込せず、別ウィンドウも作らない。再オープンの前面化は所有UIスレッドへまとめて渡す。WindowsではIsIconic/ShowWindowで最小化だけを同期的に復元し、通常/最大化状態を保つ。可視のGetLastActivePopupがあればそちらを選び、SetForegroundWindowで前面化する。ネイティブ保存ダイアログを背面に隠さない。Tauriのキューへ復元/フォーカスを別々に送る処理へ依存せず、失敗も通知する。常時最前面化、疑似キー入力、任意ウィンドウIDのIPCは追加しない。single-instanceプラグインの既存AllowSetForegroundWindowによる権限受け渡しを利用する。Windowsの制限により前面化が拒否される場合はエラーとタスクバーからの選択を案内する（[Microsoft仕様](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setforegroundwindow)）。
 
 ## 文書とウィンドウ
 
